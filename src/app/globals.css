@@ -1,19 +1,37 @@
-/* Inyección del motor nativo de Tailwind v4 */
 @import "tailwindcss";
 
-/* Declaración de los tokens de diseño y colores de Beatmemo */
 @theme {
-  --color-brand-dark: #000000;  /* Negro Puro */
-  --color-brand-soft: #121212;  /* Negro Suave para tarjetas */
-  --color-brand-gold: #D4AF37;  /* Dorado elegante */
-  --color-brand-red: #C8102E;   /* Rojo British */
+  /* ⬛ Brand Blacks */
+  --color-brand-black-100: #0C0C0C;
+  --color-brand-black-200: #1F1F1F;
+  --color-brand-black-300: #3A3A3A;
+
+  /* ⬜ Brand Whites */
+  --color-brand-white-100: #FAFAFA;
+  --color-brand-white-200: #E6E6E6;
+  --color-brand-white-300: #AAAAAA;
+
+  /* 🥇 Accents & Brand Gold */
+  --color-brand-gold: #A6936A;
+  --color-accent-gold-dark: #A6936A;
+  --color-accent-gold-vibrant: #EAB64E;
+  --color-accent-gold-light: #FFE894;
+  --color-accent-gold-accent: #F9DB15;
+
+  /* 🟥 Brand Reds */
+  --color-brand-red-100: #C41E34;
+  --color-brand-red-200: #D04255;
+  --color-brand-red-300: #FF5C5C;
+
+  /* 🖋️ Tipografías (Enlazadas a Next.js Fonts) */
+  --font-sans: var(--font-barlow);
+  --font-serif: var(--font-libre-baskerville);
 }
 
-/* Estilos base por defecto para asegurar el lienzo premium de la Home */
 @layer base {
   body {
-    background-color: var(--color-brand-dark);
-    color: #ffffff;
-    font-family: sans-serif;
+    /* Aplicamos tu negro más oscuro y blanco primario por defecto */
+    background-color: var(--color-brand-black-100);
+    color: var(--color-brand-white-100);
   }
 }
