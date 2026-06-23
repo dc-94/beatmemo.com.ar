@@ -20,8 +20,12 @@ const libreBaskerville = Libre_Baskerville({
   style: ["normal", "italic"],
 });
 
-export const metadata: Metadata = {
-  title: "Beatmemo 2026",
+export const metadata = {
+  title: {
+    default: "Beatmemo | Museo y Pub Temático en Rosario",
+    template: "%s | Beatmemo", // Esto hace que el título se auto-complete
+  },
+  description: "El punto de encuentro de los fans de The Beatles en Rosario.",
 };
 
 export default function RootLayout({

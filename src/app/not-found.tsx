@@ -38,7 +38,7 @@ export default function NotFound() {
         {/* Botones de rescate - CX Recovery */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
           <Link 
-            href="/shows" 
+            href="/agenda" 
             className="w-full sm:w-auto text-center bg-brand-red-100 text-brand-white-100 px-8 py-3.5 rounded-sm font-sans font-bold tracking-widest uppercase text-sm hover:bg-brand-red-200 transition-colors shadow-lg"
           >
             Agenda de Shows

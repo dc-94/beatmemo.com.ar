@@ -108,7 +108,7 @@ export default function MuseumPreview() {
             <div className="flex flex-col gap-2 border-l-0 md:border-l border-brand-white-300/10 md:pl-8">
               <span className="text-brand-red-100 font-bold uppercase tracking-widest text-[10px]">Instituciones Educativas</span>
               <Link 
-                href="/visitas-guiadas" 
+                href="/museo/visitas-guiadas" 
                 className="font-sans text-brand-white-100 font-bold text-sm border-b border-brand-white-100 w-fit pb-0.5 hover:text-brand-red-100 hover:border-brand-red-100 transition-colors mt-1"
               >
                 Reservar para escuelas

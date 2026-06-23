@@ -1,7 +1,11 @@
-// src/app/admin/layout.tsx
+// src/app/admin/(dashboard)/layout.tsx
 import { redirect } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+
+// Lista blanca estricta (Whitelist). Solo estos correos pueden ver el panel.
+// Puedes agregar los correos de tus socios o managers aquí separados por comas.
+const ALLOWED_EMAILS = ["beatlesmemo.adm@gmail.com"];
 
 export default async function AdminLayout({
   children,
@@ -37,15 +41,23 @@ export default async function AdminLayout({
   // Verificación estricta criptográfica: ¿Este usuario es legítimo?
   const { data, error } = await supabase.auth.getUser();
 
-  // Si no hay usuario o el token expiró, lo echamos de la ruta
+  // 1. Verificación base: Si no hay usuario o el token expiró, lo echamos al login
   if (error || !data?.user) {
     redirect("/admin/login");
+  }
+
+  // 2. HARDENING (Whitelist): ¿Es un usuario autorizado por la empresa?
+  const userEmail = data.user.email || "";
+  if (!ALLOWED_EMAILS.includes(userEmail)) {
+    // Si entró con un correo válido de Google pero que no es de tu empresa,
+    // destruimos su sesión criptográfica y lo expulsamos.
+    await supabase.auth.signOut(); 
+    redirect("/admin/login?error=unauthorized");
   }
 
   // Si el guardia aprueba, renderizamos todo el panel de control
   return (
     <div className="min-h-screen bg-brand-black-100 flex flex-col">
-      {/* Podríamos poner un Navbar interno exclusivo del Admin aquí arriba */}
       <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         {children}
       </main>

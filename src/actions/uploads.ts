@@ -3,12 +3,13 @@
 
 import cloudinary from "@/lib/cloudinary";
 
-// Definimos los destinos permitidos para mantener el orden estricto en tu Cloudinary
 type UploadFolder = "shows" | "cocina" | "cocktails" | "banners" | "general";
 
-/**
- * Sube una imagen a Cloudinary en la carpeta dinámica especificada.
- */
+// Reglas de negocio y seguridad
+const MAX_FILE_SIZE_MB = 5;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+const ALLOWED_MIME_TYPES = ["image/jpeg", "image/jpg","image/png", "image/webp"];
+
 export async function uploadImageToCloudinary(
   formData: FormData, 
   folderName: UploadFolder = "general"
@@ -20,15 +21,24 @@ export async function uploadImageToCloudinary(
       throw new Error("No se encontró ningún archivo para subir.");
     }
 
+    // 1. HARDENING: Validación de Tipo de Archivo (Evitar Malware / SVG XSS)
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      throw new Error(`Formato no permitido (${file.type}). Solo se aceptan JPG, PNG o WEBP.`);
+    }
+
+    // 2. HARDENING: Validación de Tamaño (Evitar Denial of Service)
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      throw new Error(`El archivo es demasiado grande (${(file.size / 1024 / 1024).toFixed(2)}MB). El máximo permitido es ${MAX_FILE_SIZE_MB}MB.`);
+    }
+
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         { 
-          // AQUÍ ESTÁ LA MAGIA: La carpeta se asigna y se crea dinámicamente
           folder: `beatmemo/${folderName}`, 
-          format: "webp",
+          format: "webp", // Forzamos siempre la conversión a webp por performance
           quality: "auto",
         },
         (error, result) => {
@@ -46,6 +56,6 @@ export async function uploadImageToCloudinary(
 
   } catch (error) {
     console.error("Error crítico en uploadImageToCloudinary:", error);
-    throw error;
+    throw error; // Propagamos el error para que el frontend pueda mostrar un Toast/Alert
   }
 }

@@ -1,26 +1,16 @@
-// src/components/home/AgendaPreview.tsx
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useInView } from "framer-motion";
-import { getUpcomingShows } from "@/actions/shows";
+// Importamos motion y useInView de forma más segura para evitar conflictos de chunk
+import { motion, useInView } from "framer-motion"; 
 import { Show } from "@/types/database.types";
 
-export default function AgendaPreview() {
-  const [shows, setShows] = useState<Show[]>([]);
-  const [hoveredIndex, setHoveredIndex] = useState<number>(0); // En Desktop, la primera tarjeta arranca expandida
+export default function AgendaPreview({ shows }: { shows: Show[] }) {
+  const [hoveredIndex, setHoveredIndex] = useState<number>(0);
 
-  useEffect(() => {
-    async function loadShows() {
-      const data = await getUpcomingShows();
-      setShows(data.slice(0, 5)); // Máximo 5 bandas
-    }
-    loadShows();
-  }, []);
-
-  if (shows.length === 0) return null; // Evita parpadeos mientras carga
+  if (shows.length === 0) return null;
 
   return (
     <section className="bg-brand-black-100 py-16 lg:py-24 overflow-hidden w-full">
@@ -51,7 +41,7 @@ export default function AgendaPreview() {
 
       <div className="hidden lg:flex max-w-[95vw] mx-auto w-full justify-center mt-8 px-4">
         <Link
-          href="/shows"
+          href="/agenda"
          className="font-sans font-bold tracking-[0.2em] uppercase text-sm border-b-2 mt-3 border-brand-red-100 pb-3 hover:text-brand-red-100 transition-colors"
         >
           Ver agenda completa
@@ -72,10 +62,10 @@ export default function AgendaPreview() {
             {/* SOLUCIÓN PRIMARIA: Padre como flex center, enlace limpio */}
             <div className="w-full flex justify-center mt-2 px-4">
                 <Link
-                href="/shows"
+                href="/agenda"
                 className="font-sans font-bold tracking-[0.2em] uppercase text-[11px] border-b-2 border-brand-red-100 pb-1 hover:border-brand-white-100 transition-colors"
                 >
-                Ver Cartelera
+                Ver Agenda Completa
                 </Link>
             </div>
         </div>

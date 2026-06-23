@@ -2,23 +2,29 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client"; // Cliente CSR correcto
 
 export default function AdminNav() {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
 
-  // Definimos las rutas del panel de control
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/admin/login");
+    router.refresh(); // Forzamos al servidor a reevaluar que ya no hay sesión
+  };
+
   const tabs = [
     { name: "Shows", path: "/admin/shows" },
-    { name: "Menú Pub", path: "/admin" }, // Por ahora el Pub es la ruta principal (/admin)
+    { name: "Menú Pub", path: "/admin" },
     { name: "QR Carta", path: "/admin/qr" },
     { name: "Configuración", path: "/admin/settings" },
   ];
 
   return (
     <nav className="sticky top-0 z-50 bg-brand-black-100/95 backdrop-blur-md border-b border-brand-white-300/10">
-      
-      {/* Barra Superior */}
       <div className="flex items-center justify-between px-4 py-3 sm:px-6">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
@@ -26,16 +32,20 @@ export default function AdminNav() {
             BTM ADMIN
           </span>
         </div>
-        <button className="text-brand-white-300 hover:text-brand-red-100 font-sans text-[10px] font-bold tracking-widest uppercase transition-colors">
+        <button 
+          onClick={handleLogout}
+          className="text-brand-white-300 hover:text-brand-red-100 font-sans text-[10px] font-bold tracking-widest uppercase transition-colors"
+        >
           Salir
         </button>
       </div>
 
-      {/* Pestañas (Scrollable en móviles) */}
       <div className="flex overflow-x-auto hide-scrollbar px-4 sm:px-6 gap-6 font-sans text-xs font-bold uppercase tracking-widest">
         {tabs.map((tab) => {
-          // Lógica para saber si la pestaña está activa
-          const isActive = pathname === tab.path;
+          // Lógica robusta: Si es admin puro exige match exacto, sino usa startsWith
+          const isActive = tab.path === "/admin" 
+            ? pathname === "/admin" 
+            : pathname.startsWith(tab.path);
           
           return (
             <Link

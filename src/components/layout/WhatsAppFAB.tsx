@@ -12,7 +12,7 @@ export default function WhatsAppFAB() {
       target="_blank"
       rel="noopener noreferrer"
       // Se mantiene z-40 para que no tape el menú móvil
-      className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40 bg-brand-black-100/20 backdrop-blur-md border border-brand-white-300/5 text-white p-3 md:p-4 rounded-full shadow-lg hover:scale-105 hover:bg-brand-black-100 transition-all duration-300 group flex items-center justify-center pr-5"
+      className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40 bg-brand-black-100/20 backdrop-blur-md border border-brand-white-300/5 text-white p-3 md:p-4 rounded-full shadow-lg hover:scale-105 hover:bg-brand-black-100 transition-all duration-300 group flex items-center justify-center pr-5 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-red-100 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-black-100 transition-all"
       aria-label="Contactar por WhatsApp"
     >
       <div className="bg-[#25D366] p-2 rounded-full flex items-center justify-center">

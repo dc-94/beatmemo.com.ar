@@ -1,9 +1,19 @@
-// src/app/museo/page.tsx
-"use client";
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import MuseoTimeline from "@/components/museo/MuseoTimeline";
+
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Museo Beatle',
+  description: 'Explora nuestra colección privada y única con objetos históricos sobre la carrera de The Beatles. Una experiencia cultural imperdible en Rosario.',
+  openGraph: {
+    title: 'Museo Beatle | Beatmemo',
+    description: 'Explora nuestra colección privada y única sobre la historia de los Fab Four.',
+    images: ['/og/museo.jpg'],
+  },
+};
 
 export default function MuseoPage() {
   const timelineEvents = [
@@ -80,49 +90,11 @@ export default function MuseoPage() {
         </div>
       </section>
 
-      {/* 4. TIMELINE ALTERNADO (Mix Fotos y Texto) */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto relative">
-        {/* Línea central dorada sutil */}
+     <section className="py-24 px-4 max-w-6xl mx-auto relative">
         <div className="absolute left-8 lg:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-brand-black-200 via-[#C5A059]/40 to-brand-black-200 transform lg:-translate-x-1/2" />
-
-        <div className="flex flex-col gap-24 lg:gap-32">
-          {timelineEvents.map((event, index) => {
-            const isEven = index % 2 === 0;
-            return (
-              <motion.div 
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8 }}
-                key={index} 
-                className={`relative flex flex-col lg:flex-row items-center gap-8 lg:gap-16 ${isEven ? 'lg:flex-row-reverse' : ''}`}
-              >
-                {/* Punto en la línea del tiempo */}
-                <div className="hidden lg:block absolute left-1/2 top-1/2 w-4 h-4 bg-brand-black-200 border-2 border-[#C5A059] rounded-full transform -translate-x-1/2 -translate-y-1/2 z-10 shadow-[0_0_15px_rgba(197,160,89,0.5)]" />
-
-                {/* Mitad: Imagen */}
-                <div className="w-full pl-12 lg:pl-0 lg:w-1/2">
-                  <div className="relative aspect-[4/3] lg:aspect-video w-full rounded-sm overflow-hidden border border-[#8B6D3B]/20">
-                    <Image 
-                      src="/placeholders/museo.jpg" 
-                      alt={event.title}
-                      fill
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                      className="object-cover grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-700"
-                    />
-                  </div>
-                </div>
-
-                {/* Mitad: Texto */}
-                <div className={`w-full pl-12 lg:pl-0 lg:w-1/2 flex flex-col ${isEven ? 'lg:text-right lg:pr-16' : 'lg:text-left lg:pl-16'}`}>
-                  <span className="font-serif italic text-4xl lg:text-5xl text-[#C5A059]/20 mb-[-10px] lg:mb-[-15px] z-0">{event.year}</span>
-                  <h3 className="font-serif font-bold text-2xl lg:text-3xl text-[#E6C987] z-10 mb-4">{event.title}</h3>
-                  <p className="text-brand-white-300 text-sm lg:text-base leading-relaxed">{event.desc}</p>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+        
+        {/* Aquí pasamos los datos al componente animado */}
+        <MuseoTimeline events={timelineEvents} />
       </section>
 
       {/* 5. AUDIOGUÍAS */}
@@ -177,7 +149,7 @@ export default function MuseoPage() {
               <span className="text-[#C5A059] font-bold uppercase tracking-widest text-[10px]">Instituciones Educativas</span>
               <span className="text-brand-white-300 text-[11px]">Disponible en Inglés y Español.</span>
               <Link 
-                href="/visitas-guiadas" 
+                href="/museo/visitas-guiadas" 
                 className="font-sans text-[#E6C987] font-bold text-sm border-b border-[#E6C987] w-fit pb-0.5 hover:text-brand-white-100 hover:border-brand-white-100 transition-colors"
               >
                 Reservar para escuelas

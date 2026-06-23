@@ -8,8 +8,8 @@ import { usePathname } from "next/navigation";
 
 export default function Footer() {
   const pathname = usePathname();
-  // Si estamos en cualquier ruta de admin, devolvemos null (no renderiza nada)
-  if (pathname.startsWith("/admin")) return null;
+  
+  // 1. TODOS los hooks DEBEN declararse arriba, antes de cualquier "return"
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, amount: 0.3 });
 
@@ -34,6 +34,8 @@ export default function Footer() {
     },
   };
 
+  // 2. AHORA SÍ, el early return condicional
+  if (pathname.startsWith("/admin")) return null;
   return (
     <footer 
       ref={containerRef}
