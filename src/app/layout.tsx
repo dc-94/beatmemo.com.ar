@@ -1,9 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"; 
+import {cookies} from "next/headers";
 import { Barlow, Libre_Baskerville } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer"; // <-- 1. Importa esto
+import Footer from "@/components/layout/Footer"; 
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
+import SplashLoader from "@/components/layout/SplashLoader";
 
 // Configuración de Barlow (Sans-serif)
 const barlow = Barlow({
@@ -20,7 +22,7 @@ const libreBaskerville = Libre_Baskerville({
   style: ["normal", "italic"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: {
     default: "Beatmemo | Museo y Pub Temático en Rosario",
     template: "%s | Beatmemo", // Esto hace que el título se auto-complete
@@ -28,14 +30,19 @@ export const metadata = {
   description: "El punto de encuentro de los fans de The Beatles en Rosario.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  const cookieStore = await cookies();
+  const hasSeenLoader = cookieStore.get("loader_visto")?.value === "true";
+
   return (
     <html lang="es" className="scroll-smooth">
       <body className={`${barlow.variable} ${libreBaskerville.variable} font-sans bg-brand-black-100 text-brand-white-100 antialiased min-h-screen flex flex-col`}>
+        <SplashLoader hasSeenLoader={hasSeenLoader} />
         <Navbar />
         <main className="flex-grow">
           {children}

@@ -41,6 +41,7 @@ export default function HeroSection() {
             alt={`Beatmemo - ${slide.word}`}
             fill
             className="object-cover"
+            sizes="100vw"
             priority={index === 0} 
           />
         </div>

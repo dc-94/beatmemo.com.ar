@@ -84,6 +84,31 @@ export async function getCulturalEvents(): Promise<Show[]> {
     return getCulturalFallback();
   }
 }
+// src/actions/shows.ts
+export async function getShowsByView(view: 'past' | 'current' | 'next', year?: string, month?: string) {
+  const supabase = await createClient();
+  const now = new Date();
+  
+  let query = supabase.from("shows").select("*").eq("categoria", "shows");
+
+  if (view === 'past') {
+    // Shows anteriores a hoy, ordenados por más reciente al tope
+    query = query.lt("fecha_hora", now.toISOString()).order("fecha_hora", { ascending: false });
+  } else {
+    // Lógica para 'current' (mes actual) y 'next' (mes siguiente)
+    // Aquí implementamos el filtrado por año/mes que ya tenías, pero reforzado
+    const targetYear = year ? parseInt(year) : now.getFullYear();
+    const targetMonth = month ? parseInt(month) : now.getMonth() + 1;
+    
+    const start = new Date(targetYear, targetMonth - 1, 1).toISOString();
+    const end = new Date(targetYear, targetMonth, 0, 23, 59, 59).toISOString();
+    
+    query = query.gte("fecha_hora", start).lte("fecha_hora", end).order("fecha_hora", { ascending: true });
+  }
+
+  const { data, error } = await query;
+  return data || [];
+}
 
 /* ========================================================= */
 /* FUNCIONES DE RESPALDO (FALLBACKS) - SIN CAMBIOS           */

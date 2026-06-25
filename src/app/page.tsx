@@ -1,10 +1,12 @@
 // src/app/page.tsx
+import { Suspense } from "react";
 import HeroSection from "@/components/home/HeroSection";
+import AgendaWrapper from "@/components/home/AgendaWrapper";
+import BrandSpinner from "@/components/ui/BrandSpinner";
 import Banner from "@/components/home/Banner";
-import AgendaPreview from "@/components/home/AgendaPreview";
 import Pub from "@/components/home/Pub";
 import MuseumPreview from "@/components/home/MuseumPreview";
-import { getUpcomingShows } from "@/actions/shows";
+
 
 import { Metadata } from 'next';
 
@@ -21,7 +23,7 @@ export const metadata: Metadata = {
 
 
 export default async function HomePage() {
-  const shows = await getUpcomingShows();
+  
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -61,7 +63,9 @@ export default async function HomePage() {
     <div className="flex flex-col min-h-screen bg-brand-black-100 gap-14 lg:gap-20 pb-32">
       <HeroSection />
       <Banner />
-      <AgendaPreview shows={shows} />
+      <Suspense fallback={<BrandSpinner />}>
+        <AgendaWrapper />
+      </Suspense>
       <Pub />
       <MuseumPreview />
     </div>

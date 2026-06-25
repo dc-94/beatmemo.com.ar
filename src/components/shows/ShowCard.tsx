@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { isToday } from "@/utils/date";
 import { Show } from "@/types/database.types";
 
 export default function ShowCard({ show }: { show: Show }) {
@@ -13,10 +14,8 @@ export default function ShowCard({ show }: { show: Show }) {
   const formattedDateCard = dateObj.toLocaleDateString("es-AR", { day: "numeric", month: "short" });
   const formattedDateFull = dateObj.toLocaleDateString("es-AR", { weekday: 'long', day: "numeric", month: "long", year: 'numeric' });
 
-  // Lógica de "Live Tonight" (Checkeo de hoy)
-  const todayString = new Date().toISOString().split('T')[0];
-const showDateString = new Date(show.fecha_hora).toISOString().split('T')[0];
-const isTonight = todayString === showDateString;
+  // Lógica de "Live Tonight" utilizando la utilidad isToday
+  const isTonight = isToday(show.fecha_hora);
 
   return (
     <>
