@@ -1,66 +1,66 @@
-// src/app/admin/(dashboard)/layout.tsx
-import { redirect } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { Toaster } from "sonner";
+import Sidebar from "@/components/admin/Sidebar";
+import BottomNav from "@/components/admin/BottomNav";
 
-// Lista blanca estricta (Whitelist). Solo estos correos pueden ver el panel.
-// Puedes agregar los correos de tus socios o managers aquí separados por comas.
-const ALLOWED_EMAILS = ["beatlesmemo.adm@gmail.com"];
-
-export default async function AdminLayout({
+export default async function AdminDashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // En Next.js 15/16, las cookies son asíncronas
   const cookieStore = await cookies();
 
-  // Inicializamos el cliente SSR
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            });
-          } catch (error) {
-            // Next.js ignora set() en layouts de solo lectura de forma intencional, 
-            // el refresh de tokens ocurre en Server Actions o Route Handlers.
-          }
-        },
+        getAll() { return cookieStore.getAll(); },
+        setAll() { /* El middleware maneja las cookies, el layout es de lectura */ }
       },
     }
   );
 
-  // Verificación estricta criptográfica: ¿Este usuario es legítimo?
-  const { data, error } = await supabase.auth.getUser();
+  // 1. Verificación de Autenticación
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
 
-  // 1. Verificación base: Si no hay usuario o el token expiró, lo echamos al login
-  if (error || !data?.user) {
-    redirect("/admin/login");
+  // 2. Verificación de Autorización (RBAC)
+  // Usamos la función SQL que creamos: public.get_auth_role()
+  const { data: role, error } = await supabase.rpc('get_auth_role');
+
+  if (error || !role || role === 'VISITOR') {
+    // Si no es CM o SUPERADMIN, expulsamos.
+    // Opcional: destruir sesión
+    await supabase.auth.signOut();
+    redirect("/login?error=unauthorized");
   }
 
-  // 2. HARDENING (Whitelist): ¿Es un usuario autorizado por la empresa?
-  const userEmail = data.user.email || "";
-  if (!ALLOWED_EMAILS.includes(userEmail)) {
-    // Si entró con un correo válido de Google pero que no es de tu empresa,
-    // destruimos su sesión criptográfica y lo expulsamos.
-    await supabase.auth.signOut(); 
-    redirect("/admin/login?error=unauthorized");
-  }
-
-  // Si el guardia aprueba, renderizamos todo el panel de control
   return (
-    <div className="min-h-screen bg-brand-black-100 flex flex-col">
-      <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-        {children}
-      </main>
+    <div className="min-h-screen bg-black text-white selection:bg-brand-red-100">
+      {/* Sistema de Notificaciones Minimalista */}
+      <Toaster position="top-right" theme="dark" richColors />
+
+      <div className="flex h-screen overflow-hidden">
+        {/* Sidebar Desktop */}
+        <aside className="hidden md:flex w-64 border-r border-white/10 flex-col">
+          <Sidebar />
+        </aside>
+
+        {/* Contenido Principal */}
+        <main className="flex-1 overflow-y-auto bg-neutral-950 pb-20 md:pb-0">
+          <div className="p-4 md:p-8 max-w-7xl mx-auto">
+            {children}
+          </div>
+        </main>
+      </div>
+
+      {/* Navegación Móvil (Solo visible en pantallas pequeñas) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/10 bg-black/90 backdrop-blur-md z-50">
+        <BottomNav />
+      </nav>
     </div>
   );
 }

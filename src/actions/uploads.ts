@@ -2,6 +2,7 @@
 "use server";
 
 import cloudinary from "@/lib/cloudinary";
+import { createClient } from "@/lib/supabase/server"; // IMPORTAMOS EL CLIENTE SEGURO
 
 type UploadFolder = "shows" | "cocina" | "cocktails" | "banners" | "general";
 
@@ -15,6 +16,14 @@ export async function uploadImageToCloudinary(
   folderName: UploadFolder = "general"
 ): Promise<string> {
   try {
+    // 0. HARDENING: Verificación de Sesión (Solo Admins autenticados pueden subir)
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      throw new Error("No autorizado. Intento de subida bloqueado.");
+    }
+
     const file = formData.get("file") as File;
     
     if (!file) {
@@ -38,7 +47,7 @@ export async function uploadImageToCloudinary(
       const uploadStream = cloudinary.uploader.upload_stream(
         { 
           folder: `beatmemo/${folderName}`, 
-          format: "webp", // Forzamos siempre la conversión a webp por performance
+          format: "webp", 
           quality: "auto",
         },
         (error, result) => {
@@ -56,6 +65,6 @@ export async function uploadImageToCloudinary(
 
   } catch (error) {
     console.error("Error crítico en uploadImageToCloudinary:", error);
-    throw error; // Propagamos el error para que el frontend pueda mostrar un Toast/Alert
+    throw error;
   }
 }

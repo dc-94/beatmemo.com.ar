@@ -8,14 +8,12 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   
   // Capturamos el parámetro
-  let next = searchParams.get("next") ?? "/admin";
+  let next = searchParams.get("next") ?? "/";
 
-  // HARDENING (Prevención de Open Redirect):
-  // Aseguramos que la redirección sea siempre a un path local.
-  // Rechazamos dominios externos (ej: https://) o rutas relativas de protocolo (ej: //malicious.com)
+  // HARDENING (Prevención de Open Redirect)
   if (!next.startsWith("/") || next.startsWith("//")) {
-    console.warn(`Intento de redirección externa bloqueado. Destino intentado: ${next}`);
-    next = "/admin"; // Fallback a zona segura
+    console.warn(`[Seguridad] Intento de redirección externa bloqueado. Destino: ${next}`);
+    next = "/"; // Fallback a zona segura
   }
 
   if (code) {
@@ -33,7 +31,7 @@ export async function GET(request: Request) {
                 cookieStore.set(name, value, options);
               });
             } catch (error) {
-              console.error("Error seteando cookies", error);
+              console.error("Error seteando cookies en callback", error);
             }
           },
         },
