@@ -23,7 +23,7 @@ export default function AdminLoginPage() {
         <p className="font-sans text-brand-white-300 text-sm mb-8">
           Acceso restringido. Solo personal autorizado de Beatmemo.
         </p>
-
+    
         {/* Aquí inyectamos el botón que creamos */}
         <LoginButton />
         

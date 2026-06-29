@@ -49,7 +49,7 @@ export default async function RootLayout({
 
   return (
     <html lang="es" className="scroll-smooth">
-      <body className={`/* mantén tus clases de fuentes y colores de fondo aquí */`}>
+      <body className={`${barlow.variable} ${libreBaskerville.variable} font-sans bg-brand-black-100 text-brand-white-100 antialiased`}>
         
         {/* Renderizado Condicional: Solo se muestra si NO estamos en el admin */}
         {!isAdmin && <SplashLoader hasSeenLoader={hasSeenLoader} />}
