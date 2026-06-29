@@ -2,9 +2,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 export default function WhatsAppFAB() {
-  const pathname = usePathname();
-  // Si estamos en cualquier ruta de admin, devolvemos null (no renderiza nada)
-  if (pathname.startsWith("/admin")) return null;
 
   return (
     <Link

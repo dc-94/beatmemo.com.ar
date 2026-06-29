@@ -1,4 +1,5 @@
 import type { Metadata } from "next"; 
+import { headers } from "next/headers";
 import {cookies} from "next/headers";
 import { Barlow, Libre_Baskerville } from "next/font/google";
 import "./globals.css";
@@ -32,23 +33,34 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-
+}) {
+  // 1. Detectamos el Host desde el servidor antes de renderizar nada
+  const headersList = await headers();
+  const host = headersList.get('host') || '';
+  const adminPrefix = process.env.NEXT_PUBLIC_ADMIN_SUBDOMAIN_PREFIX || 'vault.';
+  
+  // 2. Variable booleana: ¿Estamos en el admin?
+  const isAdmin = host.startsWith(adminPrefix);
+  
   const cookieStore = await cookies();
   const hasSeenLoader = cookieStore.get("loader_visto")?.value === "true";
 
   return (
     <html lang="es" className="scroll-smooth">
-      <body className={`${barlow.variable} ${libreBaskerville.variable} font-sans bg-brand-black-100 text-brand-white-100 antialiased min-h-screen flex flex-col`}>
-        <SplashLoader hasSeenLoader={hasSeenLoader} />
-        <Navbar />
-        <main className="flex-grow">
-          {children}
-        </main>
-        <Footer /> 
-        <WhatsAppFAB />
+      <body className={`/* mantén tus clases de fuentes y colores de fondo aquí */`}>
+        
+        {/* Renderizado Condicional: Solo se muestra si NO estamos en el admin */}
+        {!isAdmin && <SplashLoader hasSeenLoader={hasSeenLoader} />}
+        {!isAdmin && <Navbar />}
+        
+        <main className="flex-grow">{children}</main>
+        
+        {/* Renderizado Condicional: Solo se muestra si NO estamos en el admin */}
+        {!isAdmin && <Footer />}
+        {!isAdmin && <WhatsAppFAB />}
+        
       </body>
     </html>
   );

@@ -1,26 +1,22 @@
 // src/lib/rate-limit.ts
-import { headers } from "next/headers";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
-// Store simple en memoria (esto es lo que reemplazaremos por Redis más adelante)
-const store = new Map<string, { count: number; resetAt: number }>();
+// Configuración del Limitador: 50 peticiones por minuto por usuario/IP
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(50, "1 m"),
+  analytics: false,
+});
 
-export async function rateLimit() {
-  const ip = (await headers()).get("x-forwarded-for") || "anonymous";
-  const now = Date.now();
-  const windowMs = 60 * 1000; // Ventana de 1 minuto
-  
-  const record = store.get(ip) || { count: 0, resetAt: now + windowMs };
-  
-  if (now > record.resetAt) {
-    record.count = 0;
-    record.resetAt = now + windowMs;
-  }
-  
-  record.count++;
-  store.set(ip, record);
-  
-  // Limitar a 50 peticiones por minuto por IP
-  if (record.count > 50) {
-    throw new Error("Too many requests");
+export async function rateLimit(identifier: string) {
+  try {
+    const { success } = await ratelimit.limit(identifier);
+    if (!success) {
+      throw new Error("Too many requests");
+    }
+  } catch (error) {
+    // Si Redis falla o no hay variables de entorno, dejamos pasar para no romper la app entera
+    console.warn("Ratelimit bypass:", error);
   }
 }

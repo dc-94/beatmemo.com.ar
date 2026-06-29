@@ -58,7 +58,6 @@ export default function Navbar() {
     };
   }, [isMobileMenuOpen]);
 
-  if (pathname.startsWith("/admin")) return null;
 
   const toggleMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
   
