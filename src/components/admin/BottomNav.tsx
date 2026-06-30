@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, Coffee, LayoutDashboard, FileText, Megaphone } from "lucide-react";
+import { Calendar, Coffee, LayoutDashboard, FileText, Megaphone, ShieldAlert } from "lucide-react";
 
 const navLinks = [
   { name: "Dash", href: "/admin", icon: LayoutDashboard },
   { name: "Shows", href: "/admin/shows", icon: Calendar },
   { name: "Menús", href: "/admin/menus", icon: FileText },
   { name: "Pub", href: "/admin/gastronomia", icon: Coffee },
-  { name: "Banners", href: "/admin/banners", icon: Megaphone },
+  { name: "Logs", href: "/admin/logs", icon: ShieldAlert }, // Nuevo ítem
 ];
 
 export default function BottomNav() {

@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { 
-  Calendar, Coffee, Image as ImageIcon, 
-  LayoutDashboard, LogOut, FileText, Megaphone 
+  Calendar, Coffee, LayoutDashboard, LogOut, 
+  FileText, Megaphone, ShieldAlert // Añadido ShieldAlert
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client"; // Importamos el cliente CSR
 
 const navLinks = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -14,7 +14,9 @@ const navLinks = [
   { name: "Menús", href: "/admin/menus", icon: FileText },
   { name: "Gastronomía", href: "/admin/gastronomia", icon: Coffee },
   { name: "Banners", href: "/admin/banners", icon: Megaphone },
+  { name: "Auditoría", href: "/admin/logs", icon: ShieldAlert }, // Nuevo ítem
 ];
+
 
 export default function Sidebar() {
   const pathname = usePathname();

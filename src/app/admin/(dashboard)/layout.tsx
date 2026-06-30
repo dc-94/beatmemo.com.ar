@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { Toaster } from "sonner";
 import Sidebar from "@/components/admin/Sidebar";
 import BottomNav from "@/components/admin/BottomNav";
-
+import { logAdminAction } from "@/lib/admin-logger"; // <--- IMPORTACIÓN CRÍTICA
 export default async function AdminDashboardLayout({
   children,
 }: {
@@ -29,11 +29,19 @@ export default async function AdminDashboardLayout({
   // BUG #4 RESUELTO: Leemos directamente de la metadata del JWT (Microsegundos, 0 consultas DB)
   const role = user?.app_metadata?.role as string | undefined;
 
-  if (!role || role === 'VISITOR') {
-    await supabase.auth.signOut();
-    redirect("/login?error=unauthorized");
-  }
+  const validRoles = ['SUPERADMIN', 'CONTENT_ADMIN'];
+const isAuthorized = role && validRoles.includes(role);
 
+if (!isAuthorized) {
+  // Auditoría silenciosa del intento fallido
+  await logAdminAction('UNAUTHORIZED_ACCESS', 'admin_layout', { 
+    email: user.email,
+    attempted_role: role || 'NONE'
+  });
+  
+  await supabase.auth.signOut();
+  redirect("/admin/login?error=unauthorized");
+}
   return (
     <div className="min-h-screen bg-black text-white selection:bg-brand-red-100">
       <Toaster position="top-right" theme="dark" richColors />

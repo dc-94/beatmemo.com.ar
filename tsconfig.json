@@ -13,6 +13,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
+    "types": ["next-cloudinary"],
     "plugins": [
       {
         "name": "next"

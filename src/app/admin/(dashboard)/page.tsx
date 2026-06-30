@@ -2,7 +2,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { Calendar, Coffee, FileText, Megaphone, Activity } from "lucide-react";
+import { Calendar, Coffee, FileText, Megaphone, Activity,ShieldAlert } from "lucide-react";
 
 export default async function AdminDashboardPage() {
   const cookieStore = await cookies();
@@ -30,35 +30,25 @@ export default async function AdminDashboardPage() {
         <h1 className="text-2xl font-bold text-white">Panel de Control</h1>
         <p className="text-neutral-400">Bienvenido de vuelta, Administrador.</p>
       </header>
-
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard title="Shows Activos" value={totalShows || 0} icon={<Calendar className="text-blue-400"/>} />
-        <StatCard title="Items en Pub" value={totalPubItems || 0} icon={<Coffee className="text-amber-400"/>} />
-        <StatCard title="Estado del Sistema" value="Óptimo" icon={<Activity className="text-green-400"/>} />
-      </section>
-
-      {/* Actividad Reciente (Caja Negra) */}
-      <section className="bg-white/5 border border-white/10 rounded-xl p-6">
-        <h2 className="text-lg font-semibold mb-4 text-white">Actividad Reciente</h2>
-        <div className="space-y-4">
-          {logs?.map((log) => (
-            <div key={log.id} className="flex items-center justify-between border-b border-white/5 pb-3">
-              <div>
-                <p className="text-sm text-white font-medium capitalize">{log.action_type} en {log.table_name}</p>
-                <p className="text-xs text-neutral-500">{new Date(log.created_at).toLocaleString()}</p>
-              </div>
+      <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <StatCard title="Shows" value={totalShows || 0} icon={<Calendar className="text-blue-400"/>} href="/admin/shows" />
+        <StatCard title="Items Pub" value={totalPubItems || 0} icon={<Coffee className="text-amber-400"/>} href="/admin/gastronomia" />
+        <StatCard title="Auditoría" value="Ver Logs" icon={<ShieldAlert className="text-red-400"/>} href="/admin/logs" />
+        <div className="bg-white/5 border border-white/10 p-6 rounded-xl flex items-center gap-4">
+            <Activity className="text-green-400" />
+            <div>
+                <p className="text-xs text-neutral-400 uppercase">Sistema</p>
+                <p className="text-lg font-bold text-white">Óptimo</p>
             </div>
-          ))}
-          {logs?.length === 0 && <p className="text-sm text-neutral-500">No hay actividad reciente.</p>}
         </div>
       </section>
     </div>
   );
 }
-
-function StatCard({ title, value, icon }: { title: string, value: string | number, icon: React.ReactNode }) {
-  return (
-    <div className="bg-white/5 border border-white/10 p-6 rounded-xl flex items-center gap-4">
+// Actualizamos StatCard para que sea clickable si tiene href
+function StatCard({ title, value, icon, href }: { title: string, value: string | number, icon: React.ReactNode, href?: string }) {
+  const content = (
+    <div className="bg-white/5 border border-white/10 p-6 rounded-xl flex items-center gap-4 hover:bg-white/10 transition-colors">
       <div className="p-3 bg-white/5 rounded-lg">{icon}</div>
       <div>
         <p className="text-xs text-neutral-400 uppercase tracking-wider">{title}</p>
@@ -66,4 +56,6 @@ function StatCard({ title, value, icon }: { title: string, value: string | numbe
       </div>
     </div>
   );
+
+  return href ? <Link href={href}>{content}</Link> : content;
 }
