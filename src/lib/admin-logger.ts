@@ -23,10 +23,12 @@ export async function logAdminAction(
     timestamp: new Date().toISOString()
   };
 
-  await supabase.from('admin_logs').insert({
+  supabase.from('admin_logs').insert({
     action_type: action,
     table_name: tableName,
     record_id: recordId,
     metadata: finalMetadata
+  }).then(({ error }) => {
+    if (error) console.error("Fallo silencioso en log:", error);
   });
 }

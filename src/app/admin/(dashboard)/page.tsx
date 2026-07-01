@@ -4,7 +4,9 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { Calendar, Coffee, FileText, Megaphone, Activity,ShieldAlert } from "lucide-react";
 
+
 export default async function AdminDashboardPage() {
+  
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

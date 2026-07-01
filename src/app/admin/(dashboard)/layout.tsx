@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import Sidebar from "@/components/admin/Sidebar";
 import BottomNav from "@/components/admin/BottomNav";
 import { logAdminAction } from "@/lib/admin-logger"; // <--- IMPORTACIÓN CRÍTICA
+
 export default async function AdminDashboardLayout({
   children,
 }: {
@@ -22,16 +23,24 @@ export default async function AdminDashboardLayout({
       },
     }
   );
+const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/admin/login");
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  // BUG #4 RESUELTO: Leemos directamente de la metadata del JWT (Microsegundos, 0 consultas DB)
-  const role = user?.app_metadata?.role as string | undefined;
-
+  // REFACTOR: Database-First
+  // Consultamos la fuente de verdad en tiempo real
+  const { data: userData, error } = await supabase
+    .from('user_roles') // Asegúrate de tener esta tabla
+    .select('role')
+    .eq('user_id', user.id)
+    .single();
+if (error || !userData) {
+    console.error("[Auth] Error verificando rol en DB:", error?.message);
+    await supabase.auth.signOut();
+    redirect("/admin/login?error=db_error");
+  }
+  const role = userData?.role;
   const validRoles = ['SUPERADMIN', 'CONTENT_ADMIN'];
-const isAuthorized = role && validRoles.includes(role);
-
+  const isAuthorized = role && validRoles.includes(role);
 if (!isAuthorized) {
   // Auditoría silenciosa del intento fallido
   await logAdminAction('UNAUTHORIZED_ACCESS', 'admin_layout', { 
@@ -43,17 +52,17 @@ if (!isAuthorized) {
   redirect("/admin/login?error=unauthorized");
 }
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-brand-red-100">
-      <Toaster position="top-right" theme="dark" richColors />
+<div className="flex h-screen w-full overflow-hidden bg-neutral-950">
+        <Toaster position="top-right" theme="dark" richColors />
       <div className="flex h-screen overflow-hidden">
-        <aside className="hidden md:flex w-64 border-r border-white/10 flex-col">
-          <Sidebar />
-        </aside>
-        <main className="flex-1 overflow-y-auto bg-neutral-950 pb-20 md:pb-0">
-          <div className="p-4 md:p-8 max-w-7xl mx-auto">
-            {children}
-          </div>
-        </main>
+       <aside className="w-64 border-r border-white/10 hidden md:flex flex-col flex-shrink-0">
+        <Sidebar />
+      </aside>
+        <main className="flex-1 h-full overflow-y-auto bg-neutral-950 relative">
+        <div className="p-8 w-full max-w-7xl mx-auto">
+          {children}
+        </div>
+      </main>
       </div>
       <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/10 bg-black/90 backdrop-blur-md z-50">
         <BottomNav />
