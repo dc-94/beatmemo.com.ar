@@ -1,12 +1,16 @@
 export interface Show {
   id: string;
-  banda: string;
-  ciclo: string;
-  fecha_hora: string;
-  precio: number;
+  titulo: string;
+  tipo: string;
+  fecha: string;
+  hora: string;
   url_imagen: string;
-  categoria?: string;   
-  descripcion?: string; 
-  integrantes?: string;      
-  valor_espectaculo?: number;
+  es_gratuito: boolean;
+  precio: number | null;
+  ciclo_id: string | null;
+}
+
+export interface Ciclo {
+  id: string;
+  nombre: string;
 }
