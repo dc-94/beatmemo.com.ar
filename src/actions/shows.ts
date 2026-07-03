@@ -1,127 +1,100 @@
 "use server";
 
 import { createClient } from "../lib/supabase/server";
-import { Show } from "../types/database.types";
+
+// Como la base de datos cambió, definimos una interfaz ajustada para el Frontend
+export interface PublicEvent {
+  id: string;
+  titulo: string;
+  fecha: string;
+  hora: string;
+  precio: number | null;
+  es_gratuito: boolean;
+  url_imagen: string;
+  descripcion: string;
+  integrantes: string;
+  tipo: string;
+  ciclos: { nombre: string } | null; // El JOIN trae esto como un objeto
+}
 
 /**
  * Helper: Obtiene la fecha absoluta actual en Argentina (YYYY-MM-DD)
- * Evita el bug de la medianoche UTC de Vercel.
  */
 function getLocalTodayString() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "America/Argentina/Buenos_Aires" });
 }
 
-export async function getUpcomingShows(): Promise<Show[]> {
-  try {
-    const supabase = await createClient(); // Cliente seguro de servidor (SSR)
-    const todayString = getLocalTodayString();
-    
-    const { data, error } = await supabase
-      .from("shows")
-      .select("id, banda, ciclo, fecha_hora, precio, url_imagen, descripcion, categoria")
-      .eq("categoria", "shows")
-      .gte("fecha_hora", todayString)
-      .order("fecha_hora", { ascending: true })
-      .limit(6);
-
-    if (error) throw error;
-    return (data as Show[]) || [];
-  } catch (err) {
-    console.error("Error crítico en getUpcomingShows:", err);
-    return getPlaceholdersFallback();
-  }
-}
-
-export async function getShowsList(year?: string, month?: string): Promise<Show[]> {
-  try {
-    const supabase = await createClient(); // Cliente seguro
-    let query = supabase
-      .from("shows")
-      .select("id, banda, ciclo, fecha_hora, precio, url_imagen, descripcion, categoria, integrantes, valor_espectaculo")
-      .eq("categoria", "shows")
-      .order("fecha_hora", { ascending: true });
-
-    if (year && month) {
-      // VALIDACIÓN ESTRICTA (Hardening)
-      const safeYear = parseInt(year, 10);
-      const safeMonth = parseInt(month, 10);
-      
-      if (isNaN(safeYear) || safeYear < 2024 || safeYear > 2030 || isNaN(safeMonth) || safeMonth < 1 || safeMonth > 12) {
-        console.warn("Intento de inyección o parámetros inválidos en URL");
-        return [];
-      }
-
-      const startDate = new Date(safeYear, safeMonth - 1, 1).toISOString();
-      const endDate = new Date(safeYear, safeMonth, 0, 23, 59, 59).toISOString();
-      query = query.gte("fecha_hora", startDate).lte("fecha_hora", endDate);
-    } else {
-      query = query.gte("fecha_hora", getLocalTodayString());
-    }
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return (data as Show[]) || [];
-  } catch (err) {
-    console.error("Error crítico en getShowsList:", err);
-    return getPlaceholdersFallback();
-  }
-}
-
-export async function getCulturalEvents(): Promise<Show[]> {
-  try {
-    const supabase = await createClient(); // Cliente seguro
-    const { data, error } = await supabase
-      .from("shows")
-      .select("id, banda, ciclo, fecha_hora, precio, url_imagen, descripcion, categoria")
-      .eq("categoria", "cultura")
-      .gte("fecha_hora", getLocalTodayString())
-      .order("fecha_hora", { ascending: true });
-
-    if (error) throw error;
-    return (data as Show[]) || [];
-  } catch (err) {
-    console.error("Error crítico en getCulturalEvents:", err);
-    return getCulturalFallback();
-  }
-}
-// src/actions/shows.ts
-export async function getShowsByView(view: 'past' | 'current' | 'next', year?: string, month?: string) {
+// 1. Obtener Shows por Vista (Agenda Principal)
+export async function getShowsByView(view: 'past' | 'current' | 'next', year?: string, month?: string): Promise<PublicEvent[]> {
   const supabase = await createClient();
   const now = new Date();
   
-  let query = supabase.from("shows").select("*").eq("categoria", "shows");
+  // Iniciamos la consulta en la tabla 'eventos'. 
+  // Hacemos un JOIN con 'ciclos' para traer el nombre, y filtramos los borrados.
+  let query = supabase
+    .from("eventos")
+    .select("*, ciclos(nombre)")
+    .neq("is_deleted", true)
+    .order("fecha", { ascending: true });
 
   if (view === 'past') {
-    // Shows anteriores a hoy, ordenados por más reciente al tope
-    query = query.lt("fecha_hora", now.toISOString()).order("fecha_hora", { ascending: false });
+    query = query.lt("fecha", getLocalTodayString()).order("fecha", { ascending: false });
   } else {
-    // Lógica para 'current' (mes actual) y 'next' (mes siguiente)
-    // Aquí implementamos el filtrado por año/mes que ya tenías, pero reforzado
     const targetYear = year ? parseInt(year) : now.getFullYear();
     const targetMonth = month ? parseInt(month) : now.getMonth() + 1;
     
-    const start = new Date(targetYear, targetMonth - 1, 1).toISOString();
-    const end = new Date(targetYear, targetMonth, 0, 23, 59, 59).toISOString();
+    const startStr = `${targetYear}-${String(targetMonth).padStart(2, '0')}-01`;
+    const lastDay = new Date(targetYear, targetMonth, 0).getDate();
+    const endStr = `${targetYear}-${String(targetMonth).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
     
-    query = query.gte("fecha_hora", start).lte("fecha_hora", end).order("fecha_hora", { ascending: true });
+    query = query.gte("fecha", startStr).lte("fecha", endStr);
   }
 
   const { data, error } = await query;
-  return data || [];
+  if (error) console.error("Error en getShowsByView:", error);
+  return (data as PublicEvent[]) || [];
 }
 
-/* ========================================================= */
-/* FUNCIONES DE RESPALDO (FALLBACKS) - SIN CAMBIOS           */
-/* ========================================================= */
-function getPlaceholdersFallback(): Show[] {
-  return [
-    { id: "mock-1", banda: "TIAGO & LOS PAJAROS", ciclo: "Pre Weekend Concert", fecha_hora: "2026-06-11T21:00:00Z", precio: 0, url_imagen: "/placeholders/hero/show.jpg", categoria: "shows", descripcion: "Show en vivo.", valor_espectaculo: 2500 },
-    { id: "mock-2", banda: "HUMAN NATURE", ciclo: "Rockin' Fridays", fecha_hora: "2026-06-12T22:00:00Z", precio: 0, url_imagen: "/placeholders/hero/cultural.png", categoria: "shows", descripcion: "Show en vivo.", valor_espectaculo: 3000 }
-  ];
+// 2. Obtener Próximos Shows (Para el Home)
+export async function getUpcomingShows(): Promise<PublicEvent[]> {
+  try {
+    const supabase = await createClient();
+    const todayString = getLocalTodayString();
+    
+    const { data, error } = await supabase
+      .from("eventos")
+      .select("*, ciclos(nombre)")
+      .eq("is_deleted", false)
+      .eq("tipo", "SHOW")
+      .gte("fecha", todayString)
+      .order("fecha", { ascending: true })
+      .order("hora", { ascending: true }) // Orden secundario por hora
+      .limit(6);
+
+    if (error) throw error;
+    return (data as PublicEvent[]) || [];
+  } catch (err) {
+    console.error("Error crítico en getUpcomingShows:", err);
+    return [];
+  }
 }
 
-function getCulturalFallback(): Show[] {
-  return [
-    { id: "mock-cultura-1", banda: "Edición Rock Nacional", ciclo: "Club del Vinilo", fecha_hora: "2026-06-17T20:00:00Z", precio: 0, url_imagen: "/placeholders/clubvinilo.png", categoria: "cultura", descripcion: "Noche de vinilos." }
-  ];
+// 3. Obtener Eventos Culturales
+export async function getCulturalEvents(): Promise<PublicEvent[]> {
+  try {
+    const supabase = await createClient(); 
+    const { data, error } = await supabase
+      .from("eventos")
+      .select("*, ciclos(nombre)")
+      .eq("is_deleted", false)
+      .eq("tipo", "EVENTO_CULTURAL")
+      .gte("fecha", getLocalTodayString())
+      .order("fecha", { ascending: true });
+
+    if (error) throw error;
+    return (data as PublicEvent[]) || [];
+  } catch (err) {
+    console.error("Error crítico en getCulturalEvents:", err);
+    return [];
+  }
 }

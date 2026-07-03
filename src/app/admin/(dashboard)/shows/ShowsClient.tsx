@@ -1,96 +1,138 @@
 "use client";
+
 import { useState } from "react";
 import EventDrawer from "@/components/admin/EventDrawer";
-import { Show, Ciclo } from "@/types/database.types"; // Ajusta el import
-import { getOptimizedImageUrl } from "@/lib/utils";
+import { getOptimizedImageUrl } from "@/lib/utils"; // Tu utilidad de imágenes
 
-interface ShowsClientProps {
-  shows: Show[];
-  ciclos: Ciclo[];
-}
-
-export default function ShowsClient({ shows, ciclos }: ShowsClientProps) {
+export default function ShowsClient({ shows, ciclos }: any) {
+  // 1. ESTADOS DEL MODAL
   const [isOpen, setIsOpen] = useState(false);
+  const [eventToEdit, setEventToEdit] = useState<any>(null); // <- AQUÍ ESTÁ LA SOLUCIÓN AL ERROR
+
+  // 2. ESTADOS DE LOS FILTROS
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterTipo, setFilterTipo] = useState("");
+  const [filterCiclo, setFilterCiclo] = useState("");
 
-  const filteredShows = shows.filter((show) =>
-    show.titulo.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // 3. LÓGICA DE FILTRADO COMBINADO
+  const filteredShows = shows.filter((show: any) => {
+    const matchesSearch = show.titulo.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesTipo = filterTipo ? show.tipo === filterTipo : true;
+    const matchesCiclo = filterCiclo ? show.ciclo_id === filterCiclo : true;
+    
+    return matchesSearch && matchesTipo && matchesCiclo;
+  });
 
-  // 3. Función auxiliar para encontrar el nombre del ciclo
+  // Funciones de ayuda
   const getNombreCiclo = (id: string | null) => {
-    if (!id) return "Sin ciclo asignado";
-    const ciclo = ciclos.find((c) => c.id === id);
-    return ciclo ? ciclo.nombre : "Ciclo desconocido";
+    if (!id) return "Sin ciclo";
+    const ciclo = ciclos.find((c: any) => c.id === id);
+    return ciclo ? ciclo.nombre : "Desconocido";
   };
 
-  // Función auxiliar para formatear la fecha a formato latino (DD/MM/YYYY)
   const formatearFecha = (fechaDb: string) => {
     if (!fechaDb) return "";
     const [year, month, day] = fechaDb.split('-');
     return `${day}/${month}/${year}`;
   };
 
-  return (
-    <div className="space-y-8">
-      {/* HEADER DE LA PÁGINA */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+  // Función para abrir el modal en modo edición
+  const handleEdit = (show: any) => {
+    setEventToEdit(show);
+    setIsOpen(true);
+  };
+
+  // Función para abrir el modal en modo creación (limpio)
+  const handleCreateNew = () => {
+    setEventToEdit(null);
+    setIsOpen(true);
+  };
+
+return (
+    <div className="w-full min-h-screen space-y-6 flex flex-col">
+      {/* HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white">Gestión de Eventos</h1>
-          <p className="text-neutral-400">Administra los shows y eventos culturales</p>
         </div>
         <button 
-          onClick={() => setIsOpen(true)} 
-          className=" border border-brand-red-100 hover:bg-red-700 text-white font-bold px-6 py-2.5 rounded transition"
+          onClick={handleCreateNew} 
+          className="bg-brand-red hover:bg-red-700 text-white font-bold px-6 py-3 rounded-lg transition w-full sm:w-auto"
         >
           + Nuevo Evento
         </button>
       </div>
 
-      {/* BARRA DE BÚSQUEDA */}
-      <div className="bg-neutral-900 p-4 rounded-lg border border-neutral-800">
+      {/* BARRA DE FILTROS (Optimizada para Móvil y Desktop) */}
+      <div className="bg-neutral-900 p-4 rounded-lg border border-neutral-800 space-y-4 sm:space-y-0 sm:flex sm:gap-4">
+        
+        {/* Buscador de texto */}
         <input 
           type="text"
-          placeholder="Buscar por título de evento o banda..."
+          placeholder="Buscar evento..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-neutral-950 border border-neutral-800 text-white p-3 rounded focus:border-brand-red outline-none transition"
+          className="w-full sm:flex-1 bg-neutral-950 border border-neutral-800 text-white p-3 rounded focus:border-brand-red outline-none transition"
         />
+
+        {/* Filtro por Tipo */}
+        <select 
+          value={filterTipo}
+          onChange={(e) => setFilterTipo(e.target.value)}
+          className="w-full sm:w-48 bg-neutral-950 border border-neutral-800 text-white p-3 rounded focus:border-brand-red outline-none"
+        >
+          <option value="">Todos los tipos</option>
+          <option value="SHOW">Shows / Conciertos</option>
+          <option value="EVENTO_CULTURAL">Culturales</option>
+        </select>
+
+        {/* Filtro por Ciclo */}
+        <select 
+          value={filterCiclo}
+          onChange={(e) => setFilterCiclo(e.target.value)}
+          className="w-full sm:w-48 bg-neutral-950 border border-neutral-800 text-white p-3 rounded focus:border-brand-red outline-none"
+        >
+          <option value="">Todos los ciclos</option>
+          {ciclos.map((c: any) => (
+            <option key={c.id} value={c.id}>{c.nombre}</option>
+          ))}
+        </select>
       </div>
 
       {/* GRID DE RESULTADOS */}
       {filteredShows.length === 0 ? (
         <div className="text-center py-12 bg-neutral-900 border border-neutral-800 rounded-lg">
-          <p className="text-neutral-400 text-lg">No se encontraron eventos.</p>
+          <p className="text-neutral-400 text-lg">No se encontraron eventos con estos filtros.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredShows.map((show) => (
-            <div key={show.id} className="bg-neutral-900 border border-neutral-800 rounded-md overflow-hidden hover:border-neutral-700 transition">
-              {/* Imagen (Usamos un div con background para mantener la proporción) */}
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+          {filteredShows.map((show: any) => (
+            <div 
+              key={show.id} 
+              onClick={() => handleEdit(show)} 
+              className="bg-neutral-900 border border-neutral-800 rounded-lg overflow-hidden hover:border-neutral-700 transition cursor-pointer hover:scale-[1.02] duration-200"
+            >
+              {/* Imagen (Usando la utilidad optimizada) */}
               <div 
-                className="h-38 w-full bg-cover bg-center bg-neutral-800"
+                className="h-48 w-full bg-cover bg-center bg-neutral-800"
                 style={{ backgroundImage: `url(${getOptimizedImageUrl(show.url_imagen)})` }}
               />
-              {/* Contenido de la tarjeta */}
+              
               <div className="p-5 space-y-3">
                 <div className="flex justify-between items-start gap-2">
-                  <h3 className="text-md font-bold text-white leading-tight">{show.titulo}</h3>
-                   <span className="bg-neutral-800 text-xs px-2 py-1 rounded text-neutral-300 whitespace-nowrap">
+                  <h3 className="text-xl font-bold text-white leading-tight">{show.titulo}</h3>
+                  <span className="bg-neutral-800 text-xs px-2 py-1 rounded text-neutral-300 whitespace-nowrap">
                     {show.tipo === 'SHOW' ? '🎸 Show' : '🎭 Cultural'}
                   </span>
                 </div>
 
-                <p className="text-brand-red text-xs font-semibold uppercase tracking-wider">
+                <p className="text-brand-red text-sm font-semibold uppercase tracking-wider">
                   {getNombreCiclo(show.ciclo_id)}
                 </p>
 
                 <div className="flex flex-col text-sm text-neutral-400 space-y-1 pt-2 border-t border-neutral-800">
                   <span>📅 {formatearFecha(show.fecha)}</span>
-                  <span>⏰ {show.hora.slice(0, 5)} hs</span> {/* Cortamos los segundos (ej: 21:00:00 -> 21:00) */}
-                  <span>
-                    🎟️ {show.es_gratuito || !show.precio ? "Gratuito" : `$${show.precio}`}
-                  </span>
+                  <span>🎟️ {show.es_gratuito || !show.precio ? "Gratuito" : `$${show.precio}`}</span>
                 </div>
               </div>
             </div>
@@ -98,11 +140,15 @@ export default function ShowsClient({ shows, ciclos }: ShowsClientProps) {
         </div>
       )}
 
-      {/* DRAWER PORTAL */}
+      {/* DRAWER POLIMÓRFICO (Crear / Editar) */}
       <EventDrawer 
         ciclos={ciclos} 
         isOpen={isOpen} 
-        onClose={() => setIsOpen(false)} 
+        onClose={() => {
+          setIsOpen(false);
+          setEventToEdit(null); // Limpiamos al cerrar
+        }} 
+        eventToEdit={eventToEdit} // Le pasamos los datos si estamos editando
       />
     </div>
   );
