@@ -1,8 +1,12 @@
+// src/actions/shows.ts
 "use server";
 
 import { createClient } from "../lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-// Como la base de datos cambió, definimos una interfaz ajustada para el Frontend
+// ============================================================================
+// TIPOS
+// ============================================================================
 export interface PublicEvent {
   id: string;
   titulo: string;
@@ -14,87 +18,152 @@ export interface PublicEvent {
   descripcion: string;
   integrantes: string;
   tipo: string;
-  ciclos: { nombre: string } | null; // El JOIN trae esto como un objeto
+  ciclos: { nombre: string } | null;
 }
 
 /**
- * Helper: Obtiene la fecha absoluta actual en Argentina (YYYY-MM-DD)
+ * Resultado discriminado de lecturas públicas.
+ *
+ * ANTES: todo error se tragaba en un catch y se devolvía [], indistinguible
+ * de una agenda genuinamente vacía. El bug del thenable estuvo en producción
+ * disfrazado de "no hay shows programados" precisamente por esto.
+ *
+ * AHORA: la UI recibe el estado real y decide qué mostrar.
+ * - ok: true  + data []        → vacío REAL ("no hay shows este mes")
+ * - ok: false                  → fallo de datos (la UI muestra estado honesto,
+ *                                 jamás inventa contenido)
+ *
+ * `error` es un código interno para logs/monitoring, NO para mostrar al
+ * usuario: nunca filtrar mensajes crudos de Postgres/Supabase al browser.
  */
-function getLocalTodayString() {
-  return new Date().toLocaleDateString("en-CA", { timeZone: "America/Argentina/Buenos_Aires" });
+export type EventosResult =
+  | { ok: true; data: PublicEvent[] }
+  | { ok: false; data: []; error: string };
+
+function fail(fnName: string, err: unknown): EventosResult {
+  const e = err as {
+    message?: string; code?: string; details?: string; hint?: string;
+  };
+  console.error(
+    `[DATA_ERROR][${fnName}]`,
+    JSON.stringify(
+      { message: e?.message, code: e?.code, details: e?.details, hint: e?.hint },
+      null, 2
+    )
+  );
+  return { ok: false, data: [], error: e?.code ?? e?.message ?? "UNKNOWN" };
+}
+// ============================================================================
+// HELPERS
+// ============================================================================
+
+function getLocalTodayString(): string {
+  return new Date().toLocaleDateString("en-CA", {
+    timeZone: "America/Argentina/Buenos_Aires",
+  });
 }
 
-// 1. Obtener Shows por Vista (Agenda Principal)
-export async function getShowsByView(view: 'past' | 'current' | 'next', year?: string, month?: string): Promise<PublicEvent[]> {
-  const supabase = await createClient();
-  const now = new Date();
-  
-  // Iniciamos la consulta en la tabla 'eventos'. 
-  // Hacemos un JOIN con 'ciclos' para traer el nombre, y filtramos los borrados.
-  let query = supabase
+/**
+ * ⚠️ REGLA CRÍTICA: los query builders de Supabase son thenables; un `await`
+ * sobre ellos EJECUTA la query. Este helper es SÍNCRONO y recibe el cliente
+ * por parámetro. Nunca convertirlo en async ni hacerle await. (Ver AGENTS.md)
+ */
+function buildEventosBaseQuery(supabase: SupabaseClient) {
+  return supabase
     .from("eventos")
     .select("*, ciclos(nombre)")
-    .neq("is_deleted", true)
-    .order("fecha", { ascending: true });
-
-  if (view === 'past') {
-    query = query.lt("fecha", getLocalTodayString()).order("fecha", { ascending: false });
-  } else {
-    const targetYear = year ? parseInt(year) : now.getFullYear();
-    const targetMonth = month ? parseInt(month) : now.getMonth() + 1;
-    
-    const startStr = `${targetYear}-${String(targetMonth).padStart(2, '0')}-01`;
-    const lastDay = new Date(targetYear, targetMonth, 0).getDate();
-    const endStr = `${targetYear}-${String(targetMonth).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-    
-    query = query.gte("fecha", startStr).lte("fecha", endStr);
-  }
-
-  const { data, error } = await query;
-  if (error) console.error("Error en getShowsByView:", error);
-  return (data as PublicEvent[]) || [];
+    .eq("is_deleted", false);
 }
 
-// 2. Obtener Próximos Shows (Para el Home)
-export async function getUpcomingShows(): Promise<PublicEvent[]> {
+/** Sanitiza año/mes de searchParams (anti parameter-tampering). */
+function sanitizeYearMonth(year?: string, month?: string) {
+  const now = new Date();
+  const y = Number(year);
+  const m = Number(month);
+  const safeYear =
+    Number.isInteger(y) && y >= 2020 && y <= 2100 ? y : now.getFullYear();
+  const safeMonth =
+    Number.isInteger(m) && m >= 1 && m <= 12 ? m : now.getMonth() + 1;
+  return { safeYear, safeMonth };
+}
+
+// ============================================================================
+// 1. SHOWS POR VISTA (/agenda)
+// ============================================================================
+export async function getShowsByView(
+  view: "past" | "current" | "next",
+  year?: string,
+  month?: string
+): Promise<EventosResult> {
   try {
     const supabase = await createClient();
-    const todayString = getLocalTodayString();
-    
-    const { data, error } = await supabase
-      .from("eventos")
-      .select("*, ciclos(nombre)")
-      .eq("is_deleted", false)
-      .eq("tipo", "SHOW")
-      .gte("fecha", todayString)
+
+    if (view === "past") {
+      const { data, error } = await buildEventosBaseQuery(supabase)
+        .lt("fecha", getLocalTodayString())
+        .order("fecha", { ascending: false })
+        .order("hora", { ascending: false });
+
+      if (error) throw error;
+      return { ok: true, data: (data as PublicEvent[]) ?? [] };
+    }
+
+    const { safeYear, safeMonth } = sanitizeYearMonth(year, month);
+    const mm = String(safeMonth).padStart(2, "0");
+    const lastDay = new Date(safeYear, safeMonth, 0).getDate();
+    const startStr = `${safeYear}-${mm}-01`;
+    const endStr = `${safeYear}-${mm}-${String(lastDay).padStart(2, "0")}`;
+
+    const { data, error } = await buildEventosBaseQuery(supabase)
+      .gte("fecha", startStr)
+      .lte("fecha", endStr)
       .order("fecha", { ascending: true })
-      .order("hora", { ascending: true }) // Orden secundario por hora
+      .order("hora", { ascending: true });
+
+    if (error) throw error;
+    return { ok: true, data: (data as PublicEvent[]) ?? [] };
+  } catch (err) {
+    return fail("getShowsByView", err);
+  }
+}
+
+// ============================================================================
+// 2. PRÓXIMOS SHOWS (Home)
+// ============================================================================
+export async function getUpcomingShows(): Promise<EventosResult> {
+  try {
+    const supabase = await createClient();
+
+    const { data, error } = await buildEventosBaseQuery(supabase)
+      .eq("tipo", "SHOW")
+      .gte("fecha", getLocalTodayString())
+      .order("fecha", { ascending: true })
+      .order("hora", { ascending: true })
       .limit(6);
 
     if (error) throw error;
-    return (data as PublicEvent[]) || [];
+    return { ok: true, data: (data as PublicEvent[]) ?? [] };
   } catch (err) {
-    console.error("Error crítico en getUpcomingShows:", err);
-    return [];
+    return fail("getUpcomingShows", err);
   }
 }
 
-// 3. Obtener Eventos Culturales
-export async function getCulturalEvents(): Promise<PublicEvent[]> {
+// ============================================================================
+// 3. EVENTOS CULTURALES
+// ============================================================================
+export async function getCulturalEvents(): Promise<EventosResult> {
   try {
-    const supabase = await createClient(); 
-    const { data, error } = await supabase
-      .from("eventos")
-      .select("*, ciclos(nombre)")
-      .eq("is_deleted", false)
+    const supabase = await createClient();
+
+    const { data, error } = await buildEventosBaseQuery(supabase)
       .eq("tipo", "EVENTO_CULTURAL")
       .gte("fecha", getLocalTodayString())
-      .order("fecha", { ascending: true });
+      .order("fecha", { ascending: true })
+      .order("hora", { ascending: true });
 
     if (error) throw error;
-    return (data as PublicEvent[]) || [];
+    return { ok: true, data: (data as PublicEvent[]) ?? [] };
   } catch (err) {
-    console.error("Error crítico en getCulturalEvents:", err);
-    return [];
+    return fail("getCulturalEvents", err);
   }
 }

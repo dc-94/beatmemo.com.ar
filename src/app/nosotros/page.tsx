@@ -1,24 +1,24 @@
 // src/app/cultura/page.tsx
 import Image from "next/image";
-import { getCulturalEvents } from "@/actions/shows";
+import { getCulturalEvents, type PublicEvent } from "@/actions/shows";
 import { Show } from "@/types/database.types"; // Ajusta el import si tu tipo se llama diferente
 
 // Helper puro para resolver el gradiente de la bandera según el ciclo
-function getBorderTheme(ciclo: string) {
-  const normalized = ciclo.toLowerCase();
+function getBorderTheme(ciclo?: string | null) {
+  const normalized = (ciclo ?? "").toLowerCase();
   if (normalized.includes("italiano")) {
     return "bg-gradient-to-r from-green-600 via-white to-red-600";
   }
-  if (normalized.includes("inglés") || normalized.includes("ingles")) {
-    return "bg-gradient-to-r from-[#012169] via-white to-[#C8102E]"; // UK colors
+  if (normalized.includes("ingl")) {  // cubre "inglés" e "ingles" en un solo check
+    return "bg-gradient-to-r from-[#012169] via-white to-[#C8102E]";
   }
-  return "bg-[#C5A059]"; // Default dorado para Vinilo u otros
+  return "bg-[#C5A059]";
 }
 
 export default async function CulturaPage() {
   // Obtenemos los eventos directamente en el servidor (React Server Component)
-  const eventos = await getCulturalEvents();
-
+  const result = await getCulturalEvents();
+const eventos = result.ok ? result.data : [];
   return (
     <main className="min-h-screen bg-[#F5F4F0] text-brand-black-100 font-sans pb-32">
       
@@ -67,28 +67,24 @@ export default async function CulturaPage() {
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16">
-        {eventos.map((evento: Show) => {
-            const fechaStr = new Date(evento.fecha_hora).toLocaleDateString("es-AR", { 
-              weekday: 'long', day: "numeric", month: "long" 
-            });
-            const horaStr = new Date(evento.fecha_hora).toLocaleTimeString("es-AR", { 
-              hour: '2-digit', minute: '2-digit' 
-            });
+        {eventos.map((evento: PublicEvent) => {
+          const dateObj = new Date(`${evento.fecha}T${evento.hora}`);
+          const fechaStr = dateObj.toLocaleDateString("es-AR", {
+            weekday: "long", day: "numeric", month: "long",
+          });
+          const horaStr = dateObj.toLocaleTimeString("es-AR", {
+            hour: "2-digit", minute: "2-digit",
+          });
+          const nombreCiclo = evento.ciclos?.nombre ?? null;
 
             return (
-              <article 
-                key={evento.id} 
-                // flex-row en móvil (horizontal) y flex-col en PC (vertical)
-                className="relative flex flex-row md:flex-col bg-brand-white-100 border border-brand-black-100/10 rounded-sm shadow-md md:shadow-xl overflow-hidden hover:shadow-2xl transition-shadow"
-              >
-                {/* Micro-interacción: Borde/Bandera superior absoluta para que funcione en ambos layouts */}
-                <div className={`absolute top-0 left-0 w-full h-1 md:h-2 z-10 ${getBorderTheme(evento.ciclo)}`} />
-                
-                {/* IMAGEN: 35% ancho en móvil, 100% ancho en PC */}
-                <div className="relative w-[35%] md:w-full shrink-0 md:aspect-video overflow-hidden bg-brand-black-200">
-                  <Image 
+             <article key={evento.id} className="...igual que ahora...">
+              <div className={`absolute top-0 left-0 w-full h-1 md:h-2 z-10 ${getBorderTheme(nombreCiclo)}`} />
+              <div className="relative w-[35%] md:w-full shrink-0 md:aspect-video overflow-hidden bg-brand-black-200">
+              
+              <Image 
                     src={evento.url_imagen} 
-                    alt={evento.ciclo} 
+                    alt={evento.titulo} 
                     fill 
                     className="object-cover opacity-90 hover:opacity-100 transition-opacity duration-500"
                     sizes="(max-width: 768px) 35vw, 33vw"
@@ -102,7 +98,7 @@ export default async function CulturaPage() {
                     {/* Encabezado: Ciclo y Precio (apilados en móvil, separados en PC) */}
                     <div className="flex flex-col md:flex-row justify-start md:justify-between items-start mb-2 md:mb-4 gap-2 md:gap-0">
                       <span className="text-[#C5A059] text-[9px] md:text-[10px] font-bold uppercase tracking-widest border-b border-[#C5A059] pb-0.5 w-fit">
-                        {evento.ciclo}
+                        {evento.ciclos?.nombre ?? "Evento Cultural"}
                       </span>
                       <span className="bg-brand-black-100 text-brand-white-100 px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[10px] uppercase font-bold tracking-widest rounded-none w-fit">
                         {evento.precio === 0 ? "FREE" : `$${evento.precio}`}
@@ -111,7 +107,7 @@ export default async function CulturaPage() {
                     
                     {/* Título de la Mesa/Banda */}
                     <h3 className="font-serif font-bold text-lg md:text-2xl text-brand-black-100 mb-1 md:mb-2 leading-tight line-clamp-2">
-                      {evento.banda}
+                      {evento.titulo}
                     </h3>
                     
                     {/* Fecha y Hora */}
@@ -128,7 +124,9 @@ export default async function CulturaPage() {
 
                   {/* Botón CTA */}
                   <a 
-                    href={`https://wa.me/5493412023737?text=Hola,%20quiero%20anotarme%20para%20${encodeURIComponent(evento.ciclo)}`} 
+                    href={`https://wa.me/5493412023737?text=${encodeURIComponent(
+  `Hola, quiero anotarme para ${nombreCiclo ?? evento.titulo}`
+)}`}
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="w-fit md:w-full text-left md:text-center border-t-0 md:border-t border-brand-black-100/10 pt-1 md:pt-4 font-sans font-bold tracking-[0.1em] md:tracking-[0.2em] uppercase text-[9px] md:text-[11px] text-brand-black-100 hover:text-[#C5A059] transition-colors mt-auto border-b md:border-b-0 border-brand-black-100 pb-0.5 md:pb-0"
