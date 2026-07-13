@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { logAdminAction } from "@/lib/admin-logger";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -35,25 +36,23 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      // Leer el usuario recién autenticado para registrar el evento
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
-        // Registrar el login en admin_logs — sin bloquear el redirect si falla
-        await supabase.from("admin_logs").insert({
-          action_type: 'LOGIN_SUCCESS', 
-          table_name: 'auth.users',
-          record_id: '00000000-0000-0000-0000-000000000000', // ID temporal
-          metadata: {
+        // Unificado: mismo helper que el resto de la auditoría.
+        // record_id queda null (un login no afecta a un registro puntual);
+        // admin_id se llena con el UUID real del usuario que ingresó.
+        await logAdminAction(
+          'LOGIN_SUCCESS',
+          'auth.users',
+          user.id,
+          {
             message: 'Login exitoso vía Google',
-            user_id: user.id,
             email: user.email,
             role: user.app_metadata?.role ?? "UNKNOWN",
             provider: "google",
-          },
-        }).then(({ error: logError }) => {
-          if (logError) console.error("[AuditLog] Error al registrar login:", logError.message);
-        });
+          }
+        );
       }
 
       const adminDomain = process.env.NEXT_PUBLIC_ADMIN_URL || "http://vault.localhost:3000";

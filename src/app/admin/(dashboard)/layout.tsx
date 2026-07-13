@@ -43,10 +43,12 @@ if (error || !userData) {
   const isAuthorized = role && validRoles.includes(role);
 if (!isAuthorized) {
   // Auditoría silenciosa del intento fallido
-  await logAdminAction('UNAUTHORIZED_ACCESS', 'admin_layout', { 
-    email: user.email,
-    attempted_role: role || 'NONE'
-  });
+ await logAdminAction(
+    'UNAUTHORIZED_ACCESS',
+    'admin_layout',
+    user.id,
+    { email: user.email, attempted_role: role || 'NONE' }
+  );
   
   await supabase.auth.signOut();
   redirect("/admin/login?error=unauthorized");

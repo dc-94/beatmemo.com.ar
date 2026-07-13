@@ -1,6 +1,9 @@
 // src/app/pub/page.tsx
 import Image from "next/image";
 import { Metadata } from 'next';
+import { createClient } from "@/lib/supabase/server";
+import { getOptimizedImageUrl } from "@/lib/utils";
+import AtributoBadges from "@/components/pub/AtributoBadges";
 
 export const metadata: Metadata = {
   title: 'Pub y Gastronomía',
@@ -12,37 +15,38 @@ export const metadata: Metadata = {
   },
 };
 
-const cocktails = [
-  {
-    title: "Beatmemo Spritz",
-    desc: "Un clásico italiano reinterpretado con notas cítricas intensas y un toque espumante. El aperitivo perfecto para abrir el apetito.",
-    img: "/placeholders/pub/cocktail01.jpg",
-    category: "Cocktails"
-  },
-  {
-    title: "Citrus Mint Sour",
-    desc: "Frescura absoluta. Una base cítrica balanceada con espuma sedosa y un bouquet aromático de menta fresca recién cortada.",
-    img: "/placeholders/pub/cocktail03.jpeg",
-    category: "Cocktails"
-  },
-];
+// ISR: regenera cada 5 min con datos reales. Si la DB hipa entre regeneraciones,
+// sirve el último snapshot bueno en vez de romper. Datos reales cacheados, nunca ficción.
+export const revalidate = 300;
 
-const food = [
-  {
-    title: "Pesto Vitality Pasta",
-    desc: "Pasta artesanal al dente bañada en una emulsión vibrante de albahaca fresca, nueces tostadas y aceite de oliva virgen extra.",
-    img: "/placeholders/pub/food03.png",
-    category: "Main Courses"
-  },
-  {
-    title: "Beat Burguer",
-    desc: "Blend de carnes seleccionadas, queso cheddar fundido y nuestro pan brioche artesanal sellado con manteca.",
-    img: "/placeholders/pub/burguer.jpg",
-    category: "Main Courses"
-  }
-];
+interface PubItem {
+  id: string;
+  nombre: string;
+  descripcion: string | null;
+  precio: number | null;
+  url_imagen: string;
+  categoria: string;
+  es_vegetariano: boolean;
+  es_vegano: boolean;
+  es_sin_tacc: boolean;
+  es_nuevo: boolean;
+  es_recomendado: boolean;
+}
 
-export default function PubPage() {
+export default async function PubPage() {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("pub")
+    .select("id, nombre, descripcion, precio, url_imagen, categoria, es_vegetariano, es_vegano, es_sin_tacc, es_nuevo, es_recomendado")
+    .eq("is_deleted", false)
+    .eq("disponible", true)
+    .order("orden", { ascending: true });
+
+  const items = (data as PubItem[]) ?? [];
+  const food = items.filter((i) => i.categoria === "Food");
+  const cocktails = items.filter((i) => i.categoria === "Cocktail");
+
   return (
     // IMPORTANTE: scroll-smooth añadido para que la navegación por anclas sea suave
     <main className="min-h-screen bg-[#FAF7F2] text-[#2C2924] scroll-smooth">
@@ -109,23 +113,28 @@ export default function PubPage() {
            <h2 className="font-serif text-4xl font-bold">Nuestra Cocina</h2>
         </div>
         
+        {food.length === 0 ? (
+          <p className="text-center text-[#5C5852]">Estamos actualizando nuestra carta. Volvé pronto.</p>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {food.map((item, idx) => (
-            <article key={idx} className="group flex flex-col md:flex-row gap-6 items-center">
+          {food.map((item) => (
+            <article key={item.id} className="group flex flex-col md:flex-row gap-6 items-center">
               <div className="w-full md:w-1/2 aspect-[4/3] relative overflow-hidden bg-white shadow-sm border border-[#D1CCC0]">
-                <Image src={item.img} alt={item.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 768px) 100vw, 50vw" />
+                <Image src={getOptimizedImageUrl(item.url_imagen, 600, 450)} alt={item.nombre} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 768px) 100vw, 50vw" />
               </div>
               <div className="w-full md:w-1/2 space-y-2">
-                <span className="text-[#A68966] text-[9px] uppercase font-bold tracking-widest">{item.category}</span>
-                <h3 className="font-serif text-xl font-bold">{item.title}</h3>
-                <p className="text-[#5C5852] text-sm leading-relaxed">{item.desc}</p>
+                <span className="text-[#A68966] text-[9px] uppercase font-bold tracking-widest">{item.categoria}</span>
+                <h3 className="font-serif text-xl font-bold">{item.nombre}</h3>
+                {item.descripcion && <p className="text-[#5C5852] text-sm leading-relaxed">{item.descripcion}</p>}
+                <AtributoBadges item={item} />
               </div>
             </article>
           ))}
         </div>
+        )}
       </section>
 
-      {/* SECCIÓN VALORES (Parte de la cocina) */}
+      {/* SECCIÓN VALORES (Parte de la cocina) — CONTENIDO EDITORIAL FIJO, no se toca */}
       <section className="py-20 bg-[#F2EDE5] border-y border-[#D1CCC0]/50">
         <div className="max-w-5xl mx-auto px-4 grid md:grid-cols-2 gap-16 text-center">
           <div className="space-y-4">
@@ -146,20 +155,25 @@ export default function PubPage() {
            <h2 className="font-serif text-4xl font-bold">Nuestra Barra</h2>
         </div>
 
+        {cocktails.length === 0 ? (
+          <p className="text-center text-[#5C5852]">Estamos preparando nuevos tragos. Volvé pronto.</p>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {cocktails.map((item, idx) => (
-            <article key={idx} className="group flex flex-col md:flex-row gap-6 items-center">
+          {cocktails.map((item) => (
+            <article key={item.id} className="group flex flex-col md:flex-row gap-6 items-center">
               <div className="w-full md:w-1/2 aspect-[4/3] relative overflow-hidden bg-white shadow-sm border border-[#D1CCC0]">
-                <Image src={item.img} alt={item.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 768px) 100vw, 50vw" />
+                <Image src={getOptimizedImageUrl(item.url_imagen, 600, 450)} alt={item.nombre} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 768px) 100vw, 50vw" />
               </div>
               <div className="w-full md:w-1/2 space-y-2">
-                <span className="text-[#A68966] text-[9px] uppercase font-bold tracking-widest">{item.category}</span>
-                <h3 className="font-serif text-xl font-bold">{item.title}</h3>
-                <p className="text-[#5C5852] text-sm leading-relaxed">{item.desc}</p>
+                <span className="text-[#A68966] text-[9px] uppercase font-bold tracking-widest">{item.categoria}</span>
+                <h3 className="font-serif text-xl font-bold">{item.nombre}</h3>
+                {item.descripcion && <p className="text-[#5C5852] text-sm leading-relaxed">{item.descripcion}</p>}
+                <AtributoBadges item={item} />
               </div>
             </article>
           ))}
         </div>
+        )}
       </section>
 
       {/* FOOTER CTA */}

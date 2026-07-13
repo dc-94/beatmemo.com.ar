@@ -21,42 +21,55 @@ export interface PublicEvent {
   ciclos: { nombre: string } | null;
 }
 
-/**
- * Resultado discriminado de lecturas públicas.
- *
- * ANTES: todo error se tragaba en un catch y se devolvía [], indistinguible
- * de una agenda genuinamente vacía. El bug del thenable estuvo en producción
- * disfrazado de "no hay shows programados" precisamente por esto.
- *
- * AHORA: la UI recibe el estado real y decide qué mostrar.
- * - ok: true  + data []        → vacío REAL ("no hay shows este mes")
- * - ok: false                  → fallo de datos (la UI muestra estado honesto,
- *                                 jamás inventa contenido)
- *
- * `error` es un código interno para logs/monitoring, NO para mostrar al
- * usuario: nunca filtrar mensajes crudos de Postgres/Supabase al browser.
- */
 export type EventosResult =
   | { ok: true; data: PublicEvent[] }
   | { ok: false; data: []; error: string };
 
-function fail(fnName: string, err: unknown): EventosResult {
-  const e = err as {
-    message?: string; code?: string; details?: string; hint?: string;
-  };
+/**
+ * Registra un fallo de datos. Doble destino:
+ *  1. console.error con prefijo [DATA_ERROR] → visible en logs de Vercel (efímero).
+ *  2. system_errors vía RPC log_system_error → persistente y buscable.
+ *
+ * La RPC corre SECURITY DEFINER con guarda anti-flood de 60s: el contexto
+ * público no escribe directo en la tabla, invoca la función controlada.
+ * El logueo NUNCA tumba la respuesta: si la RPC falla, seguimos.
+ */
+async function fail(
+  supabase: SupabaseClient,
+  fnName: string,
+  err: unknown
+): Promise<EventosResult> {
+  const e = err as { message?: string; code?: string; details?: string; hint?: string };
+  const code = e?.code ?? e?.message ?? "UNKNOWN";
+
   console.error(
     `[DATA_ERROR][${fnName}]`,
-    JSON.stringify(
-      { message: e?.message, code: e?.code, details: e?.details, hint: e?.hint },
-      null, 2
-    )
+    JSON.stringify({ message: e?.message, code: e?.code, details: e?.details, hint: e?.hint })
   );
-  return { ok: false, data: [], error: e?.code ?? e?.message ?? "UNKNOWN" };
+
+  // dedup_key agrupa el mismo error de la misma función dentro de la ventana.
+  const dedupKey = `shows:${fnName}:${code}`;
+  const message = `[${fnName}] ${e?.message ?? "Unknown error"}`;
+  const stack = e?.details || e?.hint
+    ? `details: ${e?.details ?? "-"} | hint: ${e?.hint ?? "-"}`
+    : null;
+
+  try {
+    await supabase.rpc("log_system_error", {
+      p_message: message,
+      p_stack: stack,
+      p_dedup_key: dedupKey,
+    });
+  } catch (logErr) {
+    console.error(`[DATA_ERROR][${fnName}] fallo al persistir en system_errors:`, logErr);
+  }
+
+  return { ok: false, data: [], error: code };
 }
+
 // ============================================================================
 // HELPERS
 // ============================================================================
-
 function getLocalTodayString(): string {
   return new Date().toLocaleDateString("en-CA", {
     timeZone: "America/Argentina/Buenos_Aires",
@@ -75,7 +88,6 @@ function buildEventosBaseQuery(supabase: SupabaseClient) {
     .eq("is_deleted", false);
 }
 
-/** Sanitiza año/mes de searchParams (anti parameter-tampering). */
 function sanitizeYearMonth(year?: string, month?: string) {
   const now = new Date();
   const y = Number(year);
@@ -95,9 +107,8 @@ export async function getShowsByView(
   year?: string,
   month?: string
 ): Promise<EventosResult> {
+  const supabase = await createClient();
   try {
-    const supabase = await createClient();
-
     if (view === "past") {
       const { data, error } = await buildEventosBaseQuery(supabase)
         .lt("fecha", getLocalTodayString())
@@ -123,7 +134,7 @@ export async function getShowsByView(
     if (error) throw error;
     return { ok: true, data: (data as PublicEvent[]) ?? [] };
   } catch (err) {
-    return fail("getShowsByView", err);
+    return fail(supabase, "getShowsByView", err);
   }
 }
 
@@ -131,9 +142,8 @@ export async function getShowsByView(
 // 2. PRÓXIMOS SHOWS (Home)
 // ============================================================================
 export async function getUpcomingShows(): Promise<EventosResult> {
+  const supabase = await createClient();
   try {
-    const supabase = await createClient();
-
     const { data, error } = await buildEventosBaseQuery(supabase)
       .eq("tipo", "SHOW")
       .gte("fecha", getLocalTodayString())
@@ -144,7 +154,7 @@ export async function getUpcomingShows(): Promise<EventosResult> {
     if (error) throw error;
     return { ok: true, data: (data as PublicEvent[]) ?? [] };
   } catch (err) {
-    return fail("getUpcomingShows", err);
+    return fail(supabase, "getUpcomingShows", err);
   }
 }
 
@@ -152,18 +162,16 @@ export async function getUpcomingShows(): Promise<EventosResult> {
 // 3. EVENTOS CULTURALES
 // ============================================================================
 export async function getCulturalEvents(): Promise<EventosResult> {
+  const supabase = await createClient();
   try {
-    const supabase = await createClient();
-
     const { data, error } = await buildEventosBaseQuery(supabase)
       .eq("tipo", "EVENTO_CULTURAL")
       .gte("fecha", getLocalTodayString())
-      .order("fecha", { ascending: true })
-      .order("hora", { ascending: true });
+      .order("fecha", { ascending: true });
 
     if (error) throw error;
     return { ok: true, data: (data as PublicEvent[]) ?? [] };
   } catch (err) {
-    return fail("getCulturalEvents", err);
+    return fail(supabase, "getCulturalEvents", err);
   }
 }
