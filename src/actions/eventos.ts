@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { eventSchema } from "@/lib/validations/eventos";
 import { revalidatePath } from "next/cache";
 import { logAdminAction } from "@/lib/admin-logger";
-
+import { ADMIN_ROLES } from "@/lib/auth-roles";
 // 1. Contrato estricto de respuestas
 export interface ActionResponse {
   success: boolean;
@@ -25,14 +25,14 @@ export async function upsertEvento(formData: FormData, id?: string): Promise<Act
       return { success: false, error: "No autorizado. Sesión inválida." };
     }
 
-    // 2. SEGURIDAD: Verificar Rol (Solo SUPERADMIN y CONTENT_ADMIN)
+    // 2. SEGURIDAD: Verificar Rol (Solo SUPERADMIN y CM)
     const { data: roleData } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
       .single();
 
-    if (!roleData || !['SUPERADMIN', 'CONTENT_ADMIN'].includes(roleData.role)) {
+      if (!roleData || !ADMIN_ROLES.includes(roleData.role)) {
       await logAdminAction(
         id ? 'UNAUTHORIZED_UPDATE_EVENT_ATTEMPT' : 'UNAUTHORIZED_CREATE_EVENT_ATTEMPT',
         'eventos',
@@ -131,7 +131,7 @@ export async function deleteEvento(showId: string): Promise<ActionResponse> {
       .eq('user_id', user.id)
       .single();
 
-    if (!roleData || !['SUPERADMIN', 'CONTENT_ADMIN'].includes(roleData.role)) {
+      if (!roleData || !ADMIN_ROLES.includes(roleData.role)) {
       await logAdminAction(
         'UNAUTHORIZED_DELETE_EVENT_ATTEMPT',
         'eventos',

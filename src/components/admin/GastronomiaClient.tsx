@@ -12,7 +12,6 @@ interface PubItem {
   nombre: string;
   categoria: string;
   descripcion: string | null;
-  precio: number | null;
   url_imagen: string;
   tags: string[];
   es_vegetariano: boolean;
@@ -90,9 +89,6 @@ export default function GastronomiaClient({ items, categorias }: Props) {
               <div className="p-4">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-[10px] uppercase tracking-wider text-neutral-500">{item.categoria}</span>
-                  <span className="text-sm font-bold text-white">
-                    {item.precio != null ? `$${item.precio.toLocaleString("es-AR")}` : "—"}
-                  </span>
                 </div>
                 <h3 className="font-semibold text-white">{item.nombre}</h3>
                 {item.descripcion && (

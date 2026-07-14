@@ -44,7 +44,7 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
       });
     } else {
       reset({
-        nombre: "", categoria: "", descripcion: "", precio: null, url_imagen: "",
+        nombre: "", categoria: "", descripcion: "", url_imagen: "",
         es_vegetariano: false, es_vegano: false, es_sin_tacc: false,
         es_nuevo: false, es_recomendado: false,
         destacado_home: false, disponible: true, orden: 0, tags: "",
@@ -127,14 +127,9 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
                 className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded text-white focus:border-brand-red outline-none" />
             </div>
 
-            {/* PRECIO + ORDEN */}
+            {/* ORDEN */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-neutral-400 mb-1">Precio ($)</label>
-                <input type="number" step="0.01" {...register("precio")} placeholder="Vacío = sin precio"
-                  className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded text-white focus:border-brand-red outline-none" />
-                {errors.precio && <p className="text-red-500 text-xs mt-1">{errors.precio.message as string}</p>}
-              </div>
+              
               <div>
                 <label className="block text-sm text-neutral-400 mb-1">Orden</label>
                 <input type="number" {...register("orden")} placeholder="0"

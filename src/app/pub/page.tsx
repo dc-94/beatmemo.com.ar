@@ -15,17 +15,15 @@ export const metadata: Metadata = {
   },
 };
 
-// ISR: regenera cada 5 min con datos reales. Si la DB hipa entre regeneraciones,
-// sirve el último snapshot bueno en vez de romper. Datos reales cacheados, nunca ficción.
 export const revalidate = 300;
 
 interface PubItem {
   id: string;
   nombre: string;
   descripcion: string | null;
-  precio: number | null;
   url_imagen: string;
   categoria: string;
+  tags: string[]; // Agregado según esquema DB
   es_vegetariano: boolean;
   es_vegano: boolean;
   es_sin_tacc: boolean;
@@ -36,19 +34,33 @@ interface PubItem {
 export default async function PubPage() {
   const supabase = await createClient();
 
-  const { data } = await supabase
+  // 1. DTO Sincronizado con DDL: Se pide tags, y se maneja is_deleted correctamente
+  const { data, error } = await supabase
     .from("pub")
-    .select("id, nombre, descripcion, precio, url_imagen, categoria, es_vegetariano, es_vegano, es_sin_tacc, es_nuevo, es_recomendado")
-    .eq("is_deleted", false)
+    .select("id, nombre, descripcion, url_imagen, categoria, tags, es_vegetariano, es_vegano, es_sin_tacc, es_nuevo, es_recomendado")
+    .neq("is_deleted", true)
     .eq("disponible", true)
     .order("orden", { ascending: true });
 
+  if (error) {
+    console.error("Error crítico de DB en PubPage:", error);
+  }
+
   const items = (data as PubItem[]) ?? [];
-  const food = items.filter((i) => i.categoria === "Food");
-  const cocktails = items.filter((i) => i.categoria === "Cocktail");
+
+  // 2. Filtros Normalizados y Defensivos
+  const food = items.filter((i) => {
+    const cat = i.categoria?.trim().toLowerCase() || "";
+    // Agrupamos 'promo' y 'food' en la misma sección para no romper el diseño a rajatabla
+    return cat === "food" || cat === "comida" || cat === "promo";
+  });
+
+  const cocktails = items.filter((i) => {
+    const cat = i.categoria?.trim().toLowerCase() || "";
+    return cat === "cocktail" || cat === "tragos" || cat === "bebida";
+  });
 
   return (
-    // IMPORTANTE: scroll-smooth añadido para que la navegación por anclas sea suave
     <main className="min-h-screen bg-[#FAF7F2] text-[#2C2924] scroll-smooth">
       
       {/* 1. HERO */}
@@ -64,31 +76,20 @@ export default async function PubPage() {
         </div>
       </section>
 
-      {/* 2. STICKY SUB-NAVBAR (Scrollspy Menu) - Híbrido Mobile/Desktop con Separadores */}
+      {/* 2. STICKY SUB-NAVBAR */}
       <nav className="sticky top-[80px] z-40 bg-[#FAF7F2]/95 backdrop-blur-sm border-b border-[#D1CCC0] shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
-          {/* Cambiamos a justify-center y gap-3 (móvil) / gap-10 (desktop) para controlar los puntos */}
           <ul className="flex items-center justify-center gap-3 sm:gap-10 py-4 w-full">
             <li>
-              <a href="#espacio" className="font-sans text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[#5C5852] hover:text-[#C5A059] transition-colors">Nuestro Espacio
-              </a>
+              <a href="#espacio" className="font-sans text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[#5C5852] hover:text-[#C5A059] transition-colors">Nuestro Espacio</a>
             </li>
-            
-            <li className="text-[#C5A059] font-bold text-xl leading-none mt-[-2px]">
-              ·
-            </li>
-
+            <li className="text-[#C5A059] font-bold text-xl leading-none mt-[-2px]">·</li>
             <li>
               <a href="#cocina" className="font-sans text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[#5C5852] hover:text-[#C5A059] transition-colors">
                 <span className="hidden sm:inline">Nuestra </span>Cocina
               </a>
             </li>
-
-            {/* Punto Dorado */}
-            <li className="text-[#C5A059] font-bold text-xl leading-none mt-[-2px]">
-              ·
-            </li>
-
+            <li className="text-[#C5A059] font-bold text-xl leading-none mt-[-2px]">·</li>
             <li>
               <a href="#barra" className="font-sans text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[#5C5852] hover:text-[#C5A059] transition-colors">
                 <span className="hidden sm:inline">Nuestra </span>Barra
@@ -120,12 +121,14 @@ export default async function PubPage() {
           {food.map((item) => (
             <article key={item.id} className="group flex flex-col md:flex-row gap-6 items-center">
               <div className="w-full md:w-1/2 aspect-[4/3] relative overflow-hidden bg-white shadow-sm border border-[#D1CCC0]">
-                <Image src={getOptimizedImageUrl(item.url_imagen, 600, 450)} alt={item.nombre} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 768px) 100vw, 50vw" />
+                {/* Fallback visual temporal si url_imagen es null o vacía */}
+                <Image src={item.url_imagen ? getOptimizedImageUrl(item.url_imagen, 600, 450) : '/placeholders/pub/burguer.jpg'} alt={item.nombre} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 768px) 100vw, 50vw" />
               </div>
               <div className="w-full md:w-1/2 space-y-2">
                 <span className="text-[#A68966] text-[9px] uppercase font-bold tracking-widest">{item.categoria}</span>
                 <h3 className="font-serif text-xl font-bold">{item.nombre}</h3>
                 {item.descripcion && <p className="text-[#5C5852] text-sm leading-relaxed">{item.descripcion}</p>}
+                {/* El componente hijo ahora recibirá el objeto con la prop 'tags' */}
                 <AtributoBadges item={item} />
               </div>
             </article>
@@ -134,7 +137,7 @@ export default async function PubPage() {
         )}
       </section>
 
-      {/* SECCIÓN VALORES (Parte de la cocina) — CONTENIDO EDITORIAL FIJO, no se toca */}
+      {/* SECCIÓN VALORES EDITORIAL */}
       <section className="py-20 bg-[#F2EDE5] border-y border-[#D1CCC0]/50">
         <div className="max-w-5xl mx-auto px-4 grid md:grid-cols-2 gap-16 text-center">
           <div className="space-y-4">
@@ -162,7 +165,7 @@ export default async function PubPage() {
           {cocktails.map((item) => (
             <article key={item.id} className="group flex flex-col md:flex-row gap-6 items-center">
               <div className="w-full md:w-1/2 aspect-[4/3] relative overflow-hidden bg-white shadow-sm border border-[#D1CCC0]">
-                <Image src={getOptimizedImageUrl(item.url_imagen, 600, 450)} alt={item.nombre} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 768px) 100vw, 50vw" />
+                <Image src={item.url_imagen ? getOptimizedImageUrl(item.url_imagen, 600, 450) : '/placeholders/pub/cocktail01.jpg'} alt={item.nombre} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 768px) 100vw, 50vw" />
               </div>
               <div className="w-full md:w-1/2 space-y-2">
                 <span className="text-[#A68966] text-[9px] uppercase font-bold tracking-widest">{item.categoria}</span>

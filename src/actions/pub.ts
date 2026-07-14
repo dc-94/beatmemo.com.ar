@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { pubItemSchema } from "@/lib/validations/pub";
 import { revalidatePath } from "next/cache";
 import { logAdminAction } from "@/lib/admin-logger";
+import { ADMIN_ROLES } from "@/lib/auth-roles";
 
 export interface ActionResponse {
   success: boolean;
@@ -12,7 +13,6 @@ export interface ActionResponse {
   fieldErrors?: Record<string, string[]>;
 }
 
-const ADMIN_ROLES = ["SUPERADMIN", "CONTENT_ADMIN"];
 
 // ============================================================================
 // UPSERT (CREAR O EDITAR ITEM DEL PUB)

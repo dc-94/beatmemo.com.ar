@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { Toaster } from "sonner";
 import Sidebar from "@/components/admin/Sidebar";
 import BottomNav from "@/components/admin/BottomNav";
-import { logAdminAction } from "@/lib/admin-logger"; // <--- IMPORTACIÓN CRÍTICA
+import { logAdminAction } from "@/lib/admin-logger"; 
+import { isAdminRole } from "@/lib/auth-roles";
 
 export default async function AdminDashboardLayout({
   children,
@@ -39,8 +40,7 @@ if (error || !userData) {
     redirect("/admin/login?error=db_error");
   }
   const role = userData?.role;
-  const validRoles = ['SUPERADMIN', 'CONTENT_ADMIN'];
-  const isAuthorized = role && validRoles.includes(role);
+  const isAuthorized = isAdminRole(role);
 if (!isAuthorized) {
   // Auditoría silenciosa del intento fallido
  await logAdminAction(
