@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion"; 
 import { getOptimizedImageUrl } from "@/lib/utils"; // Tu utilidad de imágenes
+import { whatsappLink, WA_MESSAGES } from "@/lib/config"; 
 
 export default function AgendaPreview({ shows }: { shows: any[] }) {
   const [hoveredIndex, setHoveredIndex] = useState<number>(0);
@@ -71,9 +72,7 @@ export default function AgendaPreview({ shows }: { shows: any[] }) {
 function DesktopAccordionCard({ show, isExpanded, onHover }: { show: any; isExpanded: boolean; onHover: () => void; }) {
   const dateObj = new Date(`${show.fecha}T${show.hora}`);
   const fechaStr = dateObj.toLocaleDateString("es-AR", { day: "numeric", month: "long" });
-  const wpText = `Hola! Quiero reservar una mesa para el show de ${show.titulo} el ${fechaStr}.`;
-  const wpUrl = `https://wa.me/5493412023737?text=${encodeURIComponent(wpText)}`;
-
+  const wpUrl = whatsappLink(WA_MESSAGES.reservaShow(show.titulo, show.fecha));
   return (
     <motion.div
       onMouseEnter={onHover}
@@ -140,11 +139,7 @@ function MobileCarouselCard({ show }: { show: any }) {
   const cardRef = useRef(null);
   const isInView = useInView(cardRef, { amount: 0.7 });
 
-  const dateObj = new Date(`${show.fecha}T${show.hora}`);
-  const fechaStr = dateObj.toLocaleDateString("es-AR", { day: "numeric", month: "short" });
-  const wpText = `Hola! Quiero reservar una mesa para el show de ${show.titulo} el ${fechaStr}.`;
-  const wpUrl = `https://wa.me/5493412023737?text=${encodeURIComponent(wpText)}`;
-
+  const wpUrl = whatsappLink(WA_MESSAGES.reservaShow(show.titulo, show.fecha));
   return (
     <div
       ref={cardRef}
@@ -163,7 +158,7 @@ function MobileCarouselCard({ show }: { show: any }) {
       <div className="absolute inset-0 z-20 flex flex-col justify-end p-5">
         <div className="absolute top-6 left-6 z-20">
           <span className="text-brand-white-100 font-bold text-[16px] uppercase tracking-widest border-b-1 border-brand-red-100 pb-1">
-            {fechaStr}
+            {show.fecha ? new Date(`${show.fecha}T${show.hora}`).toLocaleDateString("es-AR", { day: "numeric", month: "long" }) : ""}
           </span>
         </div>
         <div className="flex flex-col gap-1 w-full">

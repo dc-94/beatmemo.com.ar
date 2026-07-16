@@ -2,7 +2,8 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCw, MessageCircle } from "lucide-react";
+import { whatsappLink, WA_MESSAGES } from "@/lib/config";
 
 interface Props {
   /** URL pública del PDF en Supabase Storage */
@@ -11,29 +12,24 @@ interface Props {
   version: number;
 }
 
+// Si en 20s no cargó, algo anda mal. Un cliente sentado en la mesa no espera
+// más que eso mirando un spinner mudo: se rinde y llama al mozo.
+const TIMEOUT_MS = 20000;
+
 export default function PdfViewer({ url, version }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const pdfDocRef = useRef<any>(null);
   const renderTaskRef = useRef<any>(null);
-
-  // COLA DE RENDER: serializa los dibujos sobre el canvas.
-  // Sin esto, dos llamadas concurrentes (StrictMode en dev monta los effects
-  // dos veces; paginar rápido; un resize a mitad de carga) chocan con
-  // "Cannot use the same canvas during multiple render() operations".
-  // cancel() de pdf.js es ASÍNCRONO: pedir la cancelación no garantiza que
-  // el task murió. La cola espera a que termine de verdad.
   const queueRef = useRef<Promise<void>>(Promise.resolve());
 
   const [pageNum, setPageNum] = useState(1);
   const [numPages, setNumPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0); // 0-100
+  const [retryKey, setRetryKey] = useState(0); // cambia → re-dispara la carga
 
-  // Cache-busting por versión, NO por timestamp.
-  // El sistema viejo usaba Date.now() y forzaba re-descarga en CADA visita,
-  // castigando los datos móviles. Con ?v=version, el navegador cachea la carta
-  // hasta que diseño sube un PDF nuevo (el trigger incrementa version).
   const src = `${url}${url.includes("?") ? "&" : "?"}v=${version}`;
 
   /** Dibujo real de una página. Nunca se llama directo: siempre vía la cola. */
@@ -47,12 +43,11 @@ export default function PdfViewer({ url, version }: Props) {
     try {
       page = await pdfDoc.getPage(num);
     } catch {
-      return; // el documento se destruyó mientras tanto (cambio de carta)
+      return; // el documento se destruyó mientras tanto
     }
 
-    // Escala: el PDF ocupa el ancho disponible del contenedor.
     const availableWidth = scroller.clientWidth;
-    if (availableWidth === 0) return; // aún no montado, el ResizeObserver reintenta
+    if (availableWidth === 0) return;
 
     const unscaled = page.getViewport({ scale: 1 });
     const scale = availableWidth / unscaled.width;
@@ -77,11 +72,15 @@ export default function PdfViewer({ url, version }: Props) {
 
     try {
       await task.promise;
-      scroller.scrollTop = 0; // al cambiar de página, volver arriba
-      // Precargar la siguiente en silencio (la mete en caché de pdf.js).
+      // Móvil: el contenedor scrollea internamente → reset de su scroll.
+      // Desktop: no hay scroll interno (h-auto) → subimos la ventana entera.
+      if (scroller.scrollHeight > scroller.clientHeight + 1) {
+        scroller.scrollTop = 0;
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
       if (num < pdfDoc.numPages) pdfDoc.getPage(num + 1);
     } catch (err: any) {
-      // RenderingCancelledException es esperable al paginar rápido: no es error.
       if (err?.name !== "RenderingCancelledException") {
         console.error("[PdfViewer] render:", err);
       }
@@ -90,38 +89,33 @@ export default function PdfViewer({ url, version }: Props) {
     }
   }, []);
 
-  /** Encola un render. Cancela el actual para que la cola avance rápido. */
+  /** Encola un render. La cola serializa: sin esto, dos renders pisan el canvas. */
   const renderPage = useCallback(
     (num: number) => {
       if (renderTaskRef.current) {
         try { renderTaskRef.current.cancel(); } catch { /* noop */ }
       }
-      queueRef.current = queueRef.current
-        .catch(() => {})
-        .then(() => doRender(num));
+      queueRef.current = queueRef.current.catch(() => {}).then(() => doRender(num));
       return queueRef.current;
     },
     [doRender]
   );
 
-  /**
-   * Carga del documento. OJO: NO renderiza acá.
-   * Antes lo hacía, y el effect de pageNum disparaba un SEGUNDO render de la
-   * misma página en paralelo → el error del canvas compartido.
-   * El render tiene una única puerta de entrada: el effect de abajo.
-   */
+  /** Carga del documento. NO renderiza acá: el render tiene una sola puerta. */
   useEffect(() => {
     let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout>;
+    let loadingTask: any = null;
 
     (async () => {
       setLoading(true);
       setError(null);
+      setProgress(0);
       setPageNum(1);
 
       try {
         // Polyfill: Promise.withResolvers es ES2024 (Chrome 119+, Safari 17.4+).
-        // pdf.js lo usa internamente y revienta en navegadores anteriores —
-        // justo los de nuestra audiencia mayor con teléfonos de hace 3 años.
+        // pdf.js lo usa internamente y revienta en navegadores anteriores.
         if (typeof (Promise as any).withResolvers !== "function") {
           (Promise as any).withResolvers = function () {
             let resolve: any, reject: any;
@@ -133,19 +127,33 @@ export default function PdfViewer({ url, version }: Props) {
         const pdfjs = await import("pdfjs-dist");
         pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
-        const doc = await pdfjs.getDocument({
-          url: src,
-          // Descarga por rangos: la primera página aparece antes en 3G/4G lento.
-          disableAutoFetch: true,
-          disableStream: false,
-        }).promise;
+        loadingTask = pdfjs.getDocument({ url: src });
 
-        if (cancelled) { return; }
+        // Progreso real de descarga. Un "45%" le dice al cliente que algo pasa;
+        // un spinner mudo lo deja sin saber si esperar o rendirse.
+        loadingTask.onProgress = ({ loaded, total }: { loaded: number; total: number }) => {
+          if (total > 0 && !cancelled) {
+            setProgress(Math.min(100, Math.round((loaded / total) * 100)));
+          }
+        };
+
+        // Red del bar + PDF de 6MB = puede colgarse. Nos rendimos con dignidad.
+        timeoutId = setTimeout(() => {
+          if (cancelled) return;
+          try { loadingTask?.destroy(); } catch { /* noop */ }
+          setError("La carta está tardando demasiado.");
+          setLoading(false);
+        }, TIMEOUT_MS);
+
+        const doc = await loadingTask.promise;
+        clearTimeout(timeoutId);
+        if (cancelled) return;
 
         pdfDocRef.current = doc;
         setNumPages(doc.numPages);
         setLoading(false);
       } catch (err) {
+        clearTimeout(timeoutId!);
         if (cancelled) return;
         console.error("[PdfViewer] load:", err);
         setError("No pudimos cargar la carta.");
@@ -155,20 +163,22 @@ export default function PdfViewer({ url, version }: Props) {
 
     return () => {
       cancelled = true;
+      clearTimeout(timeoutId!);
+      try { loadingTask?.destroy(); } catch { /* noop */ }
       if (renderTaskRef.current) {
         try { renderTaskRef.current.cancel(); } catch { /* noop */ }
       }
       const doc = pdfDocRef.current;
       pdfDocRef.current = null;
-      // Esperar a que la cola drene antes de destruir: si destruís el doc con
-      // un render a mitad de camino, pdf.js tira "Worker was destroyed".
       if (doc) {
+        // Esperar a que la cola drene antes de destruir: evita
+        // "Worker was destroyed" si hay un render a mitad de camino.
         queueRef.current.catch(() => {}).then(() => {
           try { doc.destroy(); } catch { /* noop */ }
         });
       }
     };
-  }, [src]);
+  }, [src, retryKey]);
 
   /** ÚNICA puerta de render: al terminar de cargar y al cambiar de página. */
   useEffect(() => {
@@ -176,52 +186,78 @@ export default function PdfViewer({ url, version }: Props) {
     renderPage(pageNum);
   }, [pageNum, loading, error, renderPage]);
 
-  /** Re-render si cambia el ancho (rotación de pantalla, resize de ventana). */
+  /** Re-render si cambia el ancho (rotación de pantalla, resize). */
   useEffect(() => {
     const scroller = scrollRef.current;
     if (!scroller) return;
-
     let timeout: ReturnType<typeof setTimeout>;
     const observer = new ResizeObserver(() => {
       clearTimeout(timeout);
-      // Debounce: evita re-renderizar en cada píxel durante un resize.
       timeout = setTimeout(() => {
         if (pdfDocRef.current) renderPage(pageNum);
       }, 200);
     });
-
     observer.observe(scroller);
     return () => { observer.disconnect(); clearTimeout(timeout); };
   }, [pageNum, renderPage]);
 
   const prev = () => setPageNum((n) => Math.max(1, n - 1));
   const next = () => setPageNum((n) => Math.min(numPages, n + 1));
+  const retry = () => setRetryKey((k) => k + 1);
 
   return (
     <div className="flex flex-col">
-      {/* CONTENEDOR DE ALTO FIJO: solo este sector scrollea.
-          Los chips y los controles quedan siempre visibles. */}
       <div
         ref={scrollRef}
-        className="relative w-full h-[70vh] md:h-[75vh] overflow-y-auto overflow-x-hidden bg-neutral-100 rounded-sm"
+        className="relative w-full h-[60vh] overflow-y-auto overflow-x-hidden md:h-auto md:min-h-[50vh] md:overflow-visible bg-neutral-100 rounded-sm"
       >
+        {/* CARGANDO — con progreso real, no un spinner mudo */}
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Loader2 className="animate-spin text-neutral-400" size={28} />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-8">
+            <div className="w-40 h-[3px] bg-[#D1CCC0] overflow-hidden rounded-full">
+              <div
+                className="h-full bg-[#A68966] transition-[width] duration-300 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <span className="text-[10px] uppercase tracking-widest text-[#5C5852] tabular-nums">
+              {progress > 0 ? `Cargando ${progress}%` : "Cargando la carta"}
+            </span>
           </div>
         )}
 
+        {/* ERROR — honesto y con salida real. Nunca un spinner eterno. */}
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
-            <p className="text-neutral-600 text-sm">{error}</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 px-8 text-center">
+            <div className="space-y-2">
+              <p className="font-serif text-lg text-[#2C2924]">{error}</p>
+              <p className="text-[#5C5852] text-xs max-w-xs">
+                Puede ser la conexión. Probá de nuevo o pedinos la carta por WhatsApp.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2.5">
+              <button
+                onClick={retry}
+                className="flex items-center justify-center gap-2 bg-[#2C2924] text-[#FAF7F2] px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest hover:bg-[#4A453D] transition-colors"
+              >
+                <RotateCw size={13} /> Reintentar
+              </button>
+              <a href={whatsappLink(WA_MESSAGES.cartaNoCarga)}      
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 border border-[#A68966] text-[#A68966] px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest hover:bg-[#A68966] hover:text-white transition-colors"
+              >
+                <MessageCircle size={13} /> Pedirla por WhatsApp
+              </a>
+            </div>
           </div>
         )}
 
         <canvas ref={canvasRef} className="block mx-auto" />
       </div>
 
-      {/* CONTROLES DE PÁGINA — fuera del área scrolleable, siempre accesibles */}
-      {numPages > 1 && !error && (
+      {/* CONTROLES — fuera del área scrolleable, siempre accesibles */}
+      {numPages > 1 && !error && !loading && (
         <div className="flex items-center justify-center gap-6 py-4">
           <button
             onClick={prev}

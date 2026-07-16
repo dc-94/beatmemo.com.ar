@@ -46,7 +46,7 @@ export async function middleware(request: NextRequest) {
   if (hostname.startsWith(QR_PREFIX)) {
     if (pathname === '/') {
       url.pathname = '/menu';
-      return NextResponse.rewrite(url);
+      return NextResponse.redirect(url);
     }
     return NextResponse.next({ request: { headers: request.headers } });
   }
@@ -180,6 +180,6 @@ export const config = {
   matcher: [
     // Excluir del middleware: assets estáticos de Next.js, imágenes optimizadas,
     // favicon y archivos de imagen/fuente. Solo procesar páginas y API routes.
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?|mjs|js)$).*)',
   ],
 };

@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import Image from "next/image";
-// Asumiendo que isToday espera un string ISO o un objeto Date. 
-// Si isToday espera 'YYYY-MM-DD', usaremos show.fecha directamente.
 import { isToday } from "@/utils/date"; 
 import { getOptimizedImageUrl } from "@/lib/utils";
+import { whatsappLink, WA_MESSAGES } from "@/lib/config";
 
 // Ya no usamos Show de database.types porque el JOIN altera la forma del objeto.
 // Usaremos any momentáneamente, o puedes importar PublicEvent de tus actions.
@@ -127,8 +126,8 @@ export default function ShowCard({ show }: { show: any }) {
                 </div>
               </div>
 
-              <a 
-                href={`https://wa.me/5493412023737?text=Hola,%20quisiera%20reservar%20una%20mesa%20para%20${encodeURIComponent(show.titulo)}`}
+              <a href={whatsappLink(WA_MESSAGES.reservaShow(show.titulo))}           // ShowCard
+
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-2 text-center bg-brand-red-100 text-white font-sans font-bold tracking-[0.2em] uppercase text-xs py-4 hover:bg-brand-red-200 transition-colors w-full"

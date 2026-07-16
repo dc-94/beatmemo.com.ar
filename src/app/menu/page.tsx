@@ -6,19 +6,13 @@ import { headers } from "next/headers";
 import { Star, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import PdfViewer from "@/components/menu/PdfViewer";
-
+import { GOOGLE_REVIEW_URL } from "@/lib/config";
 export const metadata: Metadata = {
   title: "Carta Digital",
   description: "Nuestras cartas: cocina, barra, happy hour y whisky collection.",
 };
 
 export const revalidate = 300;
-
-// Link directo al formulario de estrellas de Google. Universal https://:
-// si la app de Maps está instalada, el sistema la abre solo; si no, cae al
-// navegador sin romperse. Forzar la app con esquemas nativos falla silencioso
-// cuando no está instalada — peor resultado, no mejor.
-const GOOGLE_REVIEW_URL = "https://g.page/r/CZ8oHnT2ZcQjEAE/review";
 
 interface Menu {
   id: string;
@@ -115,27 +109,28 @@ export default async function MenuPage({
         {/* VISOR — key fuerza remount al cambiar de carta */}
         <PdfViewer key={activa.id} url={activa.url_archivo} version={activa.version} />
 
-        {/* ESCAPES — solo en QR, y AL FINAL del scroll (no fijos):
-            el único elemento flotante es el WhatsApp, para no amontonar.
-            El cliente los encuentra cuando terminó de mirar la carta. */}
-        {isQr && (
-          <div className="flex flex-col sm:flex-row gap-3 mt-8 mb-4">
-            <a
-              href={GOOGLE_REVIEW_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-2 bg-[#C5A059] text-black px-6 py-3.5 font-bold uppercase tracking-widest text-[11px] hover:bg-[#E6C987] transition-colors"
-            >
-              <Star size={14} /> Dejanos tu reseña
-            </a>
+        {/* Reseña: en ambos contextos. "Ver sitio completo": solo QR
+            (desde la web ya estás en el sitio). */}
+        {/* Reseña: en ambos contextos. "Ver sitio completo": solo QR
+            (desde la web ya estás en el sitio). */}
+        <div className="flex flex-col sm:flex-row gap-3 mt-8 mb-4">
+          
+          <a href={GOOGLE_REVIEW_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-2 bg-[#C5A059] text-black px-6 py-3.5 font-bold uppercase tracking-widest text-[11px] hover:bg-[#E6C987] transition-colors"
+          >
+            <Star size={14} /> Dejanos tu reseña
+          </a>
+          {isQr && (
             <Link
               href={siteUrl}
               className="flex-1 flex items-center justify-center gap-2 border border-[#A68966] text-[#A68966] px-6 py-3.5 font-bold uppercase tracking-widest text-[11px] hover:bg-[#A68966] hover:text-white transition-colors"
             >
               Ver sitio completo <ArrowRight size={14} />
             </Link>
-          </div>
-        )}
+          )}
+      </div>
       </div>
     </main>
   );

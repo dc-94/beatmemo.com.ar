@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-
+import { whatsappLink } from "@/lib/config";
 export default function MuseumPreview() {
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, amount: 0.1 });
@@ -89,8 +89,7 @@ export default function MuseumPreview() {
             {/* Col 2: Privadas */}
             <div className="flex flex-col gap-2 border-l-0 md:border-l border-brand-white-300/10 md:pl-8">
               <span className="text-brand-red-100 font-bold uppercase tracking-widest text-[10px]">Guías Privadas</span>
-              <a 
-                href="https://wa.me/5493412023737?text=Hola,%20quisiera%20consultar%20por%20una%20visita%20guiada%20privada%20al%20museo." 
+              <a href={whatsappLink("Hola, quisiera consultar por una visita guiada privada al museo.")} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 group w-fit"

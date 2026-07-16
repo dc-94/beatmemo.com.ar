@@ -5,8 +5,8 @@ import { useRef } from "react";
 import Link from "next/link";
 import { motion, useInView, Variants } from "framer-motion";
 import { usePathname } from "next/navigation";
-import { whatsappLink } from "@/lib/config";
-
+import { whatsappLink,GOOGLE_REVIEW_URL } from "@/lib/config";
+import { Star } from "lucide-react";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -113,7 +113,16 @@ export default function Footer() {
                 </svg>
                 3412023737
               </a>
+              
+              <a href={GOOGLE_REVIEW_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className=" font-bold tracking-widest uppercase mt-8 text-md flex items-center gap-2 hover:text-brand-white-200 font-sans text-accent-gold-light transition-colors"
+              >
+                <Star size={20} /> Dejanos tu reseña
+              </a>
             </div>
+            
 
             {/* Columna 3: Social */}
             <div className="flex flex-col">

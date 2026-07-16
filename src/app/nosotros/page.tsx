@@ -1,7 +1,7 @@
 // src/app/cultura/page.tsx
 import Image from "next/image";
 import { getCulturalEvents, type PublicEvent } from "@/actions/shows";
-import { Show } from "@/types/database.types"; // Ajusta el import si tu tipo se llama diferente
+import { whatsappLink, WA_MESSAGES } from "@/lib/config";
 
 // Helper puro para resolver el gradiente de la bandera según el ciclo
 function getBorderTheme(ciclo?: string | null) {
@@ -123,10 +123,7 @@ const eventos = result.ok ? result.data : [];
                   </div>
 
                   {/* Botón CTA */}
-                  <a 
-                    href={`https://wa.me/5493412023737?text=${encodeURIComponent(
-  `Hola, quiero anotarme para ${nombreCiclo ?? evento.titulo}`
-)}`}
+                  <a href={whatsappLink(WA_MESSAGES.anotarseCiclo(nombreCiclo ?? evento.titulo))} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="w-fit md:w-full text-left md:text-center border-t-0 md:border-t border-brand-black-100/10 pt-1 md:pt-4 font-sans font-bold tracking-[0.1em] md:tracking-[0.2em] uppercase text-[9px] md:text-[11px] text-brand-black-100 hover:text-[#C5A059] transition-colors mt-auto border-b md:border-b-0 border-brand-black-100 pb-0.5 md:pb-0"

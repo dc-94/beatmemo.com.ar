@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
+
 // Estructura de navegación jerárquica
 const navLinks = [
   { label: "Agenda", href: "/agenda" },
@@ -16,7 +17,6 @@ const navLinks = [
       { label: "Nuestro espacio", href: "/pub#espacio" },
       { label: "Nuestra cocina", href: "/pub#cocina" },
       { label: "Nuestra barra", href: "/pub#barra" },
-      { label: "Reservá tu mesa", href: "/reservas", badge: "Nuevo" },
     ],
   },
   {
@@ -112,11 +112,6 @@ export default function Navbar() {
                           className="flex items-center justify-between px-4 py-3 font-sans text-xs font-bold uppercase tracking-widest text-brand-white-200 hover:bg-brand-black-300 hover:text-brand-gold transition-colors"
                         >
                           {subLink.label}
-                          {subLink.badge && (
-                            <span className="bg-brand-gold text-brand-black-100 px-1.5 py-0.5 text-[9px] rounded-sm ml-2">
-                              {subLink.badge}
-                            </span>
-                          )}
                         </Link>
                       ))}
                     </div>
@@ -147,8 +142,11 @@ export default function Navbar() {
 
       {/* ================= MOBILE MENU OVERLAY ================= */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[60] bg-[#1A1A1A] flex flex-col px-6 py-8 h-screen w-full overflow-y-auto">
-          <div className="flex justify-end w-full mb-8">
+        <div
+          className="fixed inset-0 z-[60] h-[100dvh] bg-[#1A1A1A] flex flex-col px-6 pt-8 w-full overflow-y-auto overscroll-contain"
+          style={{ paddingBottom: "calc(6rem + env(safe-area-inset-bottom))" }}
+        >
+          <div className="flex justify-end w-full mb-5">
             <button onClick={toggleMenu} className="flex items-center text-brand-white-200 hover:text-brand-gold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold rounded-sm p-1">
               <span className="font-sans text-sm mr-2 font-bold tracking-widest uppercase">Cerrar</span>
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,8 +155,8 @@ export default function Navbar() {
             </button>
           </div>
 
-          <div className="flex justify-center mb-10">
-             <Image src="/brand/logo_BLANCO.svg" alt="Beatmemo Logo" width={150} height={28} className="h-6 w-auto opacity-50" />
+          <div className="flex justify-center mb-6">
+             <Image src="/brand/logo_BLANCO.svg" alt="Beatmemo Logo" width={150} height={28} className="h-6 w-auto opacity-80" />
           </div>
 
           <nav className="flex flex-col w-full max-w-sm mx-auto">
@@ -169,7 +167,7 @@ export default function Navbar() {
 
               return (
                 <div key={link.label} className={`border-b transition-colors duration-200 ${isActive ? "border-brand-gold/50" : "border-brand-white-300/30"}`}>
-                  <div className="flex items-center justify-between py-4">
+                  <div className="flex items-center justify-between py-4 px-8">
                     <Link
                       href={link.href}
                       onClick={() => !hasSubLinks && setIsMobileMenuOpen(false)}
@@ -181,7 +179,7 @@ export default function Navbar() {
                     {hasSubLinks && (
                       <button 
                         onClick={() => toggleAccordion(link.label)}
-                        className="p-2 text-brand-white-200 hover:text-brand-gold transition-colors flex items-center gap-2"
+                        className="py-2 text-brand-white-200 hover:text-brand-gold transition-colors flex items-center gap-2"
                       >
                         <span className="text-[10px] uppercase font-sans tracking-widest">Ver opciones</span>
                         <svg className={`w-4 h-4 transition-transform duration-300 ${isAccordionOpen ? "rotate-180 text-brand-gold" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -193,7 +191,7 @@ export default function Navbar() {
 
                   {/* Sub-links (Accordion Body) */}
                   {hasSubLinks && (
-                    <div className={`overflow-hidden transition-all duration-300 ${isAccordionOpen ? "max-h-96 pb-4 opacity-100" : "max-h-0 opacity-0"}`}>
+                    <div className={`overflow-hidden transition-all duration-300 ${isAccordionOpen ? "max-h-96 px-8 pb-4 opacity-100" : "max-h-0 opacity-0"}`}>
                       <div className="flex flex-col pl-4 gap-4 border-l border-brand-white-300/20 ml-2 mt-2">
                         {link.subLinks?.map((subLink) => (
                           <Link
@@ -203,11 +201,6 @@ export default function Navbar() {
                             className="flex items-center justify-between text-brand-white-200 font-sans text-sm tracking-wide hover:text-brand-gold"
                           >
                             {subLink.label}
-                            {subLink.badge && (
-                              <span className="bg-brand-white-100 text-brand-black-100 px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-sm">
-                                {subLink.badge}
-                              </span>
-                            )}
                           </Link>
                         ))}
                       </div>
@@ -222,9 +215,10 @@ export default function Navbar() {
                 <span className="block w-24 h-5 bg-brand-white-100" style={{ WebkitMaskImage: "url('/brand/logo_ROOFTOP.svg')", WebkitMaskSize: "contain", WebkitMaskRepeat: "no-repeat", WebkitMaskPosition: "center" }} />
               </a>
 
-              <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="bg-brand-gold text-brand-black-100 px-8 py-3 rounded-sm font-sans font-bold uppercase tracking-wider w-full text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+              <Link href="/menu" onClick={() => setIsMobileMenuOpen(false)} className="bg-brand-gold text-brand-black-100 px-8 py-3 rounded-sm font-sans font-bold uppercase tracking-wider w-full text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
                 VER CARTA
               </Link>
+
             </div>
           </nav>
         </div>

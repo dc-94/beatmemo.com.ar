@@ -7,6 +7,8 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import SplashLoader from "@/components/layout/SplashLoader";
+import { SITE_URL } from "@/lib/config";
+
 
 const barlow = Barlow({
   variable: "--font-barlow",
@@ -22,7 +24,8 @@ const libreBaskerville = Libre_Baskerville({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://beatmemo.com"),
+  metadataBase: new URL(SITE_URL),
+  alternates: { canonical: SITE_URL },
   title: {
     default: "Beatmemo | Museo y Pub Temático en Rosario",
     template: "%s | Beatmemo",

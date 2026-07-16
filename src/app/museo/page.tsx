@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import MuseoTimeline from "@/components/museo/MuseoTimeline";
-
+import { whatsappLink } from "@/lib/config";
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -133,8 +133,7 @@ export default function MuseoPage() {
             {/* Col 2 */}
             <div className="flex flex-col gap-2 border-l-0 md:border-l border-[#8B6D3B]/20 md:pl-8">
               <span className="text-[#C5A059] font-bold uppercase tracking-widest text-[10px]">Guías Privadas</span>
-              <a 
-                href="https://wa.me/5493412023737?text=Hola,%20quisiera%20consultar%20por%20una%20visita%20guiada%20privada%20al%20museo." 
+              <a href={whatsappLink("Hola, quisiera consultar por una visita guiada privada al museo.")}
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 group w-fit"

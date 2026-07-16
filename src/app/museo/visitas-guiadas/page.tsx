@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { whatsappLink, WA_MESSAGES } from "@/lib/config";
 
 export default function VisitasGuiadasPage() {
   return (
@@ -85,8 +86,7 @@ export default function VisitasGuiadasPage() {
             <p className="text-brand-white-300 text-base leading-relaxed">
               Diseñamos recorridos exclusivos para grupos cerrados, contingentes turísticos y eventos corporativos. Una atención personalizada que puede combinarse con una experiencia de cata y degustación en nuestro  Pub.
             </p>
-            <a 
-              href="https://wa.me/5493412023737?text=Hola,%20quisiera%20consultar%20disponibilidad%20y%20tarifas%20para%20una%20visita%20privada%20al%20museo." 
+            <a href={whatsappLink(WA_MESSAGES.visitaGuiada)}
               target="_blank" 
               rel="noopener noreferrer"
               className="mt-4 flex items-center gap-3 group"

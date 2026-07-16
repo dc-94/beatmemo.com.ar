@@ -1,18 +1,13 @@
 // src/components/layout/WhatsAppFAB.tsx
 "use client";
 import Link from "next/link";
-import { whatsappLink } from "@/lib/config";
+import { whatsappLink, WA_MESSAGES } from "@/lib/config";
 
 export default function WhatsAppFAB() {
-  // Antes: href="http://wa.me/5493412023737" hardcodeado.
-  // http:// fuerza un redirect innecesario (y es mala señal de seguridad).
-  // El número ahora vive en lib/config.ts: un solo lugar para cambiarlo.
-  const href = whatsappLink("Hola! Quiero reservar una mesa en Beatmemo.");
 
   return (
     <Link
-      href={href}
-      target="_blank"
+    href={whatsappLink(WA_MESSAGES.reservaMesa)}        
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40 bg-brand-black-100/20 backdrop-blur-md border border-brand-white-300/5 text-white p-3 md:p-4 rounded-full shadow-lg hover:scale-105 hover:bg-brand-black-100 transition-all duration-300 group flex items-center justify-center pr-5 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-red-100 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-black-100"
       aria-label="Contactar por WhatsApp"
