@@ -1,5 +1,6 @@
 // src/app/pub/page.tsx
 import Image from "next/image";
+import Link from 'next/link';
 import { Metadata } from 'next';
 import { createClient } from "@/lib/supabase/server";
 import { getOptimizedImageUrl } from "@/lib/utils";
@@ -38,7 +39,7 @@ export default async function PubPage() {
   const { data, error } = await supabase
     .from("pub")
     .select("id, nombre, descripcion, url_imagen, categoria, tags, es_vegetariano, es_vegano, es_sin_tacc, es_nuevo, es_recomendado")
-    .neq("is_deleted", true)
+    .eq("is_deleted", false)
     .eq("disponible", true)
     .order("orden", { ascending: true });
 
@@ -70,9 +71,9 @@ export default async function PubPage() {
         <div className="absolute bottom-16 left-4 lg:left-16 text-white">
           <span className="text-[#E6C987] uppercase tracking-[0.4em] text-[10px] font-bold mb-4 block">Gastronomía & Barra</span>
           <h1 className="font-serif text-5xl lg:text-7xl font-bold mb-6">Classic Pub.</h1>
-          <a href="#" className="bg-[#C5A059] text-black px-8 py-3 font-bold uppercase tracking-widest text-xs hover:bg-[#E6C987] transition-colors inline-block">
+          <Link href="/menu" className="bg-[#C5A059] text-black px-8 py-3 font-bold uppercase tracking-widest text-xs hover:bg-[#E6C987] transition-colors inline-block">
             Ver Menú Completo
-          </a>
+          </Link>
         </div>
       </section>
 
@@ -181,9 +182,9 @@ export default async function PubPage() {
 
       {/* FOOTER CTA */}
       <section className="py-16 text-center">
-        <a href="#" className="border border-[#A68966] text-[#A68966] px-10 py-4 font-bold uppercase tracking-widest text-xs hover:bg-[#A68966] hover:text-white transition-all inline-block">
-          Descargar Carta Completa
-        </a>
+        <Link href="/menu" className="border border-[#A68966] text-[#A68966] px-10 py-4 font-bold uppercase tracking-widest text-xs hover:bg-[#A68966] hover:text-white transition-all inline-block">
+          Ver Carta Completa
+        </Link>
       </section>
     </main>
   );

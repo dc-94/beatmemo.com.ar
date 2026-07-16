@@ -1,6 +1,8 @@
 // src/components/agenda/FullAgendaWrapper.tsx
 import { getShowsByView } from "@/actions/shows";
 import AgendaGrid from "./AgendaGrid";
+import { whatsappLink } from "@/lib/config";
+
 
 interface WrapperProps {
   view: string;
@@ -10,9 +12,7 @@ interface WrapperProps {
 
 // TODO: cuando exista lib/config.ts (ítem "WhatsApp hardcodeado" del mapa),
 // este número sale de ahí. Por ahora, coherente con el resto del codebase.
-const WHATSAPP_URL = `https://wa.me/5493412023737?text=${encodeURIComponent(
-  "Hola! Quiero consultar por los próximos shows de Beatmemo."
-)}`;
+const WHATSAPP_URL = whatsappLink("Hola! Quiero consultar por los próximos shows de Beatmemo.");
 
 export default async function FullAgendaWrapper({ view, year, mes }: WrapperProps) {
   const result = await getShowsByView(

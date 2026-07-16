@@ -1,7 +1,7 @@
 // src/components/admin/MenusClient.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Plus, ArrowUp, ArrowDown, FileText, EyeOff, Pencil } from "lucide-react";
 import MenuDrawer from "./MenuDrawer";
@@ -28,6 +28,16 @@ export default function MenusClient({ menus: initialMenus }: Props) {
   const [orderDirty, setOrderDirty] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // FIX: useState(initialMenus) SOLO toma el valor en el primer render.
+  // Cuando router.refresh() traía datos nuevos del server, este componente
+  // recibía props nuevos pero seguía mostrando el array viejo del estado.
+  // Por eso una carta creada no aparecía hasta recargar la página entera.
+  // Este effect resincroniza el estado local cada vez que el server manda datos.
+  useEffect(() => {
+    setMenus(initialMenus);
+    setOrderDirty(false); // los datos frescos ya traen el orden persistido
+  }, [initialMenus]);
+
   const openNew = () => { setEditing(undefined); setIsOpen(true); };
   const openEdit = (m: Menu) => { setEditing(m); setIsOpen(true); };
 
@@ -44,16 +54,21 @@ export default function MenusClient({ menus: initialMenus }: Props) {
 
   const saveOrder = async () => {
     setSaving(true);
-    // Reasignamos orden según la posición actual en la lista.
-    const payload = menus.map((m, i) => ({ id: m.id, orden: i }));
-    const res = await reorderMenus(payload);
-    if (res.success) {
-      toast.success("Orden guardado");
-      setOrderDirty(false);
-    } else {
-      toast.error(res.error);
+    try {
+      const payload = menus.map((m, i) => ({ id: m.id, orden: i }));
+      const res = await reorderMenus(payload);
+      if (res.success) {
+        toast.success("Orden guardado");
+        setOrderDirty(false);
+      } else {
+        toast.error(res.error);
+      }
+    } catch (err) {
+      console.error("[REORDER MENUS]", err);
+      toast.error("Error inesperado al guardar el orden.");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   return (
@@ -72,14 +87,14 @@ export default function MenusClient({ menus: initialMenus }: Props) {
       </header>
 
       {/* Caption explicativo del reordenamiento */}
-      <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-4 py-3">
+      <div className="flex items-center justify-between gap-4 bg-white/5 border border-white/10 rounded-lg px-4 py-3">
         <p className="text-neutral-400 text-xs">
           Usá las flechas para cambiar el orden de las cartas en el visor. Los cambios se aplican al guardar.
         </p>
         <button
           onClick={saveOrder}
           disabled={!orderDirty || saving}
-          className={`text-sm font-semibold px-4 py-2 rounded-lg transition ${
+          className={`shrink-0 text-sm font-semibold px-4 py-2 rounded-lg transition ${
             orderDirty && !saving
               ? "bg-white text-black hover:bg-neutral-200"
               : "bg-white/5 text-neutral-600 cursor-not-allowed"
@@ -106,7 +121,7 @@ export default function MenusClient({ menus: initialMenus }: Props) {
                   onClick={() => move(index, -1)}
                   disabled={index === 0}
                   className="text-neutral-500 hover:text-white disabled:opacity-20 disabled:hover:text-neutral-500"
-                  aria-label="Subir"
+                  aria-label={`Subir ${menu.nombre}`}
                 >
                   <ArrowUp size={16} />
                 </button>
@@ -114,7 +129,7 @@ export default function MenusClient({ menus: initialMenus }: Props) {
                   onClick={() => move(index, 1)}
                   disabled={index === menus.length - 1}
                   className="text-neutral-500 hover:text-white disabled:opacity-20 disabled:hover:text-neutral-500"
-                  aria-label="Bajar"
+                  aria-label={`Bajar ${menu.nombre}`}
                 >
                   <ArrowDown size={16} />
                 </button>

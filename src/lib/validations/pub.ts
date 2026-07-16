@@ -8,13 +8,6 @@ export const pubItemSchema = z.object({
 
   descripcion: z.string().optional(),
 
-  // Puede ser nulo (ej: promos sin precio fijo). coerce convierte el string del form.
-  precio: z.coerce
-    .number()
-    .min(0, "El precio no puede ser negativo")
-    .nullable()
-    .optional(),
-
   url_imagen: z.string().url({ message: "La URL de la imagen no es válida" }),
 
   // Atributos booleanos (multi-selección). Default false para que nunca lleguen undefined.

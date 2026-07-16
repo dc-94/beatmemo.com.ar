@@ -16,7 +16,8 @@ interface Props {
 
 export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
   const isEditing = !!menuToEdit;
-const router = useRouter();
+  const router = useRouter();
+
   const [nombre, setNombre] = useState("");
   const [tipo, setTipo] = useState("");
   const [activo, setActivo] = useState(true);
@@ -26,20 +27,19 @@ const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Reset SIEMPRE que se abre/cierra o cambia el item, sin importar si es
+  // creación o edición. Antes, los flags (uploading/saving) solo se limpiaban
+  // en la rama de "nuevo", así que un error durante la edición dejaba el
+  // drawer trabado.
   useEffect(() => {
-    if (menuToEdit) {
-      setNombre(menuToEdit.nombre || "");
-      setTipo(menuToEdit.tipo || "");
-      setActivo(menuToEdit.activo ?? true);
-      setUrlArchivo(menuToEdit.url_archivo || "");
-    } else {
-      setNombre(""); setTipo(""); setActivo(true); setUrlArchivo("");
-      setUploadWarning(null);
-      setUploading(false);
-      setSaving(false);
-      setDeleting(false);
-    }
+    setNombre(menuToEdit?.nombre ?? "");
+    setTipo(menuToEdit?.tipo ?? "");
+    setActivo(menuToEdit?.activo ?? true);
+    setUrlArchivo(menuToEdit?.url_archivo ?? "");
     setUploadWarning(null);
+    setUploading(false);
+    setSaving(false);
+    setDeleting(false);
   }, [menuToEdit, isOpen]);
 
   if (!isOpen) return null;
@@ -53,33 +53,50 @@ const router = useRouter();
     }
   };
 
-   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!tipo) {
+      toast.error("Primero ponele nombre a la carta.");
+      e.target.value = "";
+      return;
+    }
 
     // Validación temprana en cliente: evita gastar ancho de banda subiendo
     // algo que el server va a rechazar igual.
     if (file.size > 10 * 1024 * 1024) {
       toast.error(`El PDF pesa ${(file.size / 1024 / 1024).toFixed(1)}MB. El máximo es 10MB.`);
-      e.target.value = "";  // limpia el input para poder reintentar
+      e.target.value = "";
       return;
     }
 
     setUploading(true);
     setUploadWarning(null);
 
-    const formData = new FormData();
-    formData.append("file", file);
+    // FIX: try/finally. Si uploadMenuPdf LANZA (no devuelve error, revienta:
+    // body limit, red caída, form truncado), el setUploading(false) suelto
+    // nunca se ejecutaba y `uploading` quedaba en true para siempre →
+    // Cancelar y Guardar quedaban deshabilitados de por vida.
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
 
-    const res = await uploadMenuPdf(formData, tipo);
-    if (res.success && res.url) {
-      setUrlArchivo(res.url);
-      toast.success("PDF subido");
-      if (res.warning) setUploadWarning(res.warning);
-    } else {
-      toast.error(res.error || "Error al subir el PDF");
+      const res = await uploadMenuPdf(formData, tipo);
+      if (res.success && res.url) {
+        setUrlArchivo(res.url);
+        toast.success("PDF subido");
+        if (res.warning) setUploadWarning(res.warning);
+      } else {
+        toast.error(res.error || "Error al subir el PDF");
+      }
+    } catch (err) {
+      console.error("[UPLOAD PDF]", err);
+      toast.error("Falló la subida del PDF. Probá de nuevo.");
+    } finally {
+      setUploading(false);
+      e.target.value = ""; // permite reintentar el mismo archivo
     }
-    setUploading(false);
   };
 
   const handleSave = async () => {
@@ -89,43 +106,51 @@ const router = useRouter();
     }
     setSaving(true);
 
-    const formData = new FormData();
-    formData.append("nombre", nombre);
-    formData.append("tipo", tipo);
-    formData.append("url_archivo", urlArchivo);
-    formData.append("activo", String(activo));
+    try {
+      const formData = new FormData();
+      formData.append("nombre", nombre);
+      formData.append("tipo", tipo);
+      formData.append("url_archivo", urlArchivo);
+      formData.append("activo", String(activo));
 
-    const res = await upsertMenu(formData, isEditing ? menuToEdit.id : undefined);
-    if (res.success) {
-      toast.success(isEditing ? "Carta actualizada" : "Carta creada");
+      const res = await upsertMenu(formData, isEditing ? menuToEdit.id : undefined);
       if (res.success) {
-      toast.success(isEditing ? "Carta actualizada" : "Carta creada");
-      router.refresh();   // ← trae los datos nuevos del server
-      onClose();
+        toast.success(isEditing ? "Carta actualizada" : "Carta creada");
+        router.refresh();
+        onClose();
+      } else {
+        toast.error(res.error);
+      }
+    } catch (err) {
+      console.error("[SAVE MENU]", err);
+      toast.error("Error inesperado al guardar.");
+    } finally {
+      setSaving(false);
     }
-    } else {
-      toast.error(res.error);
-    }
-    setSaving(false);
   };
 
   const handleDelete = async () => {
     if (!window.confirm("¿Eliminar esta carta del visor? El PDF queda en Storage.")) return;
     setDeleting(true);
-    const res = await deleteMenu(menuToEdit.id);
-    if (res.success) {
-      toast.success("Carta eliminada");
+
+    try {
+      const res = await deleteMenu(menuToEdit.id);
       if (res.success) {
-      toast.success(isEditing ? "Carta actualizada" : "Carta creada");
-      router.refresh();   // ← trae los datos nuevos del server
-      onClose();
+        toast.success("Carta eliminada");
+        router.refresh();
+        onClose();
+      } else {
+        toast.error(res.error);
+      }
+    } catch (err) {
+      console.error("[DELETE MENU]", err);
+      toast.error("Error inesperado al eliminar.");
+    } finally {
+      setDeleting(false);
     }
-      onClose();
-    } else {
-      toast.error(res.error);
-    }
-    setDeleting(false);
   };
+
+  const busy = saving || deleting || uploading;
 
   return (
     <>
@@ -182,7 +207,13 @@ const router = useRouter();
                   <span className="text-neutral-400 text-sm">Subir PDF (máx. 10MB)</span>
                 </>
               )}
-              <input type="file" accept="application/pdf" onChange={handleFileChange} className="hidden" disabled={uploading} />
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={handleFileChange}
+                className="hidden"
+                disabled={uploading}
+              />
             </label>
 
             {uploadWarning && (
@@ -195,7 +226,12 @@ const router = useRouter();
 
           {/* ACTIVO */}
           <label className="flex items-center gap-2 cursor-pointer text-white text-sm">
-            <input type="checkbox" checked={activo} onChange={(e) => setActivo(e.target.checked)} className="w-4 h-4 accent-brand-red" />
+            <input
+              type="checkbox"
+              checked={activo}
+              onChange={(e) => setActivo(e.target.checked)}
+              className="w-4 h-4 accent-brand-red"
+            />
             Carta activa (visible en el visor)
           </label>
         </div>
@@ -204,26 +240,28 @@ const router = useRouter();
           {isEditing && (
             <button
               onClick={handleDelete}
-              disabled={deleting || saving}
+              disabled={busy}
               className="w-full md:w-auto px-4 py-3 bg-neutral-950 border border-red-900/50 hover:bg-red-950 text-red-500 font-semibold rounded-lg transition text-sm disabled:opacity-50"
             >
               {deleting ? "Borrando…" : "Eliminar"}
             </button>
           )}
+          {/* Cancelar NO se bloquea por `uploading`: siempre debe poder salirse.
+              Solo se bloquea durante una escritura en curso (guardar/borrar). */}
           <button
             type="button"
             onClick={onClose}
-            disabled={saving || deleting || uploading}
+            disabled={saving || deleting}
             className="w-full md:w-auto px-4 py-3 bg-neutral-950 border border-neutral-700 hover:bg-neutral-800 text-neutral-300 font-semibold rounded-lg transition text-sm disabled:opacity-50"
           >
             Cancelar
           </button>
           <button
             onClick={handleSave}
-            disabled={saving || deleting || uploading}
+            disabled={busy}
             className="w-full flex-1 bg-brand-red hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition text-sm disabled:opacity-50"
           >
-            {saving ? "Guardando…" : (isEditing ? "Actualizar" : "Crear carta")}
+            {saving ? "Guardando…" : isEditing ? "Actualizar" : "Crear carta"}
           </button>
         </div>
       </div>

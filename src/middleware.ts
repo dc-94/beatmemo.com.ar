@@ -27,6 +27,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = url;
 
   const isAdminSubdomain = hostname.startsWith(ADMIN_PREFIX);
+  const QR_PREFIX = process.env.NEXT_PUBLIC_QR_SUBDOMAIN_PREFIX ?? 'qr.';
   const isBlockedPath = BLOCKED_ON_PUBLIC.some((p) => pathname.startsWith(p));
 
   // ── REGLA 1: Devolver 404 real en el dominio público ──────────────────────
@@ -37,6 +38,18 @@ export async function middleware(request: NextRequest) {
     return new NextResponse(null, { status: 404 });
   }
 
+  // ── REGLA 1.5: Subdominio QR → visor de cartas ────────────────────────────
+  // qr.beatmemo.com/            → /menu
+  // qr.beatmemo.com/?tipo=hh    → /menu?tipo=hh
+  // El QR impreso apunta a la raíz del subdominio; el rewrite lo lleva al visor
+  // sin que la URL fea aparezca en la pantalla del cliente.
+  if (hostname.startsWith(QR_PREFIX)) {
+    if (pathname === '/') {
+      url.pathname = '/menu';
+      return NextResponse.rewrite(url);
+    }
+    return NextResponse.next({ request: { headers: request.headers } });
+  }
   // ── REGLA 2: Bypass total del dominio público ──────────────────────────────
   // FIX (optimización): el original creaba un cliente Supabase en cada request
   // de la web pública aunque no fuera necesario. Ahora se cortocircuita acá.

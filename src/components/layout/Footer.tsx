@@ -5,6 +5,8 @@ import { useRef } from "react";
 import Link from "next/link";
 import { motion, useInView, Variants } from "framer-motion";
 import { usePathname } from "next/navigation";
+import { whatsappLink } from "@/lib/config";
+
 
 export default function Footer() {
   const pathname = usePathname();
@@ -97,7 +99,7 @@ export default function Footer() {
                 Reserva
               </h3>
               <a 
-                href="http://wa.me/5493412023737" 
+                href={whatsappLink("Hola! Quiero consultar por los próximos shows.")}
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-brand-gold font-sans text-xl font-bold hover:text-accent-gold-vibrant transition-colors group w-fit"

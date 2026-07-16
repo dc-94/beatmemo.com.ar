@@ -131,7 +131,7 @@ export default function Navbar() {
             </a>
 
             {/* VER CARTA Button */}
-            <Link href="#" className="bg-brand-gold text-brand-black-100 px-6 py-2 rounded-sm font-sans font-bold uppercase tracking-wider hover:bg-accent-gold-vibrant transition-colors ml-4 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+            <Link href="/menu" className="bg-brand-gold text-brand-black-100 px-6 py-2 rounded-sm font-sans font-bold uppercase tracking-wider hover:bg-accent-gold-vibrant transition-colors ml-4 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
               VER CARTA
             </Link>
           </nav>
