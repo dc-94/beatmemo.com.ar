@@ -31,7 +31,7 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
 
   const { register, handleSubmit, setValue, reset, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(pubItemSchema),
-    defaultValues: { disponible: true, precio: null, categoria: "" },
+    defaultValues: { disponible: true, categoria: "" },
   });
 
   useEffect(() => {
@@ -55,38 +55,54 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
   if (!isOpen) return null;
 
   const onSubmit = async (data: any) => {
-    // Cache-busting en la imagen, igual que en EventDrawer.
-    if (data.url_imagen && !data.url_imagen.includes("?t=")) {
-      data.url_imagen = `${data.url_imagen}?t=${Date.now()}`;
-    }
-
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
-        formData.append(key, String(value));
+    try {
+      // Cache-busting en la imagen, igual que en EventDrawer.
+      if (data.url_imagen && !data.url_imagen.includes("?t=")) {
+        data.url_imagen = `${data.url_imagen}?t=${Date.now()}`;
       }
-    });
 
-    const res = await upsertPubItem(formData, isEditing ? itemToEdit.id : undefined);
-    if (res.success) {
-      toast.success(isEditing ? "Item actualizado" : "Item creado");
-      onClose();
-    } else {
-      toast.error(res.error);
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          formData.append(key, String(value));
+        }
+      });
+
+      const res = await upsertPubItem(formData, isEditing ? itemToEdit.id : undefined);
+      if (res.success) {
+        toast.success(isEditing ? "Item actualizado" : "Item creado");
+        onClose();
+      } else {
+        toast.error(res.error);
+      }
+    } catch (e) {
+      // Una action puede RECHAZAR (red caída, 500 del server), no solo
+      // devolver { success: false }. Sin esto, el usuario clickea y no pasa
+      // nada visible: el peor tipo de falla, la silenciosa.
+      console.error("[PubDrawer] upsert falló:", e);
+      toast.error("No se pudo guardar. Revisá tu conexión y probá de nuevo.");
     }
   };
 
   const handleDelete = async () => {
     if (!window.confirm("¿Eliminar este item del menú? Podés recuperarlo desde la base si hace falta.")) return;
     setIsDeleting(true);
-    const res = await deletePubItem(itemToEdit.id);
-    if (res.success) {
-      toast.success("Item eliminado");
-      onClose();
-    } else {
-      toast.error(res.error);
+    try {
+      const res = await deletePubItem(itemToEdit.id);
+      if (res.success) {
+        toast.success("Item eliminado");
+        onClose();
+      } else {
+        toast.error(res.error);
+      }
+    } catch (e) {
+      console.error("[PubDrawer] delete falló:", e);
+      toast.error("No se pudo eliminar. Revisá tu conexión y probá de nuevo.");
+    } finally {
+      // Sin este finally, un throw deja isDeleting en true para siempre
+      // y los dos botones del drawer quedan muertos hasta recargar.
+      setIsDeleting(false);
     }
-    setIsDeleting(false);
   };
 
   return (

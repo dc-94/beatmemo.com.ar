@@ -59,44 +59,61 @@ useEffect(() => {
   if (!isOpen) return null;
 
   const onSubmit = async (data: any) => {
-    // 1. Lógica de URL con Cache-Busting
-    if (data.url_imagen && !data.url_imagen.includes('?t=')) {
-      data.url_imagen = `${data.url_imagen}?t=${new Date().getTime()}`;
-    }
-
-    if (data.es_gratuito) data.precio = null;
-    
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== null && value !== undefined && value !== "") {
-        formData.append(key, String(value));
+    try {
+      // 1. Cache-busting en la imagen
+      if (data.url_imagen && !data.url_imagen.includes('?t=')) {
+        data.url_imagen = `${data.url_imagen}?t=${new Date().getTime()}`;
       }
-    });
 
-    // 2. Aquí llamarías a tu Server Action (puedes crear una unificada que haga upsert)
-    const response = await upsertEvento(formData, isEditing ? eventToEdit.id : undefined);
-    
-    if (response.success) {
-      toast.success(isEditing ? "Evento actualizado" : "Evento creado");
-      onClose();
-    } else {
-      toast.error(response.error);
+      if (data.es_gratuito) data.precio = null;
+
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        // undefined = el campo no existe en el form → se omite.
+        // null o "" = el usuario lo vació A PROPÓSITO → se manda vacío,
+        // para que el server pueda escribir el vaciado en la base.
+        // Descartar "" y null era el bug: el vaciado nunca llegaba.
+        if (value === undefined) return;
+        formData.append(key, value === null ? "" : String(value));
+      });
+
+      const response = await upsertEvento(formData, isEditing ? eventToEdit.id : undefined);
+
+      if (response.success) {
+        toast.success(isEditing ? "Evento actualizado" : "Evento creado");
+        onClose();
+      } else {
+        toast.error(response.error || "No se pudo guardar el evento");
+      }
+    } catch (e) {
+      // Una action puede RECHAZAR (red, 500, timeout), no solo devolver
+      // { success: false }. Sin catch, el click no muestra nada.
+      console.error("[EventDrawer] upsert falló:", e);
+      toast.error("No se pudo guardar. Revisá tu conexión y probá de nuevo.");
     }
   };
   // LÓGICA DE BORRADO
   const handleDelete = async () => {
-    // Confirmación nativa de seguridad
-    if (!window.confirm("⚠️ ¿Estás seguro de que deseas eliminar este evento? Esta acción no se puede deshacer.")) return;
-
+      if (!eventToEdit?.id) return;
+    if (!window.confirm("¿Eliminar este item del menú?")) return;
     setIsDeleting(true);
-    const response = await deleteEvento(eventToEdit.id);
-    setIsDeleting(false);
-
-    if (response.success) {
-      toast.success("Evento eliminado correctamente");
-      onClose();
-    } else {
-      toast.error(response.error || "No se pudo eliminar el evento");
+    try {
+      const response = await deleteEvento(eventToEdit.id);
+      if (response.success) {
+        toast.success("Evento eliminado correctamente");
+        onClose();
+      } else {
+        toast.error(response.error || "No se pudo eliminar el evento");
+      }
+    } catch (e) {
+      // Una action puede RECHAZAR (red, 500, timeout), no solo devolver
+      // { success: false }. Sin catch, el click no muestra nada.
+      console.error("[EventDrawer] delete falló:", e);
+      toast.error("No se pudo eliminar. Revisá tu conexión y probá de nuevo.");
+    } finally {
+      // Sin finally, un throw deja isDeleting en true para siempre y los
+      // botones del drawer quedan muertos hasta recargar la página.
+      setIsDeleting(false);
     }
   };
 

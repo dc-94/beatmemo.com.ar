@@ -1,58 +1,40 @@
 // src/actions/pub.ts
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
-import { pubItemSchema } from "@/lib/validations/pub";
 import { revalidatePath } from "next/cache";
+import { pubItemSchema } from "@/lib/validations/pub";
 import { logAdminAction } from "@/lib/admin-logger";
-import { ADMIN_ROLES } from "@/lib/auth-roles";
+import { guardAction, type ActionResponse } from "@/lib/guard";
 
-export interface ActionResponse {
-  success: boolean;
-  error?: string;
-  fieldErrors?: Record<string, string[]>;
-}
-
+// NOTA: un archivo "use server" SOLO puede exportar funciones async.
+// Nada de `export type`, `export const` ni `export interface`.
+// El tipo ActionResponse se importa acá y vive en lib/guard.ts.
 
 // ============================================================================
 // UPSERT (CREAR O EDITAR ITEM DEL PUB)
 // ============================================================================
 export async function upsertPubItem(formData: FormData, id?: string): Promise<ActionResponse> {
   try {
-    const supabase = await createClient();
+    // 1. SESIÓN + RATE LIMIT + ROL
+    const guard = await guardAction({
+      intent: id ? "UPDATE_PUB" : "CREATE_PUB",
+      table: "pub",
+      targetId: id ?? null,
+    });
+    if (!guard.ok) return guard.response;
+    const { supabase, user } = guard;
 
-    // 1. SEGURIDAD: sesión activa
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: "No autorizado. Sesión inválida." };
-    }
-
-    // 2. SEGURIDAD: rol
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .single();
-
-    if (!roleData || !ADMIN_ROLES.includes(roleData.role)) {
-      await logAdminAction(
-        id ? "UNAUTHORIZED_UPDATE_PUB_ATTEMPT" : "UNAUTHORIZED_CREATE_PUB_ATTEMPT",
-        "pub",
-        user.id,
-        { email: user.email, target_id: id },
-        id ?? null
-      );
-      return { success: false, error: "No tienes permisos para modificar el menú." };
-    }
-
-    // 3. PARSEO SEGURO: los checkboxes llegan como 'true'/'on'/ausente; normalizamos.
-    const rawData = Object.fromEntries(formData.entries()) as Record<string, any>;
-const BOOL_FIELDS = ["es_vegetariano", "es_vegano", "es_sin_tacc", "es_nuevo", "es_recomendado", "destacado_home", "disponible"];
+    // 2. PARSEO SEGURO: los checkboxes llegan como 'true'/'on'/ausente.
+    const rawData = Object.fromEntries(formData.entries()) as Record<string, unknown>;
+    const BOOL_FIELDS = [
+      "es_vegetariano", "es_vegano", "es_sin_tacc",
+      "es_nuevo", "es_recomendado", "destacado_home", "disponible",
+    ];
     for (const field of BOOL_FIELDS) {
       rawData[field] = rawData[field] === "true" || rawData[field] === "on";
     }
 
-    // 4. VALIDACIÓN ZOD
+    // 3. VALIDACIÓN ZOD
     const validated = pubItemSchema.safeParse(rawData);
     if (!validated.success) {
       return {
@@ -62,35 +44,21 @@ const BOOL_FIELDS = ["es_vegetariano", "es_vegano", "es_sin_tacc", "es_nuevo", "
       };
     }
 
-    let dbError;
-    let saved;
+    // 4. INSERT O UPDATE
+    // El ternario devuelve el builder SIN ejecutar (Regla Crítica del thenable).
+    // Se ejecuta recién en el await de abajo.
+    const query = id
+      ? supabase.from("pub").update(validated.data).eq("id", id).select("id, nombre").single()
+      : supabase.from("pub").insert(validated.data).select("id, nombre").single();
 
-    // 5. INSERT O UPDATE
-    if (id) {
-      const { data, error } = await supabase
-        .from("pub")
-        .update(validated.data)
-        .eq("id", id)
-        .select("id, nombre")
-        .single();
-      dbError = error;
-      saved = data;
-    } else {
-      const { data, error } = await supabase
-        .from("pub")
-        .insert(validated.data)
-        .select("id, nombre")
-        .single();
-      dbError = error;
-      saved = data;
-    }
+    const { data: saved, error: dbError } = await query;
 
     if (dbError) {
       console.error("[DB ERROR UPSERT PUB]:", dbError);
       return { success: false, error: "Error interno al guardar en la base de datos." };
     }
 
-    // 6. AUDITORÍA
+    // 5. AUDITORÍA
     await logAdminAction(
       id ? "UPDATE_PUB_ITEM" : "CREATE_PUB_ITEM",
       "pub",
@@ -99,7 +67,7 @@ const BOOL_FIELDS = ["es_vegetariano", "es_vegano", "es_sin_tacc", "es_nuevo", "
       saved?.id ?? null
     );
 
-    // 7. REVALIDACIÓN
+    // 6. REVALIDACIÓN
     revalidatePath("/admin/gastronomia");
     revalidatePath("/pub");
     revalidatePath("/");
@@ -115,31 +83,16 @@ const BOOL_FIELDS = ["es_vegetariano", "es_vegano", "es_sin_tacc", "es_nuevo", "
 // ============================================================================
 export async function deletePubItem(itemId: string): Promise<ActionResponse> {
   try {
-    const supabase = await createClient();
+    // 1. SESIÓN + RATE LIMIT + ROL
+    const guard = await guardAction({
+      intent: "DELETE_PUB",
+      table: "pub",
+      targetId: itemId,
+    });
+    if (!guard.ok) return guard.response;
+    const { supabase, user } = guard;
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: "No autorizado. Sesión inválida." };
-    }
-
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .single();
-
-    if (!roleData || !ADMIN_ROLES.includes(roleData.role)) {
-      await logAdminAction(
-        "UNAUTHORIZED_DELETE_PUB_ATTEMPT",
-        "pub",
-        user.id,
-        { email: user.email },
-        itemId
-      );
-      return { success: false, error: "No tienes permisos para eliminar items del menú." };
-    }
-
-    // Soft delete: preserva el registro y el historial de auditoría.
+    // 2. SOFT DELETE: preserva el registro y el historial de auditoría.
     const { error } = await supabase
       .from("pub")
       .update({ is_deleted: true })
@@ -150,6 +103,7 @@ export async function deletePubItem(itemId: string): Promise<ActionResponse> {
       return { success: false, error: "Error en la base de datos al eliminar el item." };
     }
 
+    // 3. AUDITORÍA
     await logAdminAction(
       "SOFT_DELETE_PUB_ITEM",
       "pub",
@@ -158,6 +112,7 @@ export async function deletePubItem(itemId: string): Promise<ActionResponse> {
       itemId
     );
 
+    // 4. REVALIDACIÓN
     revalidatePath("/admin/gastronomia");
     revalidatePath("/pub");
     revalidatePath("/");

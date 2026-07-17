@@ -1,22 +1,53 @@
 // src/lib/rate-limit.ts
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+// Rate limiting sobre Postgres (Supabase RPC). Sin vendors, sin env vars,
+// sin modos de falla propios: si Supabase está caída, la app ya está caída.
+import "server-only";
+import type { createClient } from "@/lib/supabase/server";
 
-// Configuración del Limitador: 50 peticiones por minuto por usuario/IP
-const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(50, "1 m"),
-  analytics: false,
-});
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
-export async function rateLimit(identifier: string) {
-  try {
-    const { success } = await ratelimit.limit(identifier);
-    if (!success) {
-      throw new Error("Too many requests");
-    }
-  } catch (error) {
-    // Si Redis falla o no hay variables de entorno, dejamos pasar para no romper la app entera
-    console.warn("Ratelimit bypass:", error);
+const PRESETS = {
+  mutation: { tokens: 20, windowSecs: 60 },
+  upload:   { tokens: 8,  windowSecs: 60 },
+} as const;
+
+export type LimitPreset = keyof typeof PRESETS;
+
+export type RateLimitResult =
+  | { ok: true }
+  | { ok: false; reason: "limit_exceeded"; retryAfter: number };
+
+/**
+ * REGLA CRÍTICA: recibe el cliente como parámetro, no lo crea.
+ * El guard ya lo tiene instanciado; crear otro duplicaría el handshake.
+ */
+export async function checkRateLimit(
+  supabase: SupabaseServerClient,
+  identifier: string,
+  preset: LimitPreset = "mutation"
+): Promise<RateLimitResult> {
+  const p = PRESETS[preset];
+
+  const { data, error } = await supabase.rpc("check_rate_limit", {
+    p_key: identifier,
+    p_limit: p.tokens,
+    p_window_secs: p.windowSecs,
+  });
+
+  if (error) {
+    // Fail-open, y FAIL-FAST de verdad: un RPC contra la misma DB
+    // responde o falla en milisegundos. Nada de backoffs de 5 segundos.
+    console.error("[rate-limit] RPC falló. Dejando pasar.", error);
+    return { ok: true };
   }
+
+  // returns table → llega como array de una fila.
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) {
+    console.error("[rate-limit] RPC sin filas. Dejando pasar.");
+    return { ok: true };
+  }
+
+  if (row.allowed) return { ok: true };
+  return { ok: false, reason: "limit_exceeded", retryAfter: row.retry_after ?? 60 };
 }
