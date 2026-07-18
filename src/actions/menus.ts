@@ -1,18 +1,13 @@
 // src/actions/menus.ts
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { logAdminAction } from "@/lib/admin-logger";
 import { z } from "zod";
-import { ADMIN_ROLES } from "@/lib/auth-roles";
+import { guardAction, type ActionResponse } from "@/lib/guard";
 
-export interface ActionResponse {
-  success: boolean;
-  error?: string;
-  fieldErrors?: Record<string, string[]>;
-}
-
+// NOTA: el contrato ActionResponse vive en lib/guard.ts. Acá solo se
+// exportan funciones async ("use server").
 
 // El slug/tipo es la identidad de la carta y el nombre del archivo: inmutable-friendly.
 const menuSchema = z.object({
@@ -23,38 +18,37 @@ const menuSchema = z.object({
   activo: z.boolean().default(true),
 });
 
+// reorderMenus recibe un array JSON directo del cliente (no FormData).
+// Era la ÚNICA action con input sin validar: directiva anti-tampering aplicada.
+const reorderSchema = z
+  .array(
+    z.object({
+      id: z.string().uuid("ID de carta inválido"),
+      orden: z.number().int().min(0).max(999),
+    })
+  )
+  .min(1)
+  .max(50); // techo sano: nadie tiene 50 cartas; corta payloads absurdos
+
 // ============================================================================
 // UPSERT CARTA
 // ============================================================================
 export async function upsertMenu(formData: FormData, id?: string): Promise<ActionResponse> {
   try {
-    const supabase = await createClient();
+    // 1. SESIÓN + RATE LIMIT + ROL
+    const guard = await guardAction({
+      intent: id ? "UPDATE_MENU" : "CREATE_MENU",
+      table: "menus",
+      targetId: id ?? null,
+    });
+    if (!guard.ok) return guard.response;
+    const { supabase, user } = guard;
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: "No autorizado. Sesión inválida." };
-    }
-
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .single();
-
-    if (!roleData || !ADMIN_ROLES.includes(roleData.role)) {
-      await logAdminAction(
-        id ? "UNAUTHORIZED_UPDATE_MENU_ATTEMPT" : "UNAUTHORIZED_CREATE_MENU_ATTEMPT",
-        "menus",
-        user.id,
-        { email: user.email, target_id: id },
-        id ?? null
-      );
-      return { success: false, error: "No tenés permisos para gestionar cartas." };
-    }
-
-    const rawData = Object.fromEntries(formData.entries()) as Record<string, any>;
+    // 2. PARSEO SEGURO
+    const rawData = Object.fromEntries(formData.entries()) as Record<string, unknown>;
     rawData.activo = rawData.activo === "true" || rawData.activo === "on";
 
+    // 3. VALIDACIÓN ZOD
     const validated = menuSchema.safeParse(rawData);
     if (!validated.success) {
       return {
@@ -64,28 +58,15 @@ export async function upsertMenu(formData: FormData, id?: string): Promise<Actio
       };
     }
 
-    let dbError;
-    let saved;
+    // 4. INSERT O UPDATE — el ternario devuelve el builder SIN ejecutar
+    //    (Regla Crítica del thenable); se ejecuta recién en el await.
+    //    En UPDATE, el trigger bump_menu_version incrementa version SOLO
+    //    si cambió url_archivo.
+    const query = id
+      ? supabase.from("menus").update(validated.data).eq("id", id).select("id, nombre").single()
+      : supabase.from("menus").insert(validated.data).select("id, nombre").single();
 
-    if (id) {
-      // El trigger bump_menu_version incrementa version SOLO si cambió url_archivo.
-      const { data, error } = await supabase
-        .from("menus")
-        .update(validated.data)
-        .eq("id", id)
-        .select("id, nombre")
-        .single();
-      dbError = error;
-      saved = data;
-    } else {
-      const { data, error } = await supabase
-        .from("menus")
-        .insert(validated.data)
-        .select("id, nombre")
-        .single();
-      dbError = error;
-      saved = data;
-    }
+    const { data: saved, error: dbError } = await query;
 
     if (dbError) {
       console.error("[DB ERROR UPSERT MENU]:", dbError);
@@ -96,6 +77,7 @@ export async function upsertMenu(formData: FormData, id?: string): Promise<Actio
       return { success: false, error: "Error al guardar la carta." };
     }
 
+    // 5. AUDITORÍA
     await logAdminAction(
       id ? "UPDATE_MENU" : "CREATE_MENU",
       "menus",
@@ -104,6 +86,7 @@ export async function upsertMenu(formData: FormData, id?: string): Promise<Actio
       saved?.id ?? null
     );
 
+    // 6. REVALIDACIÓN
     revalidatePath("/admin/menus");
     revalidatePath("/menu");
     return { success: true };
@@ -114,34 +97,20 @@ export async function upsertMenu(formData: FormData, id?: string): Promise<Actio
 }
 
 // ============================================================================
-// DELETE CARTA (soft delete)
+// DELETE CARTA (soft delete — marca is_deleted, no borra la fila)
 // ============================================================================
 export async function deleteMenu(menuId: string): Promise<ActionResponse> {
   try {
-    const supabase = await createClient();
+    // 1. SESIÓN + RATE LIMIT + ROL
+    const guard = await guardAction({
+      intent: "DELETE_MENU",
+      table: "menus",
+      targetId: menuId,
+    });
+    if (!guard.ok) return guard.response;
+    const { supabase, user } = guard;
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: "No autorizado. Sesión inválida." };
-    }
-
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .single();
-
-    if (!roleData || !ADMIN_ROLES.includes(roleData.role)) {
-      await logAdminAction(
-        "UNAUTHORIZED_DELETE_MENU_ATTEMPT",
-        "menus",
-        user.id,
-        { email: user.email },
-        menuId
-      );
-      return { success: false, error: "No tenés permisos para eliminar cartas." };
-    }
-
+    // 2. SOFT DELETE
     const { error } = await supabase
       .from("menus")
       .update({ is_deleted: true })
@@ -152,6 +121,7 @@ export async function deleteMenu(menuId: string): Promise<ActionResponse> {
       return { success: false, error: "Error al eliminar la carta." };
     }
 
+    // 3. AUDITORÍA
     await logAdminAction(
       "SOFT_DELETE_MENU",
       "menus",
@@ -177,25 +147,25 @@ export async function reorderMenus(
   ordenados: { id: string; orden: number }[]
 ): Promise<ActionResponse> {
   try {
-    const supabase = await createClient();
+    // 1. SESIÓN + RATE LIMIT + ROL
+    //    Antes esta action NO logueaba intentos no autorizados: era la única
+    //    del archivo sin rastro en el trail. El guard lo corrige de fábrica.
+    const guard = await guardAction({
+      intent: "REORDER_MENUS",
+      table: "menus",
+    });
+    if (!guard.ok) return guard.response;
+    const { supabase, user } = guard;
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: "No autorizado. Sesión inválida." };
+    // 2. VALIDACIÓN — el array viene del cliente como JSON crudo.
+    const validated = reorderSchema.safeParse(ordenados);
+    if (!validated.success) {
+      console.warn("[REORDER] payload inválido de", user.id);
+      return { success: false, error: "Datos de orden inválidos." };
     }
 
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .single();
-
-    if (!roleData || !ADMIN_ROLES.includes(roleData.role)) {
-      return { success: false, error: "No tenés permisos para reordenar cartas." };
-    }
-
-    // Actualización por lote. Cada update es chico; con pocas cartas es trivial.
-    for (const item of ordenados) {
+    // 3. Actualización por lote. Cada update es chico; con pocas cartas es trivial.
+    for (const item of validated.data) {
       const { error } = await supabase
         .from("menus")
         .update({ orden: item.orden })
@@ -206,11 +176,12 @@ export async function reorderMenus(
       }
     }
 
+    // 4. AUDITORÍA
     await logAdminAction(
       "REORDER_MENUS",
       "menus",
       user.id,
-      { email: user.email, count: ordenados.length }
+      { email: user.email, count: validated.data.length }
     );
 
     revalidatePath("/admin/menus");

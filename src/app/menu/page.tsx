@@ -6,7 +6,8 @@ import { headers } from "next/headers";
 import { Star, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import PdfViewer from "@/components/menu/PdfViewer";
-import { GOOGLE_REVIEW_URL } from "@/lib/config";
+import { GOOGLE_REVIEW_URL, SITE_URL } from "@/lib/config";
+
 export const metadata: Metadata = {
   title: "Carta Digital",
   description: "Nuestras cartas: cocina, barra, happy hour y whisky collection.",
@@ -34,7 +35,6 @@ export default async function MenuPage({
   const host = headersList.get("host") || "";
   const qrPrefix = process.env.NEXT_PUBLIC_QR_SUBDOMAIN_PREFIX || "qr.";
   const isQr = host.startsWith(qrPrefix);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://beatmemo.com";
 
   const supabase = await createClient();
   const { data } = await supabase
@@ -66,7 +66,7 @@ export default async function MenuPage({
         {/* LOGO MÍNIMO — solo en QR (en web ya está la navbar del sitio) */}
         {isQr && (
           <div className="flex justify-center mb-5">
-            <Link href={siteUrl} aria-label="Beatmemo">
+            <Link href={SITE_URL} aria-label="Beatmemo">
               <Image
                 src="/brand/logo_BLANCO.svg"
                 alt="Beatmemo"
@@ -124,7 +124,7 @@ export default async function MenuPage({
           </a>
           {isQr && (
             <Link
-              href={siteUrl}
+              href={SITE_URL}
               className="flex-1 flex items-center justify-center gap-2 border border-[#A68966] text-[#A68966] px-6 py-3.5 font-bold uppercase tracking-widest text-[11px] hover:bg-[#A68966] hover:text-white transition-colors"
             >
               Ver sitio completo <ArrowRight size={14} />

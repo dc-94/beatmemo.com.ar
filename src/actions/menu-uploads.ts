@@ -1,8 +1,8 @@
 // src/actions/menu-uploads.ts
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
-import { ADMIN_ROLES } from "@/lib/auth-roles";
+import { logAdminAction } from "@/lib/admin-logger";
+import { guardAction } from "@/lib/guard";
 
 const MAX_BYTES = 10 * 1024 * 1024;        // 10 MB hard limit
 const WARN_BYTES = 6 * 1024 * 1024;        // 6 MB → warning de performance móvil
@@ -40,32 +40,28 @@ export async function uploadMenuPdf(
   slug: string
 ): Promise<UploadResult> {
   try {
-    const supabase = await createClient();
-
-    // 1. SEGURIDAD: sesión activa
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { success: false, error: "No autorizado. Sesión inválida." };
+    // 1. SESIÓN + RATE LIMIT (preset upload: 8/min — 10MB por request no
+    //    puede tener el techo de 30/min de las mutaciones) + ROL.
+    //    Antes esta action NO logueaba intentos no autorizados: era la única
+    //    ruta donde un ataque no dejaba rastro en el trail. El guard lo cierra.
+    const guard = await guardAction({
+      intent: "UPLOAD_MENU_PDF",
+      table: "menus",
+      limit: "upload",
+    });
+    if (!guard.ok) {
+      return { success: false, error: guard.response.error };
     }
+    const { supabase, user } = guard;
 
-    // 2. SEGURIDAD: rol (todos menos VISITOR — o sea, SUPERADMIN o CM)
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .single();
-
-    if (!roleData || !ADMIN_ROLES.includes(roleData.role)) {
-      return { success: false, error: "No tenés permisos para subir cartas." };
-    }
-
-    // 3. Archivo presente
-    const file = formData.get("file") as File | null;
-    if (!file) {
+    // 2. Archivo presente — instanceof, no `as`: si llega otra cosa,
+    //    falla acá con mensaje claro, no tres líneas después con uno críptico.
+    const file = formData.get("file");
+    if (!(file instanceof File)) {
       return { success: false, error: "No se encontró ningún archivo." };
     }
 
-    // 4. Tamaño (hard limit)
+    // 3. Tamaño (hard limit) — antes de leer el buffer a memoria.
     if (file.size > MAX_BYTES) {
       return {
         success: false,
@@ -73,21 +69,20 @@ export async function uploadMenuPdf(
       };
     }
 
-    // 5. Magic bytes: ¿es un PDF de verdad?
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    // 4. Magic bytes: ¿es un PDF de verdad?
+    const buffer = Buffer.from(await file.arrayBuffer());
     if (!isRealPdf(buffer)) {
       return { success: false, error: "El archivo no es un PDF válido." };
     }
 
-    // 6. Slug seguro: solo minúsculas, números y guiones (evita path traversal)
+    // 5. Slug seguro: solo minúsculas, números y guiones (evita path traversal)
     const safeSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, "");
     if (!safeSlug) {
       return { success: false, error: "Identificador de carta inválido." };
     }
     const path = `${safeSlug}.pdf`;
 
-    // 7. Subir (upsert: reemplaza el archivo anterior del mismo slug)
+    // 6. Subir (upsert: reemplaza el archivo anterior del mismo slug)
     const { error: uploadError } = await supabase.storage
       .from(BUCKET)
       .upload(path, buffer, {
@@ -100,6 +95,16 @@ export async function uploadMenuPdf(
       console.error("[STORAGE ERROR]:", uploadError);
       return { success: false, error: "Falló la subida del archivo." };
     }
+
+    // 7. AUDITORÍA: un reemplazo de PDF es una mutación de contenido público.
+    //    Antes no quedaba registro de QUIÉN subió QUÉ carta.
+    await logAdminAction(
+      "UPLOAD_MENU_PDF",
+      "menus",
+      user.id,
+      { email: user.email, slug: safeSlug, size_mb: +(file.size / 1024 / 1024).toFixed(2) },
+      null
+    );
 
     // 8. URL pública (bucket público)
     const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
