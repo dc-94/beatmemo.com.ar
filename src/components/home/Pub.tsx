@@ -1,37 +1,33 @@
-// src/components/home/pub.tsx
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+// src/components/home/Pub.tsx
+import { publicClient } from "@/lib/supabase/public";
 import PubUI from "./PubUI";
 
 export default async function Pub() {
-  const cookieStore = await cookies();
-  
-  // Inicializamos el cliente de Supabase (Lectura Pública)
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll() {},
-      },
-    }
-  );
-
-  // 1. Buscamos solo los platos disponibles que estén marcados como destacados para la Home
-  // 2. Limitamos a 3 para no romper el diseño de grilla
-  const { data: featuredItems, error } = await supabase
+  // Lectura pública sin cookies: no fuerza render dinámico del home.
+  const { data, error } = await publicClient
     .from("pub")
-    .select("id, nombre, descripcion, url_imagen, tags")
+    .select(
+      "id, nombre, descripcion, url_imagen, es_vegetariano, es_vegano, es_sin_tacc, es_nuevo, es_recomendado"
+    )
+    .eq("is_deleted", false)      // Regla 4: FALTABA — un item borrado podía salir en el home
     .eq("disponible", true)
-    // .eq("destacado_home", true) // <-- Descomenta esta línea si usaste el boolean en BD, sino traerá 3 random
+    .eq("destacado_home", true)   // el flag del plan, por fin activo
+    .order("orden", { ascending: true }) // sin order, "los 3 que quiera Postgres"
     .limit(3);
 
   if (error) {
-    console.error("Error fetching pub items:", error);
-    // Podrías devolver un UI de "Menú no disponible" aquí si quisieras un fallback
+    // Mismo patrón que shows.ts: log persistente, nunca tumba la respuesta.
+    console.error("[DATA_ERROR][Pub.home]", JSON.stringify(error));
+    try {
+      await publicClient.rpc("log_system_error", {
+        p_message: `[Pub.home] ${error.message}`,
+        p_stack: error.details ?? null,
+        p_dedup_key: `pub:home:${error.code ?? "UNKNOWN"}`,
+      });
+    } catch { /* el logueo nunca rompe el render */ }
   }
 
-  // Le pasamos los datos reales al componente animado
-  return <PubUI items={featuredItems || []} />;
+  // Sin items destacados: PubUI oculta la grilla y muestra solo el bloque
+  // editorial. Estado vacío honesto — nada inventado.
+  return <PubUI items={data ?? []} />;
 }
