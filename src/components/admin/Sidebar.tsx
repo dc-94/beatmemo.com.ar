@@ -13,7 +13,7 @@ const navLinks = [
   { name: "Shows", href: "/admin/shows", icon: Calendar },
   { name: "Menús", href: "/admin/menus", icon: FileText },
   { name: "Gastronomía", href: "/admin/gastronomia", icon: Coffee },
-  { name: "Banners", href: "/admin/banners", icon: Megaphone },
+  { name: "Promociones", href: "/admin/promociones", icon: Megaphone },
   { name: "Auditoría", href: "/admin/logs", icon: ShieldAlert }, // Nuevo ítem
 ];
 

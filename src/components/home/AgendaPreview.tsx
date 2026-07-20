@@ -13,7 +13,7 @@ export default function AgendaPreview({ shows }: { shows: any[] }) {
   if (!shows || shows.length === 0) return null;
 
   return (
-    <section className="bg-brand-black-100 py-16 lg:py-24 overflow-hidden w-full">
+    <section className="bg-brand-black-100 py-16 lg:py-4 overflow-hidden w-full">
       <div className="max-w-7xl mx-auto px-4 mb-8 pl-10 lg:mb-12 flex flex-col items-center lg:items-start">
         <span className="flex items-center gap-2 font-sans font-bold text-brand-red-200 tracking-widest text-md uppercase mb-2">
           <span className="w-2 h-2 rounded-2px bg-brand-red-100 animate-pulse" />

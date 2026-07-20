@@ -7,6 +7,7 @@ import { motion, useInView, Variants } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { whatsappLink,GOOGLE_REVIEW_URL } from "@/lib/config";
 import { Star } from "lucide-react";
+import SellosAccesibilidad from "@/components/shared/SellosAccesibilidad";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -81,16 +82,19 @@ export default function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
             
             {/* Columna 1: Visitanos */}
-            <div className="flex flex-col">
-              <h3 className="text-brand-white-100 font-sans font-bold tracking-widest uppercase mb-4 text-sm">
-                Visitanos
-              </h3>
-              <p className="text-brand-white-200 font-sans text-sm mb-1">
-                Bv. OROÑO 107 bis (Esq. GÜEMES)
-              </p>
-              <p className="text-brand-white-200 font-sans text-sm">
-                Rosario, Santa Fe, Argentina
-              </p>
+            <div className="flex flex-col gap-8">
+              <div>
+                <h3 className="text-brand-white-100 font-sans font-bold tracking-widest uppercase mb-4 text-sm">
+                  Visitanos
+                </h3>
+                <p className="text-brand-white-200 font-sans text-sm mb-1">
+                  Bv. OROÑO 107 bis (Esq. GÜEMES)
+                </p>
+                <p className="text-brand-white-200 font-sans text-sm">
+                  Rosario, Santa Fe, Argentina
+                </p>
+              </div>
+
             </div>
 
             {/* Columna 2: Reserva */}
@@ -161,6 +165,9 @@ export default function Footer() {
             </div>
 
           </div>
+          <div className="pt-8">
+              <SellosAccesibilidad  variant="strip" />
+            </div>
 
           {/* Fila Inferior: Links Legales y Empleo */}
           <div className="flex flex-wrap gap-4 mt-16 text-brand-white-300 text-xs font-sans items-center md:justify-end">

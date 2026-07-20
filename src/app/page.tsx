@@ -3,7 +3,8 @@ import { Suspense } from "react";
 import HeroSection from "@/components/home/HeroSection";
 import AgendaWrapper from "@/components/home/AgendaWrapper";
 import BrandSpinner from "@/components/ui/BrandSpinner";
-import Banner from "@/components/home/Banner";
+import PromoSection from "@/components/home/PromoSection";
+import SellosAccesibilidad from "@/components/shared/SellosAccesibilidad";
 import Pub from "@/components/home/Pub";
 import MuseumPreview from "@/components/home/MuseumPreview";
 import { CONTACT, SITE_URL } from "@/lib/config";
@@ -68,7 +69,10 @@ export default async function HomePage() {
       />
 
       <HeroSection />
-      <Banner />
+      <SellosAccesibilidad variant="strip" />
+      <Suspense fallback={<BrandSpinner />}>
+        <PromoSection />
+      </Suspense>
       <Suspense fallback={<BrandSpinner />}>
         <AgendaWrapper />
       </Suspense>

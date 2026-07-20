@@ -54,18 +54,19 @@ if (!isAuthorized) {
   redirect("/admin/login?error=unauthorized");
 }
   return (
-<div className="flex h-screen w-full overflow-hidden bg-neutral-950">
-        <Toaster position="top-right" theme="dark" richColors />
-      <div className="flex h-screen overflow-hidden">
-       <aside className="w-64 border-r border-white/10 hidden md:flex flex-col flex-shrink-0">
+    <div className="flex h-screen w-full overflow-hidden bg-neutral-950">
+      <Toaster position="top-right" theme="dark" richColors />
+
+      <aside className="w-64 border-r border-white/10 hidden md:flex flex-col flex-shrink-0">
         <Sidebar />
       </aside>
-        <main className="flex-1 h-full overflow-y-auto bg-neutral-950 relative">
+
+      <main className="flex-1 h-full overflow-y-auto bg-neutral-950 relative">
         <div className="p-8 w-full max-w-7xl mx-auto">
           {children}
         </div>
       </main>
-      </div>
+
       <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/10 bg-black/90 backdrop-blur-md z-50">
         <BottomNav />
       </nav>

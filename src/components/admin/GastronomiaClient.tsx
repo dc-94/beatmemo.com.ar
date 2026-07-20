@@ -20,6 +20,7 @@ interface PubItem {
   es_nuevo: boolean;
   es_recomendado: boolean;
   destacado_home: boolean;
+  hero_destacado: boolean;
   disponible: boolean;
   orden: number;
 }
@@ -79,6 +80,9 @@ export default function GastronomiaClient({ items, categorias }: Props) {
                       <Star size={10} /> Home
                     </span>
                   )}
+                  {item.hero_destacado && <span className="bg-green-500/90 text-black text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                      DEST...
+                    </span>}
                   {!item.disponible && (
                     <span className="bg-neutral-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                       <EyeOff size={10} /> Oculto

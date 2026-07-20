@@ -100,12 +100,12 @@ export default function PubUI({ items }: { items: PubItem[] }) {
               coctelería clásica.
             </p>
             <blockquote className="border-l-2 border-accent-gold-vibrant px-6 mt-4 max-w-lg">
-              <p className="font-sans text-accent-gold-dark text-md lg:text-lg italic leading-relaxed mb-2">
+              <p className="font-sans text-accent-gold-dark text-sm lg:text-md italic leading-relaxed mb-2">
                 En gastronomía se descarta cerca de 2,5&nbsp;kg de comida por local
                 cada día, y casi un tercio son sobras que quedan en el plato.
               </p>
-              <p className="font-sans text-gray-500 text-sm lg:text-base font-medium leading-relaxed">
-                Por eso cocinamos en cantidad justa: menos desperdicio, más frescura.
+              <p className="font-sans text-gray-500 text-sm lg:text-lg font-medium leading-relaxed">
+                Cocinamos en cantidad justa: menos desperdicio, más frescura.
                 Y si algo te sobra, pedilo para llevar — que no quede nada en el camino.
               </p>
             </blockquote>
@@ -278,7 +278,7 @@ function BentoVertical({ item }: { item: PubItem }) {
           {item.descripcion}
         </p>
       )}
-      <AtributoBadges item={item} />
+      <AtributoBadges item={item} compact max={4} />
     </div>
   );
 }

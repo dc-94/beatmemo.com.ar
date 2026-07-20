@@ -32,6 +32,9 @@ export const pubItemSchema = z.object({
       if (!val) return [];
       const arr = Array.isArray(val) ? val : val.split(",");
       return arr.map((t) => t.trim()).filter((t) => t.length > 0);
+    })
+    .refine((arr) => arr.length <= 3, {
+      message: "Máximo 3 tags. Quitá alguno.",
     }),
 });
 

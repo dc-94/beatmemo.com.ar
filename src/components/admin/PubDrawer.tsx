@@ -29,11 +29,14 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
   const isEditing = !!itemToEdit;
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const { register, handleSubmit, setValue, reset, formState: { errors, isSubmitting } } = useForm({
+    const { register, handleSubmit, setValue, reset, watch, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(pubItemSchema),
     defaultValues: { disponible: true, categoria: "" },
   });
-
+const tagsRaw = watch("tags");
+  const tagCount = typeof tagsRaw === "string"
+    ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean).length
+    : Array.isArray(tagsRaw) ? tagsRaw.length : 0;
   useEffect(() => {
     if (itemToEdit) {
       reset({
@@ -155,10 +158,18 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
 
             {/* TAGS */}
             <div>
-              <label className="block text-sm text-neutral-400 mb-1">Tags (separados por coma)</label>
+              <label className="block text-sm text-neutral-400 mb-1">
+                Tags de marketing <span className="text-neutral-600">(máx. 3, separados por coma)</span>
+              </label>
               <input {...register("tags")} placeholder="Happy Hour, Refrescante"
                 className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded text-white focus:border-brand-red outline-none" />
-              <p className="text-neutral-600 text-xs mt-1">Etiquetas de marketing. Los atributos dietéticos van abajo.</p>
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-neutral-600 text-xs">Se muestran en la carta pública.</p>
+                <span className={`text-xs font-medium ${tagCount > 3 ? "text-red-500" : "text-neutral-500"}`}>
+                  {tagCount}/3
+                </span>
+              </div>
+              {errors.tags && <p className="text-red-500 text-xs mt-1">{errors.tags.message as string}</p>}
             </div>
 
             {/* ATRIBUTOS (checkboxes) */}

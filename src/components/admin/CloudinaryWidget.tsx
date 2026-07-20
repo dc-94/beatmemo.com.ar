@@ -5,9 +5,10 @@ import { CldUploadWidget } from 'next-cloudinary';
 
 interface Props {
   onSuccess: (url: string) => void;
+  label?: string;
 }
 
-export default function CloudinaryWidget({ onSuccess }: Props) {
+export default function CloudinaryWidget({ onSuccess, label }: Props) {
   return (
     <CldUploadWidget 
       uploadPreset="beatmemo_preset" // El que creaste en Cloudinary
@@ -27,7 +28,7 @@ export default function CloudinaryWidget({ onSuccess }: Props) {
           onClick={() => open()}
           className="bg-neutral-800 border border-neutral-700 p-4 rounded-lg text-sm text-white hover:bg-neutral-700 transition"
         >
-          Subir imagen destacada
+          {label || "Subir imagen"}
         </button>
       )}
     </CldUploadWidget>
