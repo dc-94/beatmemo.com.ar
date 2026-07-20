@@ -7,13 +7,13 @@ export default async function Pub() {
   const { data, error } = await publicClient
     .from("pub")
     .select(
-      "id, nombre, descripcion, url_imagen, es_vegetariano, es_vegano, es_sin_tacc, es_nuevo, es_recomendado"
+      "id, nombre, categoria, descripcion, url_imagen, es_vegetariano, es_vegano, es_sin_tacc, es_nuevo, es_recomendado, hero_destacado"
     )
-    .eq("is_deleted", false)      // Regla 4: FALTABA — un item borrado podía salir en el home
+    .eq("is_deleted", false)      
     .eq("disponible", true)
-    .eq("destacado_home", true)   // el flag del plan, por fin activo
-    .order("orden", { ascending: true }) // sin order, "los 3 que quiera Postgres"
-    .limit(3);
+    .eq("destacado_home", true)   
+    .order("orden", { ascending: true }) 
+    .limit(7);
 
   if (error) {
     // Mismo patrón que shows.ts: log persistente, nunca tumba la respuesta.

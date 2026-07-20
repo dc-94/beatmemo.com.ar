@@ -47,7 +47,7 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
         nombre: "", categoria: "", descripcion: "", url_imagen: "",
         es_vegetariano: false, es_vegano: false, es_sin_tacc: false,
         es_nuevo: false, es_recomendado: false,
-        destacado_home: false, disponible: true, orden: 0, tags: "",
+        destacado_home: false, hero_destacado: false, disponible: true, orden: 0, tags: "",
       });
     }
   }, [itemToEdit, reset]);
@@ -180,6 +180,10 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
               <label className="flex items-center gap-2 cursor-pointer text-white text-sm">
                 <input type="checkbox" {...register("destacado_home")} className="w-4 h-4 accent-brand-red" />
                 Mostrar en el home
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer text-white text-sm">
+                <input type="checkbox" {...register("hero_destacado")} className="w-4 h-4 accent-amber-500" />
+                Destacar como pieza principal (home)
               </label>
               <label className="flex items-center gap-2 cursor-pointer text-white text-sm">
                 <input type="checkbox" {...register("disponible")} className="w-4 h-4 accent-brand-red" />

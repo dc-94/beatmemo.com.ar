@@ -19,6 +19,7 @@ export const pubItemSchema = z.object({
   
   // Control de visibilidad y orden
   destacado_home: z.boolean().default(false),
+  hero_destacado: z.boolean().default(false),  
   disponible: z.boolean().default(true),
   orden: z.coerce.number().int().default(0),
 

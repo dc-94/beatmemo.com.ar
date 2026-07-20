@@ -28,7 +28,7 @@ export async function upsertPubItem(formData: FormData, id?: string): Promise<Ac
     const rawData = Object.fromEntries(formData.entries()) as Record<string, unknown>;
     const BOOL_FIELDS = [
       "es_vegetariano", "es_vegano", "es_sin_tacc",
-      "es_nuevo", "es_recomendado", "destacado_home", "disponible",
+      "es_nuevo", "es_recomendado", "hero_destacado", "destacado_home", "disponible",
     ];
     for (const field of BOOL_FIELDS) {
       rawData[field] = rawData[field] === "true" || rawData[field] === "on";
