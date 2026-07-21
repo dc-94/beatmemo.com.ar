@@ -35,6 +35,7 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
   const imagenUrl = watch("imagen_url");
 
   useEffect(() => {
+
     if (promoToEdit) {
       const diasArr: number[] = Array.isArray(promoToEdit.dias_semana) ? promoToEdit.dias_semana : [];
       setDias(diasArr);
@@ -44,6 +45,7 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
         entidad: promoToEdit.entidad ?? "",
         logo_url: promoToEdit.logo_url ?? "",
         imagen_url: promoToEdit.imagen_url ?? "",
+        alt_texto: promoToEdit.alt_texto ?? "",
         fecha_desde: promoToEdit.fecha_desde ?? "",
         fecha_hasta: promoToEdit.fecha_hasta ?? "",
         dias_semana: diasArr.join(","),
@@ -112,7 +114,7 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-6">
-          <form id="promo-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <form id="promo-form" onSubmit={handleSubmit(onSubmit, (errs) => console.log("VALIDATION FAIL:", errs))}>
             {/* TIPO */}
             <div>
               <label className="block text-sm text-neutral-400 mb-1">Tipo de promoción *</label>
@@ -149,13 +151,22 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
                 className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded text-white focus:border-brand-red outline-none" />
             </div>
 
-            {/* LOGO (barra) */}
+            {/* LOGO — para bancos: card se genera con el logo sobre color */}
             <div>
-              {/* LOGO */}
-            <CloudinaryWidget label="Subir logo (240×80)" onSuccess={(url) => setValue("logo_url", url, { shouldValidate: true })} />
+              <label className="block text-sm text-neutral-400 mb-1">
+                Logo del banco/entidad <span className="text-neutral-600">(se recomienda PNG transparente)</span>
+              </label>
+              <CloudinaryWidget onSuccess={(url) => setValue("logo_url", url, { shouldValidate: true })} />
+              {logoUrl && <p className="text-green-500 text-xs mt-1">✓ Logo cargado</p>}
+            </div>
 
-                {/* si agregás el de imagen de card: */}
-            <CloudinaryWidget label="Subir imagen de card (1200×630)" onSuccess={(url) => setValue("imagen_url", url, { shouldValidate: true })} /> 
+            {/* IMAGEN — para especiales: si la cargás, la card usa esta foto EN VEZ del logo */}
+            <div>
+              <label className="block text-sm text-neutral-400 mb-1">
+                Imagen de fondo <span className="text-neutral-600">(opcional · si la subís, reemplaza el estilo con logo)</span>
+              </label>
+              <CloudinaryWidget onSuccess={(url) => setValue("imagen_url", url, { shouldValidate: true })} />
+              {imagenUrl && <p className="text-green-500 text-xs mt-1">✓ Imagen cargada</p>}
             </div>
 
             {/* DÍAS DE LA SEMANA */}

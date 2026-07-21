@@ -7,22 +7,20 @@
 "use client";
 
 import Image from "next/image";
-import { Landmark, Clock, Tag, Sparkles } from "lucide-react";
+import { Landmark, Clock, Tag, Sparkles, CalendarClock } from "lucide-react";
 import { getOptimizedImageUrl } from "@/lib/utils";
-import { resolvePromoAlt, promoTieneImagen, type PromoData } from "@/lib/promo-helpers";
+import { resolvePromoAlt, promoTieneImagen, resolveVencimiento, type PromoData } from "@/lib/promo-helpers";
 
 const DIAS_LABEL: Record<number, string> = {
   1: "Lun", 2: "Mar", 3: "Mié", 4: "Jue", 5: "Vie", 6: "Sáb", 7: "Dom",
 };
 
-// Ícono por tipo, para la rama CSS sin logo.
 function iconoPorTipo(tipo: string) {
   if (tipo === "banco") return Landmark;
   if (tipo === "fecha_especial") return Sparkles;
   return Tag; // local
 }
 
-// Texto de días legible: {2}→"Martes", {1,2,3,4,5}→"Lun a Vie", null→"Todos los días"
 function textoDias(dias: number[] | null): string {
   if (!dias || dias.length === 0) return "Todos los días";
   if (dias.length === 1) {
@@ -32,24 +30,45 @@ function textoDias(dias: number[] | null): string {
     return full[dias[0]] ?? "";
   }
   const sorted = [...dias].sort((a, b) => a - b);
-  // rango contiguo → "Lun a Vie"; si no, lista → "Mar, Jue, Sáb"
   const contiguo = sorted.every((n, i) => i === 0 || n === sorted[i - 1] + 1);
   if (contiguo) return `${DIAS_LABEL[sorted[0]]} a ${DIAS_LABEL[sorted[sorted.length - 1]]}`;
   return sorted.map((n) => DIAS_LABEL[n]).join(", ");
 }
 
+// Logo del banco/entidad. Se recomienda PNG transparente (la leyenda está en
+// el drawer). object-contain para no recortar.
+function LogoBanco({ url, alt }: { url: string; alt: string }) {
+  return (
+    <div className="relative h-10 w-28">
+      <Image src={url} alt={alt} fill className="object-contain object-left" sizes="112px" />
+    </div>
+  );
+}
+
+// Chip de vencimiento. Solo se renderiza si resolveVencimiento devolvió texto
+// (promo que vence en ≤30 días). Formato "Hasta el 14/2".
+function ChipVencimiento({ texto, sobreImagen }: { texto: string; sobreImagen: boolean }) {
+  return (
+    <span className={`inline-flex items-center gap-1 text-[11px] font-bold ${
+      sobreImagen ? "text-accent-gold-light" : "text-accent-gold-vibrant"
+    }`}>
+      <CalendarClock size={12} /> {texto}
+    </span>
+  );
+}
+
 interface Props {
   promo: PromoData & { id?: string };
-  /** preview en admin: desactiva el link y ajusta cursor */
+  /** preview en admin: idéntico al home (el admin agrega su overlay afuera) */
   preview?: boolean;
 }
 
 export default function PromoCard({ promo, preview = false }: Props) {
   const conImagen = promoTieneImagen(promo);
   const dias = textoDias(promo.dias_semana);
+  const vencimiento = resolveVencimiento(promo);
   const Icon = iconoPorTipo(promo.tipo);
 
-  // Contenido interno compartido por ambas ramas para el link/no-link wrapper.
   const inner = conImagen ? (
     // ── RAMA IMAGEN ──────────────────────────────────────────────
     <article
@@ -79,10 +98,14 @@ export default function PromoCard({ promo, preview = false }: Props) {
             {promo.descripcion}
           </p>
         )}
-        <span className="inline-flex items-center gap-1 text-white/70 text-[11px] font-medium">
-          <Clock size={12} /> {dias}
-        </span>
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="inline-flex items-center gap-1 text-white/70 text-[11px] font-medium">
+            <Clock size={12} /> {dias}
+          </span>
+          {vencimiento && <ChipVencimiento texto={vencimiento} sobreImagen />}
+        </div>
       </div>
+      {promo.fecha_hasta && <meta itemProp="priceValidUntil" content={promo.fecha_hasta} />}
       <meta itemProp="availability" content="https://schema.org/InStock" />
       <meta itemProp="seller" content="Beatmemo" />
     </article>
@@ -95,19 +118,9 @@ export default function PromoCard({ promo, preview = false }: Props) {
                  bg-brand-black-200 border border-white/10 flex flex-col justify-between p-5
                  transition-colors hover:border-accent-gold-vibrant/40"
     >
-      {/* Franja/acento superior por tipo */}
       <div className="flex items-center justify-between">
         {promo.logo_url ? (
-          // Logo del banco (240×80 transparente). object-contain, sin recorte.
-          <div className="relative h-10 w-28">
-            <Image
-              src={promo.logo_url}
-              alt={resolvePromoAlt(promo)}
-              fill
-              className="object-contain object-left"
-              sizes="112px"
-            />
-          </div>
+          <LogoBanco url={promo.logo_url} alt={resolvePromoAlt(promo)} />
         ) : (
           <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/5 text-accent-gold-vibrant">
             <Icon size={18} />
@@ -129,14 +142,17 @@ export default function PromoCard({ promo, preview = false }: Props) {
             {promo.descripcion}
           </p>
         )}
-        <span className="inline-flex items-center gap-1 text-white/50 text-[11px] font-medium">
-          <Clock size={12} /> {dias}
-        </span>
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="inline-flex items-center gap-1 text-white/50 text-[11px] font-medium">
+            <Clock size={12} /> {dias}
+          </span>
+          {vencimiento && <ChipVencimiento texto={vencimiento} sobreImagen={false} />}
+        </div>
       </div>
+      {promo.fecha_hasta && <meta itemProp="priceValidUntil" content={promo.fecha_hasta} />}
       <meta itemProp="availability" content="https://schema.org/InStock" />
     </article>
   );
 
-  
   return <div className="w-full h-full">{inner}</div>;
 }

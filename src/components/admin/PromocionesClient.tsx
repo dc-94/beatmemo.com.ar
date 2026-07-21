@@ -2,29 +2,15 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import { Plus, EyeOff, Calendar, Landmark, Tag } from "lucide-react";
+import { Plus } from "lucide-react";
 import PromoDrawer from "./PromoDrawer";
+import PromoCard from "@/components/home/PromoCard";
+import { isPromoVigente, type PromoData } from "@/lib/promo-helpers";
 
-interface Promo {
+interface Promo extends PromoData {
   id: string;
-  tipo: string;
-  titulo: string;
-  descripcion: string | null;
-  entidad: string | null;
-  logo_url: string | null;
-  dias_semana: number[] | null;
-  fecha_desde: string | null;
-  fecha_hasta: string | null;
-  activo: boolean;
   prioridad: number;
 }
-
-const TIPO_META: Record<string, { label: string; Icon: any }> = {
-  banco: { label: "Banco", Icon: Landmark },
-  fecha_especial: { label: "Fecha", Icon: Calendar },
-  local: { label: "Local", Icon: Tag },
-};
 
 export default function PromocionesClient({ promos }: { promos: Promo[] }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -38,7 +24,7 @@ export default function PromocionesClient({ promos }: { promos: Promo[] }) {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Promociones</h1>
-          <p className="text-neutral-400 text-sm">{promos.length} promos · se muestran en la barra del home</p>
+          <p className="text-neutral-400 text-sm">{promos.length} promos · así se ven en el home</p>
         </div>
         <button onClick={openNew}
           className="flex items-center gap-2 bg-brand-red hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-lg transition text-sm">
@@ -51,35 +37,39 @@ export default function PromocionesClient({ promos }: { promos: Promo[] }) {
           No hay promociones cargadas. Creá la primera con “Nueva promo”.
         </div>
       ) : (
-        <div className="space-y-2">
+        // 3 columnas en desktop: el ancho menor hace la card más chica y
+        // fiel al tamaño del home. gap-6 separa para que no se pisen.
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {promos.map((p) => {
-            const meta = TIPO_META[p.tipo] ?? TIPO_META.local;
-            const Icon = meta.Icon;
+            const vigente = isPromoVigente(p);
+            const estado = !p.activo
+              ? { txt: "Inactiva", color: "text-neutral-500", dot: "bg-neutral-500" }
+              : vigente
+              ? { txt: "Vigente hoy", color: "text-green-500", dot: "bg-green-500" }
+              : { txt: "Programada", color: "text-amber-500", dot: "bg-amber-500" };
+
             return (
-              <button key={p.id} onClick={() => openEdit(p)}
-                className="w-full text-left flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition">
-                <div className="w-16 h-10 shrink-0 bg-neutral-950 rounded flex items-center justify-center overflow-hidden">
-                  {p.logo_url ? (
-                    <Image src={p.logo_url} alt={p.entidad ?? p.titulo} width={60} height={36} className="object-contain" />
-                  ) : (
-                    <Icon size={18} className="text-neutral-600" />
-                  )}
+              <button
+                key={p.id}
+                onClick={() => openEdit(p)}
+                className="group text-left relative focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red rounded-sm"
+              >
+                {/* La MISMA PromoCard del home. aspect-[16/10] la mantiene fiel. */}
+                <div className="mb-1">
+                <PromoCard promo={p} preview />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-white truncate">
-                      {p.entidad ? `${p.entidad} — ` : ""}{p.titulo}
-                    </h3>
-                    {!p.activo && (
-                      <span className="bg-neutral-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
-                        <EyeOff size={10} /> Inactiva
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-neutral-500 text-xs mt-0.5 flex items-center gap-1">
-                    <Icon size={11} /> {meta.label} · prioridad {p.prioridad}
-                    {p.dias_semana?.length ? ` · ${p.dias_semana.length} día(s)` : ""}
-                  </p>
+
+                {/* Metadata admin: afuera de la card, no la altera. */}
+                <div className="m-2 flex items-center justify-between px-1">
+                  <span className={`text-[11px] font-medium flex items-center gap-1.5 ${estado.color}`}>
+                    <span className={`w-1.5 h-1 rounded-full ${estado.dot}`} />
+                    {estado.txt}
+                  </span>
+                  <span className="text-neutral-600 text-[11px]">Prioridad {p.prioridad}</span>
+                </div>
+
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded">
+                  Editar
                 </div>
               </button>
             );

@@ -85,3 +85,28 @@ export function isPromoVigente(promo: PromoData, now: Date = new Date()): boolea
 export function promoTieneImagen(promo: { imagen_url?: string | null }): boolean {
   return Boolean(promo.imagen_url?.trim());
 }
+/**
+ * Texto de vencimiento para la card. Solo devuelve algo si la promo vence
+ * dentro de los próximos 30 días (urgencia real). Sin fecha_hasta o vencimiento
+ * más lejano → null → la card no muestra nada. Formato: "Hasta el 14/2".
+ */
+export function resolveVencimiento(
+  promo: { fecha_hasta: string | null },
+  now: Date = new Date()
+): string | null {
+  if (!promo.fecha_hasta) return null;
+
+  const hoyAr = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(now);
+
+  const hasta = new Date(promo.fecha_hasta + "T00:00:00");
+  const hoy = new Date(hoyAr + "T00:00:00");
+  const diffDias = Math.ceil((hasta.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDias < 0 || diffDias > 30) return null;
+
+  const [, mes, dia] = promo.fecha_hasta.split("-");
+  return `Hasta el ${parseInt(dia, 10)}/${parseInt(mes, 10)}`;
+}

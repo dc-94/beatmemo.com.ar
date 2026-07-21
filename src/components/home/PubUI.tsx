@@ -135,7 +135,7 @@ export default function PubUI({ items }: { items: PubItem[] }) {
 
             {/* ZONA INFERIOR: hasta 4 verticales, space-between si hay menos */}
             {rest.length > 2 && (
-              <div className="flex flex-wrap justify-between gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                 {rest.slice(2, 6).map((item) => (
                   <BentoVertical key={item.id} item={item} />
                 ))}
@@ -259,7 +259,7 @@ function BentoHorizontal({ item }: { item: PubItem }) {
 // VERTICAL: título dentro de la imagen, descripción y badges debajo. Para los 4 de abajo.
 function BentoVertical({ item }: { item: PubItem }) {
   return (
-    <div className="group flex flex-col flex-1 min-w-[240px] max-w-[300px]">
+    <div className="group flex flex-col ">
       <div className="relative w-full aspect-[4/3] overflow-hidden rounded-sm bg-gray-200 mb-3">
         <TipoIcon categoria={item.categoria} />
         <Image
