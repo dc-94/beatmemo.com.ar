@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import PromoDrawer from "./PromoDrawer";
 import PromoCard from "@/components/home/PromoCard";
-import { isPromoVigente, type PromoData } from "@/lib/promo-helpers";
+import { estadoPromo, type PromoData } from "@/lib/promo-helpers";
 
 interface Promo extends PromoData {
   id: string;
@@ -41,29 +41,28 @@ export default function PromocionesClient({ promos }: { promos: Promo[] }) {
         // fiel al tamaño del home. gap-6 separa para que no se pisen.
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {promos.map((p) => {
-            const vigente = isPromoVigente(p);
-            const estado = !p.activo
-              ? { txt: "Inactiva", color: "text-neutral-500", dot: "bg-neutral-500" }
-              : vigente
-              ? { txt: "Vigente hoy", color: "text-green-500", dot: "bg-green-500" }
-              : { txt: "Programada", color: "text-amber-500", dot: "bg-amber-500" };
+            const est = estadoPromo(p);
+            const META = {
+              vigente:    { txt: "Vigente hoy", color: "text-green-500",   dot: "bg-green-500" },
+              programada: { txt: "Programada",  color: "text-amber-500",   dot: "bg-amber-500" },
+              vencida:    { txt: "Vencida",     color: "text-red-500",     dot: "bg-red-500" },
+              inactiva:   { txt: "Inactiva",    color: "text-neutral-500", dot: "bg-neutral-500" },
+            }[est];
 
             return (
               <button
                 key={p.id}
                 onClick={() => openEdit(p)}
-                className="group text-left relative focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red rounded-sm"
+                className="group text-left relative focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red rounded-sm p-1"
               >
                 {/* La MISMA PromoCard del home. aspect-[16/10] la mantiene fiel. */}
-                <div className="mb-1">
                 <PromoCard promo={p} preview />
-                </div>
 
                 {/* Metadata admin: afuera de la card, no la altera. */}
-                <div className="m-2 flex items-center justify-between px-1">
-                  <span className={`text-[11px] font-medium flex items-center gap-1.5 ${estado.color}`}>
-                    <span className={`w-1.5 h-1 rounded-full ${estado.dot}`} />
-                    {estado.txt}
+                <div className="mt-3 flex items-center justify-between px-1">
+                  <span className={`text-[11px] font-medium flex items-center gap-1.5 ${META.color}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${META.dot}`} />
+                    {META.txt}
                   </span>
                   <span className="text-neutral-600 text-[11px]">Prioridad {p.prioridad}</span>
                 </div>

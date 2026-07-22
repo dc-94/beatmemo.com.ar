@@ -24,7 +24,10 @@ export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit }: Dr
     const [isDeleting, setIsDeleting] = useState(false);
   const { register, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(eventSchema),
-    defaultValues: eventToEdit || { es_gratuito: false, precio: null, tipo: "SHOW" }
+    // Solo constantes seguras. El dato real entra por el useEffect de abajo,
+    // que es la ÚNICA fuente de llenado. defaultValues con eventToEdit metía
+    // los null de la DB antes del reset → doble trabajo y posible flash.
+    defaultValues: { es_gratuito: false, precio: null, tipo: "Show", ciclo_id: "" },
   });
 
   // Si cambia el evento a editar, reseteamos el formulario
@@ -95,7 +98,7 @@ useEffect(() => {
   // LÓGICA DE BORRADO
   const handleDelete = async () => {
       if (!eventToEdit?.id) return;
-    if (!window.confirm("¿Eliminar este item del menú?")) return;
+    if (!window.confirm("¿Eliminar este Evento?")) return;
     setIsDeleting(true);
     try {
       const response = await deleteEvento(eventToEdit.id);

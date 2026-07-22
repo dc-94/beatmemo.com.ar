@@ -163,8 +163,9 @@ export default function MenusClient({ menus: initialMenus }: Props) {
       )}
 
       <MenuDrawer
+        key={editing?.id ?? "new"}
         isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        onClose={() => { setIsOpen(false); setEditing(undefined); }}
         menuToEdit={editing}
       />
     </div>

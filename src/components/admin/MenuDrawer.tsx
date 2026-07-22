@@ -1,4 +1,10 @@
 // src/components/admin/MenuDrawer.tsx
+// NOTA DE ARQUITECTURA: este drawer usa useState manual, NO react-hook-form
+// como los otros drawers (Pub/Event/Promo). Es a propósito: además de los 3
+// campos (nombre/tipo/activo), maneja un flujo de subida de PDF con estado
+// propio (uploading/warning/progress) que no encaja natural en RHF. Si vas a
+// tocarlo, seguí el patrón useState existente; no lo migres a RHF sin una
+// razón fuerte — funciona y está probado.
 "use client";
 
 import { useState, useEffect } from "react";

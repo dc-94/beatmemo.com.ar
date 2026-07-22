@@ -19,40 +19,41 @@ export default async function PromoSection() {
         p_stack: error.details ?? null,
         p_dedup_key: `promos:home:${error.code ?? "UNKNOWN"}`,
       });
-    } catch { /* el logueo nunca rompe el render */ }
+    } catch {}
     return null;
   }
 
-  // Filtro de vigencia (fecha + día) en el server, con la lógica compartida.
-  // La query ya trajo solo activas; acá se aplica el "¿aplica HOY?".
-  const vigentes = (data ?? []).filter((p) => isPromoVigente(p as PromoData));
+  const todas = (data ?? []) as PromoData[];
+  if (todas.length === 0) return null;
 
-  // Tope de 4 en el home (las de mayor prioridad). Coherente con la barra:
-  // más que esto no es "promo destacada", es catálogo.
-  const promos = vigentes.slice(0, 4);
+  // Las vigentes HOY van primero (con su urgencia); las demás después,
+  // apagadas. Dentro de cada grupo, respeta la prioridad ya ordenada.
+  const ordenadas = [...todas].sort((a, b) => {
+    const va = isPromoVigente(a) ? 0 : 1;
+    const vb = isPromoVigente(b) ? 0 : 1;
+    return va - vb;
+  });
 
-  if (promos.length === 0) return null; // sin promos hoy → sección no existe
+  const promos = ordenadas.slice(0, 6); // tope: vigentes + algunas próximas
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4" aria-label="Promociones vigentes">
+    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4" aria-label="Promociones">
       <div className="flex items-center gap-2 mb-6">
         <span className="w-2 h-2 rounded-full bg-accent-gold-vibrant animate-pulse" />
         <h2 className="font-sans font-bold text-accent-gold-vibrant tracking-widest text-xs uppercase">
-          Promos de hoy
+          Promos
         </h2>
       </div>
 
-      {/* DESKTOP: grilla de hasta 4 a lo ancho */}
       <div className="hidden sm:grid grid-cols-2 lg:grid-cols-4 gap-4">
         {promos.map((p) => (
-          <PromoCard key={p.id} promo={p as PromoData & { id: string }} />
+          <PromoCard key={(p as any).id} promo={p as PromoData & { id: string }} />
         ))}
       </div>
 
-      {/* MÓVIL: scroll horizontal con peek (se ve ~1.5), sin flechas */}
       <div className="sm:hidden flex overflow-x-auto snap-x snap-mandatory gap-3 -mx-4 px-4 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {promos.map((p) => (
-          <div key={p.id} className="snap-start shrink-0 w-[75%]">
+          <div key={(p as any).id} className="snap-start shrink-0 w-[75%]">
             <PromoCard promo={p as PromoData & { id: string }} />
           </div>
         ))}

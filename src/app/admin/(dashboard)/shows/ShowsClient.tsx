@@ -142,6 +142,7 @@ return (
 
       {/* DRAWER POLIMÓRFICO (Crear / Editar) */}
       <EventDrawer 
+      key={eventToEdit?.id ?? "new"}
         ciclos={ciclos} 
         isOpen={isOpen} 
         onClose={() => {

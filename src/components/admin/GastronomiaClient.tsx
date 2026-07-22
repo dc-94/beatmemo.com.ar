@@ -81,7 +81,7 @@ export default function GastronomiaClient({ items, categorias }: Props) {
                     </span>
                   )}
                   {item.hero_destacado && <span className="bg-green-500/90 text-black text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                      DEST...
+                      DESTACADO
                     </span>}
                   {!item.disponible && (
                     <span className="bg-neutral-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -105,9 +105,10 @@ export default function GastronomiaClient({ items, categorias }: Props) {
       )}
 
       <PubDrawer
+        key={editing?.id ?? "new"}
         categorias={categorias}
         isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        onClose={() => { setIsOpen(false); setEditing(undefined); }}
         itemToEdit={editing}
       />
     </div>

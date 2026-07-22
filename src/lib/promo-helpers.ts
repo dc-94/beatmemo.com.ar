@@ -110,3 +110,55 @@ export function resolveVencimiento(
   const [, mes, dia] = promo.fecha_hasta.split("-");
   return `Hasta el ${parseInt(dia, 10)}/${parseInt(mes, 10)}`;
 }
+// En promo-helpers.ts — reemplaza/agrega esta función
+export type EstadoPromo = "vigente" | "programada" | "vencida" | "inactiva";
+
+export function estadoPromo(promo: PromoData, now: Date = new Date()): EstadoPromo {
+  if (!promo.activo) return "inactiva";
+
+  const hoyAr = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(now);
+
+  // Vencida: tiene fecha_hasta y ya pasó.
+  if (promo.fecha_hasta && hoyAr > promo.fecha_hasta) return "vencida";
+
+  // Vigente hoy: pasa el filtro completo de vigencia.
+  if (isPromoVigente(promo, now)) return "vigente";
+
+  // Activa pero no aplica hoy (día distinto, o fecha_desde futura).
+  return "programada";
+}
+
+// En promo-helpers.ts — agregá al final
+
+// Texto de "cuándo vuelve" para una promo NO vigente hoy.
+// Prioriza el día de la semana (caso banco); si es por fecha, la fecha de inicio.
+export function proximaVigencia(promo: PromoData, now: Date = new Date()): string {
+  const DIAS_FULL: Record<number, string> = {
+    1: "lunes", 2: "martes", 3: "miércoles", 4: "jueves", 5: "viernes", 6: "sábados", 7: "domingos",
+  };
+
+  // Caso día de semana: "Vuelve los martes" / "Mar y Jue"
+  if (promo.dias_semana && promo.dias_semana.length > 0) {
+    const dias = [...promo.dias_semana].sort((a, b) => a - b);
+    if (dias.length === 1) return `Vuelve los ${DIAS_FULL[dias[0]]}`;
+    const abbr: Record<number, string> = { 1: "Lun", 2: "Mar", 3: "Mié", 4: "Jue", 5: "Vie", 6: "Sáb", 7: "Dom" };
+    return `Días ${dias.map((d) => abbr[d]).join(", ")}`;
+  }
+
+  // Caso fecha futura: "Desde el 14/2"
+  if (promo.fecha_desde) {
+    const hoyAr = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/Argentina/Buenos_Aires",
+      year: "numeric", month: "2-digit", day: "2-digit",
+    }).format(now);
+    if (promo.fecha_desde > hoyAr) {
+      const [, mes, dia] = promo.fecha_desde.split("-");
+      return `Desde el ${parseInt(dia, 10)}/${parseInt(mes, 10)}`;
+    }
+  }
+
+  return "Próximamente";
+}

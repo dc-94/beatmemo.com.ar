@@ -9,7 +9,8 @@
 import Image from "next/image";
 import { Landmark, Clock, Tag, Sparkles, CalendarClock } from "lucide-react";
 import { getOptimizedImageUrl } from "@/lib/utils";
-import { resolvePromoAlt, promoTieneImagen, resolveVencimiento, type PromoData } from "@/lib/promo-helpers";
+import { resolvePromoAlt, promoTieneImagen, resolveVencimiento, isPromoVigente, proximaVigencia, type PromoData } from "@/lib/promo-helpers";
+
 
 const DIAS_LABEL: Record<number, string> = {
   1: "Lun", 2: "Mar", 3: "Mié", 4: "Jue", 5: "Vie", 6: "Sáb", 7: "Dom",
@@ -66,15 +67,21 @@ interface Props {
 export default function PromoCard({ promo, preview = false }: Props) {
   const conImagen = promoTieneImagen(promo);
   const dias = textoDias(promo.dias_semana);
-  const vencimiento = resolveVencimiento(promo);
+  const vigente = isPromoVigente(promo);
+  const vencimiento = vigente ? resolveVencimiento(promo) : null;
+  const cuandoVuelve = vigente ? null : proximaVigencia(promo);
   const Icon = iconoPorTipo(promo.tipo);
+
+  const apagada = !vigente && !preview;
 
   const inner = conImagen ? (
     // ── RAMA IMAGEN ──────────────────────────────────────────────
     <article
       itemScope
       itemType="https://schema.org/Offer"
-      className="group relative overflow-hidden rounded-sm bg-neutral-900 aspect-[16/10] w-full h-full"
+      className={`group relative overflow-hidden rounded-sm bg-neutral-900 aspect-[16/10] w-full h-full transition ${
+        apagada ? "grayscale opacity-45" : ""
+      }`}
     >
       <Image
         src={getOptimizedImageUrl(promo.imagen_url!, 640, 400)}
@@ -98,11 +105,17 @@ export default function PromoCard({ promo, preview = false }: Props) {
             {promo.descripcion}
           </p>
         )}
+        {apagada && cuandoVuelve && (
+        <div className="absolute top-3 left-3 z-10 bg-black/80 text-white text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded">
+          {cuandoVuelve}
+        </div>
+      )}
         <div className="flex items-center gap-3 flex-wrap">
           <span className="inline-flex items-center gap-1 text-white/70 text-[11px] font-medium">
             <Clock size={12} /> {dias}
           </span>
-          {vencimiento && <ChipVencimiento texto={vencimiento} sobreImagen />}
+            {vencimiento && <ChipVencimiento texto={vencimiento} sobreImagen />}
+
         </div>
       </div>
       {promo.fecha_hasta && <meta itemProp="priceValidUntil" content={promo.fecha_hasta} />}
@@ -114,9 +127,7 @@ export default function PromoCard({ promo, preview = false }: Props) {
     <article
       itemScope
       itemType="https://schema.org/Offer"
-      className="group relative overflow-hidden rounded-sm aspect-[16/10] w-full h-full
-                 bg-brand-black-200 border border-white/10 flex flex-col justify-between p-5
-                 transition-colors hover:border-accent-gold-vibrant/40"
+      className={`group relative overflow-hidden rounded-sm aspect-[16/10] w-full h-full bg-brand-black-200 border border-white/10 flex flex-col justify-between p-5 transition-colors hover:border-accent-gold-vibrant/40 ${apagada ? "grayscale opacity-45" : ""}`}
     >
       <div className="flex items-center justify-between">
         {promo.logo_url ? (
@@ -142,11 +153,17 @@ export default function PromoCard({ promo, preview = false }: Props) {
             {promo.descripcion}
           </p>
         )}
+        {apagada && cuandoVuelve && (
+        <div className="absolute top-3 right-3 z-10 bg-black/80 text-accent-gold-light text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded">
+          {cuandoVuelve}
+        </div>
+      )}
         <div className="flex items-center gap-3 flex-wrap">
           <span className="inline-flex items-center gap-1 text-white/50 text-[11px] font-medium">
             <Clock size={12} /> {dias}
           </span>
-          {vencimiento && <ChipVencimiento texto={vencimiento} sobreImagen={false} />}
+            {vencimiento && <ChipVencimiento texto={vencimiento} sobreImagen />}
+
         </div>
       </div>
       {promo.fecha_hasta && <meta itemProp="priceValidUntil" content={promo.fecha_hasta} />}
