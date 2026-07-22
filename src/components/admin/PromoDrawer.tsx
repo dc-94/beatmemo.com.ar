@@ -59,7 +59,17 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
       });
     }
   }, [promoToEdit, reset]);
-
+// Al cambiar de tipo, limpia el asset que ya no corresponde.
+  // banco → usa logo (card CSS). local/fecha_especial → usa imagen.
+  // Sin esto, un logo viejo queda colgado y se pinta como imagen rota.
+  useEffect(() => {
+    if (!isOpen) return;
+    if (tipo === "banco") {
+      setValue("imagen_url", "");
+    } else {
+      setValue("logo_url", "");
+    }
+  }, [tipo, isOpen, setValue]);
   // Sincroniza el estado visual de días → el campo del form (CSV).
   const toggleDia = (n: number) => {
     const next = dias.includes(n) ? dias.filter((d) => d !== n) : [...dias, n].sort();
@@ -151,23 +161,46 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
                 className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded text-white focus:border-brand-red outline-none" />
             </div>
 
-            {/* LOGO — para bancos: card se genera con el logo sobre color */}
-            <div>
-              <label className="block text-sm text-neutral-400 mb-1">
-                Logo del banco/entidad <span className="text-neutral-600">(se recomienda PNG transparente)</span>
-              </label>
-              <CloudinaryWidget onSuccess={(url) => setValue("logo_url", url, { shouldValidate: true })} />
-              {logoUrl && <p className="text-green-500 text-xs mt-1">✓ Logo cargado</p>}
-            </div>
-
-            {/* IMAGEN — para especiales: si la cargás, la card usa esta foto EN VEZ del logo */}
-            <div>
-              <label className="block text-sm text-neutral-400 mb-1">
-                Imagen de fondo <span className="text-neutral-600">(opcional · si la subís, reemplaza el estilo con logo)</span>
-              </label>
-              <CloudinaryWidget onSuccess={(url) => setValue("imagen_url", url, { shouldValidate: true })} />
-              {imagenUrl && <p className="text-green-500 text-xs mt-1">✓ Imagen cargada</p>}
-            </div>
+            {/* ASSET VISUAL — depende del tipo */}
+            {tipo === "banco" ? (
+              <div>
+                <label className="block text-sm text-neutral-400 mb-1">
+                  Logo del banco/entidad <span className="text-neutral-600">(se recomienda PNG con fondo transparente)</span>
+                </label>
+                {logoUrl ? (
+                  <div className="flex items-center gap-3 p-2 bg-neutral-950 border border-neutral-800 rounded">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={logoUrl} alt="" className="h-8 w-20 object-contain" />
+                    <span className="text-green-500 text-xs flex-1">✓ Logo cargado</span>
+                    <button type="button" onClick={() => setValue("logo_url", "", { shouldValidate: true })}
+                      className="text-red-500 hover:text-red-400 text-xs font-semibold px-2 py-1">
+                      Quitar
+                    </button>
+                  </div>
+                ) : (
+                  <CloudinaryWidget label="Subir logo" onSuccess={(url) => setValue("logo_url", url, { shouldValidate: true })} />
+                )}
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm text-neutral-400 mb-1">
+                  Imagen de fondo <span className="text-neutral-600">(1200×630 · la card usa esta foto)</span>
+                </label>
+                {imagenUrl ? (
+                  <div className="flex items-center gap-3 p-2 bg-neutral-950 border border-neutral-800 rounded">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={imagenUrl} alt="" className="h-10 w-16 object-cover rounded" />
+                    <span className="text-green-500 text-xs flex-1">✓ Imagen cargada</span>
+                    <button type="button" onClick={() => setValue("imagen_url", "", { shouldValidate: true })}
+                      className="text-red-500 hover:text-red-400 text-xs font-semibold px-2 py-1">
+                      Quitar
+                    </button>
+                  </div>
+                ) : (
+                  <CloudinaryWidget label="Subir imagen" onSuccess={(url) => setValue("imagen_url", url, { shouldValidate: true })} />
+                )}
+              </div>
+            )}
 
             {/* DÍAS DE LA SEMANA */}
             <div>

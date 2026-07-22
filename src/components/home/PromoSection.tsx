@@ -41,7 +41,7 @@ export default async function PromoSection() {
       <div className="flex items-center gap-2 mb-6">
         <span className="w-2 h-2 rounded-full bg-accent-gold-vibrant animate-pulse" />
         <h2 className="font-sans font-bold text-accent-gold-vibrant tracking-widest text-xs uppercase">
-          Promos
+          Promos de la semana
         </h2>
       </div>
 
@@ -51,13 +51,17 @@ export default async function PromoSection() {
         ))}
       </div>
 
-      <div className="sm:hidden flex overflow-x-auto snap-x snap-mandatory gap-3 -mx-4 px-4 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <div className="sm:hidden flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {promos.map((p) => (
-          <div key={(p as any).id} className="snap-start shrink-0 w-[75%]">
+          <div key={(p as any).id} className="snap-start shrink-0 w-[78%]">
             <PromoCard promo={p as PromoData & { id: string }} />
           </div>
         ))}
+        {/* Spacer: sin esto, la última card queda pegada al borde derecho
+            (el padding-right no se respeta en flex scroll). */}
+        <div className="shrink-0 w-px" aria-hidden="true" />
       </div>
+
     </section>
   );
 }
