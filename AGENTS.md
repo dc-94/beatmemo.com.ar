@@ -245,30 +245,63 @@ Los helpers que construyen queries de Supabase deben ser **síncronos y recibir 
 
 ---
 
-## 11. Sistema de promociones (barra del home)
+## 11. Sistema de promociones (sección del home) — IMPLEMENTADO
 
-- Tabla **`promociones`** (reemplaza a `promo_banners`, eliminada). Un solo sistema para tres tipos vía campo `tipo`: `banco` (usa `entidad` + `dias_semana`), `fecha_especial` (usa `fecha_desde`/`fecha_hasta`), `local`.
-- **No hay página `/promos`.** Las promos viven solo en una barra del home.
-- **Vigencia híbrida:** una promo se muestra si `activo = true` Y (sin fechas O hoy dentro del rango) Y (sin `dias_semana` O hoy coincide). El filtro de fecha/día va en la QUERY del RSC, no en RLS.
-- **`dias_semana`** es ISO: 1=lunes … 7=domingo. NULL = todos los días. Convertir desde el dow de Postgres (0=domingo) con cuidado.
-- **Comportamiento de la barra:** desktop 3-4 promos a lo ancho, carrousel si hay más (rotación client-side sobre datos ya servidos, con pausa en hover/focus y respeto a `prefers-reduced-motion`). Móvil: scroll horizontal al tacto con "peek" (se ve 1½-2), sin flechas. Techo de 3 en la barra por prioridad; el resto no se muestra.
-- **Imágenes:** logo de barra 240×80 PNG transparente (<40KB); imagen de card/OG 1200×630 JPG/WEBP (<200KB). El `alt` se genera desde `entidad`+`titulo`, no a mano.
+- Tabla **`promociones`** (reemplaza a `promo_banners`, eliminada). Un sistema para tres tipos vía campo `tipo`: `banco`, `fecha_especial`, `local`.
+- **No hay página `/promos`.** Las promos viven en una sección del home, entre el Hero y la Agenda. El SEO se resuelve con microdata `schema.org/Offer` inline en cada card (`name`, `description`, `seller`, `availability`, `priceValidUntil`).
+- **Vigencia híbrida:** `activo = true` Y (sin fechas O hoy dentro del rango) Y (sin `dias_semana` O hoy coincide). Lógica en `lib/promo-helpers.ts` (`isPromoVigente`), NO en RLS.
+- **`dias_semana`** es ISO: 1=lunes … 7=domingo. NULL = todos los días. Se evalúa en TZ `America/Argentina/Buenos_Aires` — el día de la semana depende de la zona horaria.
+- **Se muestran TODAS las activas, vigentes o no.** Las no vigentes van atenuadas (`saturate-[0.3] opacity-75`) con badge "Vuelve los martes". Decisión de CX: el cliente sabe cuándo volver. La jerarquía visual debe ser fuerte para que nadie confunda una apagada con una activa.
+- **El badge de estado vive FUERA del wrapper atenuado.** Si estuviera adentro, el `saturate`/`opacity` lo volvería ilegible (bug ya corregido).
+- **Dos ramas visuales** (`PromoCard`): con `imagen_url` → card-foto oscura; sin imagen → card-clara (fondo `#F5F1E8`, logo grande a la izquierda, texto a la derecha). La rama clara existe porque **los logos de banco están diseñados para fondo blanco** y sobre negro se pierden.
+- **El drawer condiciona el asset por tipo:** `banco` → solo logo; resto → solo imagen. Al cambiar de tipo se limpia el campo irrelevante (si no, queda una imagen rota mostrando su `alt`).
+- **`alt_texto`** opcional; si está vacío cae al fallback automático (`resolvePromoAlt`): entidad+título para banco, título+descripción para el resto.
+- **Vencimiento:** se muestra "Hasta el 14/2" solo si vence dentro de 30 días (urgencia real). Más lejos = ruido.
+- **Estados en el admin:** vigente / programada / vencida / inactiva (`estadoPromo`). El listado del admin reusa `PromoCard` con `preview` — misma card que el home, imposible que diverjan.
+- **Imágenes:** logo PNG transparente recomendado (leyenda en el drawer, sin validación forzada); imagen de fondo 1200×630.
 
 ---
 
-## 10. Deuda técnica abierta (a la fecha)
+## 12. Trampas conocidas del stack
 
-**Seguridad / DB**
-- **Enum `app_role` legacy** (`SUPER_ADMIN`/`CONTENT_ADMIN`) sigue en la DB. Confirmar que ninguna función activa lo lee y eliminarlo. `CONTENT_ADMIN` es el rol fantasma.
-- **RLS de escritura es `ALL` a `{public}`**, no `{authenticated}`. La defensa real es `guardAction`; endurecer las policies a `{authenticated}` + check de rol como segunda capa efectiva.
+- **Soft-delete + constraint UNIQUE:** un `UNIQUE` normal no distingue filas borradas y bloquea reusar el valor. Usar **índice único parcial**: `create unique index ... where is_deleted = false`. Aplicado en `menus.tipo`.
+- **Zod v4:** `z.url()` / `z.email()` son top-level (no `z.string().url()`); en issues custom va `code: "custom"` como string (no `ZodIssueCode`); el mensaje de un enum va en `error:` (no `errorMap`).
+- **Drawers y estado arrastrado:** el contenedor debe pasar `key={editing?.id ?? "new"}` **y** limpiar el estado en `onClose` (`setEditing(undefined)`). Sin las dos cosas, reabrir el drawer conserva los datos del anterior.
+- **`reset()` con datos de la DB:** mapear TODOS los campos nullable a `""` (`campo ?? ""`). Un `null` que llega a un campo que Zod espera string hace fallar la validación en silencio — el submit no dispara y no loguea nada. Para depurar: `handleSubmit(onSubmit, (errs) => console.log(errs))`.
+- **Array de dependencias de `useEffect`:** no puede cambiar de tamaño entre renders. React lanza error.
+- **Layout flex anidado:** un `<div className="flex">` sin `w-full`/`flex-1` dentro de otro flex colapsa a su contenido, y los hijos con `flex-1` calculan mal el ancho.
+- **`.nip.io` en dev:** Tailwind v4 + Turbopack servido a una IP externa puede entregar CSS incompleto (colores y utilidades que faltan). No es bug de código; en producción no ocurre. Verificar con el modo responsive del navegador de escritorio antes de investigar.
+- **Uploads:** todos usan `CldUploadWidget` con preset unsigned. `actions/uploads.ts` (con magic bytes + guard) es **código muerto** — no se ejecuta en ninguna ruta.
+
+---
+
+## 10. Deuda técnica abierta
+
+**Seguridad**
+- **Security headers ausentes:** sin CSP, HSTS, X-Frame-Options. El vault es clickjackeable. → Bloque 1.
+- **Enum `app_role` legacy** (`SUPER_ADMIN`/`CONTENT_ADMIN`) sigue en la DB. `CONTENT_ADMIN` es el rol fantasma. Confirmar que ninguna función lo lee y eliminarlo.
+- **RLS de escritura es `ALL` a `{public}`** en todas las tablas salvo `promociones` (que sí usa `to authenticated` + check de rol contra `user_roles` — ese es el patrón correcto a replicar).
+- **Preset de Cloudinary unsigned** y visible en el bundle. `actions/uploads.ts` con todo su hardening es código muerto. Decidir: rutear los uploads por server action, o firmar el preset.
 - Callback OAuth: registrar con subdominio sobre `.com.ar`, no `.com`.
 
 **UX / accesibilidad**
 - Advertencia de borrado en `EventDrawer`: dice "no se puede deshacer" para todos, pero es hard-delete solo para SUPERADMIN (soft para CM). Role-aware o decir la verdad del peor caso.
 - `HeroSection` auto-rota sin pausa ni respeto a `prefers-reduced-motion` (WCAG 2.2.2).
-- `fieldErrors` de Zod se descarta en los drawers: si el server rechaza algo que el cliente dejó pasar, aparece "revisá los campos" sin campo marcado.
+- `fieldErrors` de Zod se descarta en los 4 drawers: si el server rechaza algo que el cliente dejó pasar, aparece "revisá los campos" sin campo marcado.
+- Sidebar `isActive` usa igualdad exacta; con el rewrite de subdominio el resaltado del ítem activo no funciona. Usar `startsWith`.
 
-**Features / performance**
+**Performance**
+- Migrar `shows.ts` a `publicClient`: hoy `AgendaWrapper` usa el cliente con cookies y mantiene el home dinámico, bloqueando el ISR.
+- Faltan índices en `eventos` (`fecha` + `is_deleted`) y `pub` (`destacado_home` + `disponible` + `is_deleted`). Hoy no se nota; con volumen sí.
+
+**Features**
 - `tags` en `pub`: límite de 3 aplicado en carga; falta render en el sitio público.
-- Migrar `shows.ts` a `publicClient` para que el home cachee con ISR (hoy `AgendaWrapper` lo mantiene dinámico).
-- `ciclos` solo se crean por SQL; falta CRUD en el admin.
+- `ciclos` solo se crean por SQL; falta CRUD en el admin (Bloque 6).
+- Sellos de accesibilidad: sólo la tira del home y el bloque del footer. Falta distribuirlos en páginas internas (Sin TACC en `/pub`, etc.).
+- `MenuDrawer` usa `useState` en vez de react-hook-form como los otros drawers. **Decisión consciente**, no migrar sin razón fuerte: maneja un flujo de upload que no encaja natural en RHF.
+
+**Pre-deploy, fuera de bloques**
+- `sitemap.xml`, `robots.txt`, metadata OG por página.
+- Monitoreo real de `system_errors`: hoy se acumulan filas y nadie las mira. Falta alerta.
+- Verificar backups de Supabase activos y probar una restauración.
+- Audioguía: migrar a `audioguia.beatmemo.com`. Audios en **Supabase Storage**, no en `/public` (evita inflar el repo y permite actualizar sin redeploy). MP3 mono ~96kbps para voz + `preload="none"`.

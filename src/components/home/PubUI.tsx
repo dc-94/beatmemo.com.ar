@@ -79,7 +79,7 @@ export default function PubUI({ items }: { items: PubItem[] }) {
               src="https://res.cloudinary.com/djmbcrliu/image/upload/v1781528975/DSC_0168_qcrypi.jpg"
               alt="Ambiente Gastronómico Beatmemo"
               fill className="object-cover object-center"
-              sizes="(max-width: 768px) 100vw, 50vw" priority
+              sizes="(max-width: 768px) 100vw, 50vw" 
             />
           </motion.div>
           <motion.div
