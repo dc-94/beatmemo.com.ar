@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { 
   Calendar, Coffee, LayoutDashboard, LogOut, 
-  FileText, Megaphone, ShieldAlert // Añadido ShieldAlert
+  FileText, Megaphone, ShieldAlert, AlertTriangle
 } from "lucide-react";
 
 const navLinks = [
@@ -14,7 +14,8 @@ const navLinks = [
   { name: "Menús", href: "/admin/menus", icon: FileText },
   { name: "Gastronomía", href: "/admin/gastronomia", icon: Coffee },
   { name: "Promociones", href: "/admin/promociones", icon: Megaphone },
-  { name: "Auditoría", href: "/admin/logs", icon: ShieldAlert }, // Nuevo ítem
+  { name: "Auditoría", href: "/admin/logs", icon: ShieldAlert },
+  { name: "Errores", href: "/admin/errores", icon: AlertTriangle },
 ];
 
 

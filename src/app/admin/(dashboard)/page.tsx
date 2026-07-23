@@ -1,26 +1,24 @@
 // src/app/admin/(dashboard)/page.tsx
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Calendar, Coffee, Activity, ShieldAlert } from "lucide-react";
 
 export default async function AdminDashboardPage() {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll() { return cookieStore.getAll(); } } }
-  );
+  const supabase = await createClient();
 
   // Consultas paralelas. FIX: apuntan a las tablas REALES (eventos, pub) y
   // excluyen los borrados lógicos para que el KPI refleje el catálogo activo.
   const [
     { count: totalEventos },
     { count: totalPub },
+    { count: erroresAbiertos },
   ] = await Promise.all([
     supabase.from("eventos").select("*", { count: "exact", head: true }).eq("is_deleted", false),
     supabase.from("pub").select("*", { count: "exact", head: true }).eq("is_deleted", false),
+    supabase.from("system_errors").select("*", { count: "exact", head: true }).eq("resolved", false),
   ]);
+
+  const sinErrores = (erroresAbiertos ?? 0) === 0;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -32,13 +30,26 @@ export default async function AdminDashboardPage() {
         <StatCard title="Eventos" value={totalEventos ?? 0} icon={<Calendar className="text-blue-400" />} href="/admin/shows" />
         <StatCard title="Items Pub" value={totalPub ?? 0} icon={<Coffee className="text-amber-400" />} href="/admin/gastronomia" />
         <StatCard title="Auditoría" value="Ver Logs" icon={<ShieldAlert className="text-red-400" />} href="/admin/logs" />
-        <div className="bg-white/5 border border-white/10 p-6 rounded-xl flex items-center gap-4">
-          <Activity className="text-green-400" />
-          <div>
-            <p className="text-xs text-neutral-400 uppercase">Sistema</p>
-            <p className="text-lg font-bold text-white">Óptimo</p>
+
+        {/* Card de sistema: usa StatCard como las demás para que sean idénticas,
+            con el color condicionado por si hay errores abiertos. */}
+        <Link href="/admin/errores">
+          <div className={`p-6 rounded-xl flex items-center gap-4 border transition-colors ${
+            sinErrores
+              ? "bg-white/5 border-white/10 hover:bg-white/10"
+              : "bg-red-950/30 border-red-900/50 hover:bg-red-950/50"
+          }`}>
+            <div className="p-3 bg-white/5 rounded-lg">
+              <Activity className={sinErrores ? "text-green-400" : "text-red-400"} />
+            </div>
+            <div>
+              <p className="text-xs text-neutral-400 uppercase tracking-wider">Sistema</p>
+              <p className="text-2xl font-bold text-white">
+                {sinErrores ? "Óptimo" : `${erroresAbiertos} error${erroresAbiertos === 1 ? "" : "es"}`}
+              </p>
+            </div>
           </div>
-        </div>
+        </Link>
       </section>
     </div>
   );
