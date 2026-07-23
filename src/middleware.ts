@@ -21,6 +21,10 @@ const ADMIN_PREFIX = process.env.NEXT_PUBLIC_ADMIN_SUBDOMAIN_PREFIX ?? 'vault.';
  */
 const BLOCKED_ON_PUBLIC = ['/admin', '/secure'];
 
+function noIndex(res: NextResponse): NextResponse {
+  res.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  return res;
+}
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const hostname = request.headers.get('host') ?? '';
@@ -46,9 +50,12 @@ export async function middleware(request: NextRequest) {
   if (hostname.startsWith(QR_PREFIX)) {
     if (pathname === '/') {
       url.pathname = '/menu';
-      return NextResponse.redirect(url);
+      // REWRITE, no redirect: un redirect agrega un round-trip HTTP completo
+      // justo en el camino más sensible a latencia (escaneo del QR con la wifi
+      // del bar). Con rewrite, la URL queda limpia Y se sirve en un solo viaje.
+      return noIndex(NextResponse.rewrite(url));
     }
-    return NextResponse.next({ request: { headers: request.headers } });
+    return noIndex(NextResponse.next({ request: { headers: request.headers } }));
   }
   // ── REGLA 2: Bypass total del dominio público ──────────────────────────────
   // FIX (optimización): el original creaba un cliente Supabase en cada request
@@ -68,7 +75,7 @@ export async function middleware(request: NextRequest) {
   // establece la sesión él mismo via exchangeCodeForSession() en la Route Handler.
   // No debe ser interceptado ni reescrito por el middleware.
   if (pathname.startsWith('/auth/')) {
-    return NextResponse.next({ request: { headers: request.headers } });
+    return noIndex(NextResponse.next({ request: { headers: request.headers } }));
   }
 
   // ── INICIALIZAR CLIENTE SUPABASE con gestión correcta de cookies ───────────
@@ -122,7 +129,7 @@ export async function middleware(request: NextRequest) {
     (request.headers.get('content-type') ?? '').includes('multipart/form-data');
 
   if (isMultipartPost) {
-    return NextResponse.next({ request: { headers: request.headers } });
+    return noIndex(NextResponse.next({ request: { headers: request.headers } }));
   }
   // ── REGLA 4: Forzar autenticación ─────────────────────────────────────────
   // Sin sesión activa fuera de la página de login → redirigir al login.
@@ -173,7 +180,7 @@ export async function middleware(request: NextRequest) {
     >[2]);
   });
 
-  return rewriteResponse;
+  return noIndex(rewriteResponse); 
 }
 
 export const config = {
