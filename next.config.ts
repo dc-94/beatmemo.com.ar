@@ -13,7 +13,18 @@ const csp = [
   // 'unsafe-eval' SOLO en dev: lo pide React Refresh / HMR.
     `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ""} https://upload-widget.cloudinary.com https://widget.cloudinary.com`,
 
-  // ESTILOS. Tailwind y styled-jsx inyectan <style> inline.
+  // AGREGAR CUANDO CONECTE ANALITYCS Y CALENDLY
+  // `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ""} https://upload-widget.cloudinary.com https://widget.cloudinary.com https://www.googletagmanager.com`,
+
+  // `connect-src 'self' ${SUPABASE_URL} wss://${SUPABASE_URL.replace("https://", "")} https://api.cloudinary.com https://res.cloudinary.com https://www.google-analytics.com https://region1.google-analytics.com`,
+
+  // `frame-src 'self' https://upload-widget.cloudinary.com https://widget.cloudinary.com https://accounts.google.com https://calendly.com`,
+
+  // `img-src 'self' data: blob: https://res.cloudinary.com ${SUPABASE_URL} https://www.google-analytics.com https://www.googletagmanager.com`,
+  
+  
+  
+    // ESTILOS. Tailwind y styled-jsx inyectan <style> inline.
   `style-src 'self' 'unsafe-inline'`,
 
   // IMÁGENES. data: y blob: los usa next/image y el render de PDF a canvas.
@@ -55,7 +66,7 @@ const securityHeaders = [
   // REPORT-ONLY: declara la política pero NO bloquea nada. Las violaciones
   // aparecen en la consola del navegador. Se pasa a enforce recién cuando
   // el reporte esté limpio.
-  { key: "Content-Security-Policy-Report-Only", value: csp },
+  { key: "Content-Security-Policy", value: csp },
 
   // Impide que el sitio (sobre todo el vault) se cargue en un <iframe> ajeno.
   // Sin esto, alguien puede embeber el login y capturar clicks (clickjacking).
@@ -73,7 +84,7 @@ const securityHeaders = [
   // intenta pedir la cámara o el micrófono, el navegador lo bloquea de plano.
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), browsing-topics=()",
+    value: "camera=(), microphone=(), geolocation=()",
   },
 
   // HSTS: fuerza HTTPS por 2 años. OJO — solo tiene efecto sobre HTTPS, así

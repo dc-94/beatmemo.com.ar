@@ -6,10 +6,10 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
 const slides = [
-  { id: 1, word: "BEATMEMO", img: "/placeholders/fachada.jpg" },
-  { id: 2, word: "BANDAS", img: "/placeholders/hero/show.jpg" },
-  { id: 3, word: "NUESTRA COCINA", img: "/placeholders/hero/food.png" },
-  { id: 4, word: "CULTURAL", img: "/placeholders/hero/cultural.png" },
+  { id: 1, word: "BEATMEMO", img: "/placeholders/hero/fachada.jpeg" },
+  { id: 2, word: "BANDAS", img: "/placeholders/hero/show.jpeg" },
+  { id: 3, word: "NUESTRA COCINA", img: "/placeholders/hero/food.jpeg" },
+  { id: 4, word: "CULTURAL", img: "/placeholders/hero/cultural.jpeg" },
 ];
 
 export default function HeroSection() {

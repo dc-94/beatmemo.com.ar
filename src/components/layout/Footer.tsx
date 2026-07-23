@@ -175,9 +175,7 @@ export default function Footer() {
                TRABAJA CON NOSOTROS
              </a>
              <span className="hidden md:inline">|</span>
-             <Link href="/privacidad" className="hover:text-brand-gold transition-colors">Privacidad</Link>
-             <span>|</span>
-             <Link href="/terminos" className="hover:text-brand-gold transition-colors">Términos</Link>
+             <Link href="/terminos" className="hover:text-brand-gold transition-colors">Términos y Condiciones</Link>
           </div>
 
         </div>

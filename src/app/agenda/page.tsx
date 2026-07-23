@@ -5,6 +5,8 @@ import Link from "next/link";
 import FullAgendaWrapper from "@/components/agenda/FullAgendaWrapper";
 import BrandSpinner from "@/components/ui/BrandSpinner";
 
+export const revalidate = 600;
+
 export default async function AgendaPage({ 
   searchParams 
 }: { 

@@ -71,3 +71,13 @@ export const SITE_URL =
 
 /** Link directo al formulario de reseña de Google. Universal https://. */
 export const GOOGLE_REVIEW_URL = "https://g.page/r/CZ8oHnT2ZcQjEAE/review";
+
+
+// En config.ts
+export const LEGAL = {
+  razonSocial: "BEATMEMO S.R.L.",
+  cuit: "30-71883910-2",
+  nombreFantasia: "Beatmemo",
+  ciudad: "Rosario, Santa Fe, Argentina",
+  ultimaActualizacion: "22 de enero de 2026",
+} as const;

@@ -1,7 +1,7 @@
 // src/actions/shows.ts
 "use server";
 
-import { createClient } from "../lib/supabase/server";
+import { publicClient } from "@/lib/supabase/public";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 // ============================================================================
@@ -107,7 +107,7 @@ export async function getShowsByView(
   year?: string,
   month?: string
 ): Promise<EventosResult> {
-  const supabase = await createClient();
+  const supabase = await publicClient;
   try {
     if (view === "past") {
       const { data, error } = await buildEventosBaseQuery(supabase)
@@ -142,7 +142,7 @@ export async function getShowsByView(
 // 2. PRÓXIMOS SHOWS (Home)
 // ============================================================================
 export async function getUpcomingShows(): Promise<EventosResult> {
-  const supabase = await createClient();
+  const supabase = await publicClient ;
   try {
     const { data, error } = await buildEventosBaseQuery(supabase)
       .eq("tipo", "SHOW")
@@ -162,7 +162,7 @@ export async function getUpcomingShows(): Promise<EventosResult> {
 // 3. EVENTOS CULTURALES
 // ============================================================================
 export async function getCulturalEvents(): Promise<EventosResult> {
-  const supabase = await createClient();
+  const supabase = await publicClient ;
   try {
     const { data, error } = await buildEventosBaseQuery(supabase)
       .eq("tipo", "EVENTO_CULTURAL")

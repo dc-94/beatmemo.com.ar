@@ -10,7 +10,7 @@ import MuseumPreview from "@/components/home/MuseumPreview";
 import { CONTACT, SITE_URL } from "@/lib/config";
 
 import { Metadata } from "next";
-
+export const revalidate = 600;
 export const metadata: Metadata = {
   title: "Museo y Pub Temático en Rosario",
   description:
