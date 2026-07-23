@@ -209,7 +209,7 @@ export default function PdfViewer({ url, version }: Props) {
     <div className="flex flex-col">
       <div
         ref={scrollRef}
-        className="relative w-full h-[60vh] overflow-y-auto overflow-x-hidden md:h-auto md:min-h-[50vh] md:overflow-visible bg-neutral-100 rounded-sm"
+        className="relative w-full h-[70vh] overflow-y-auto overflow-x-hidden md:h-auto md:min-h-[50vh] md:overflow-visible bg-neutral-100 rounded-sm"
       >
         {/* CARGANDO — con progreso real, no un spinner mudo */}
         {loading && (

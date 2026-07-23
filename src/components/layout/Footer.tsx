@@ -103,7 +103,7 @@ export default function Footer() {
                 Reserva
               </h3>
               <a 
-                href={whatsappLink("Hola! Quiero consultar por los próximos shows.")}
+                href={whatsappLink("Hola! Quiero hacer una reserva.")}
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-brand-gold font-sans text-xl font-bold hover:text-accent-gold-vibrant transition-colors group w-fit"

@@ -37,3 +37,7 @@ html {
     color: var(--color-brand-white-100);
   }
 }
+
+html[data-splash="seen"] #splash-overlay {
+  display: none;
+}

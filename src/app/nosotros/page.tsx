@@ -25,7 +25,7 @@ const eventos = result.ok ? result.data : [];
       {/* 1. HERO SANGRE COMPLETO CON GRADIENTE INFERIOR */}
      <section className="relative h-[50vh] lg:h-[60vh] w-full">
         <Image 
-          src="/placeholders/fachada.JPG" 
+          src="/placeholders/hero/fachada.jpeg" 
           alt="Fachada Cultural Beatmemo" 
           fill 
           className="object-cover" 
@@ -156,10 +156,10 @@ const eventos = result.ok ? result.data : [];
             </p>
           </div>
 
-          {/* Columna de Imagen (Fachada reutilizada) */}
+          {/* Columna de Imagen (hero/fachada reutilizada) */}
           <div className="w-full lg:w-1/2 relative aspect-square lg:aspect-[4/3] overflow-hidden bg-brand-black-200">
             <Image 
-              src="/placeholders/fachada.JPG" 
+              src="/placeholders/hero/fachada.jpeg" 
               alt="Fachada Museo Tributo Distinguido" 
               fill 
               className="object-cover opacity-90 hover:opacity-100 transition-opacity duration-700"

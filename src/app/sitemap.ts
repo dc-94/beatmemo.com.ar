@@ -11,7 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/pub`,        lastModified: now, changeFrequency: "weekly",  priority: 0.8 },
     { url: `${SITE_URL}/menu`,       lastModified: now, changeFrequency: "daily",  
     priority: 0.8 },
-    { url: `${SITE_URL}/museo`,      lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${SITE_URL}/museo`,      lastModified: now, changeFrequency: "monthly", priority: 0.8 }, 
     { url: `${SITE_URL}/nosotros`,   lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE_URL}/terminos`,   lastModified: now, changeFrequency: "yearly",  priority: 0.2 },
     { url: `${SITE_URL}/museo/visitas-guiadas`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },

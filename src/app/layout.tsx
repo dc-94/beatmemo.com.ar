@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { cookies } from "next/headers";
 import { Barlow, Libre_Baskerville } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
@@ -8,7 +7,6 @@ import Footer from "@/components/layout/Footer";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import SplashLoader from "@/components/layout/SplashLoader";
 import { SITE_URL } from "@/lib/config";
-
 
 const barlow = Barlow({
   variable: "--font-barlow",
@@ -33,6 +31,11 @@ export const metadata: Metadata = {
   description: "El punto de encuentro de los fans de The Beatles en Rosario.",
 };
 
+// Corre ANTES del primer paint. Si el visitante ya vio el splash, marca el
+// <html> y el CSS lo oculta sin parpadeo. Es lo que permite sacar cookies()
+// del layout sin degradar la experiencia.
+const SPLASH_SCRIPT = `try{if(document.cookie.indexOf('loader_visto=true')>-1){document.documentElement.dataset.splash='seen'}}catch(e){}`;
+
 export default async function RootLayout({
   children,
 }: {
@@ -46,28 +49,28 @@ export default async function RootLayout({
 
   const isAdmin = host.startsWith(adminPrefix);
   const isQr = host.startsWith(qrPrefix);
-
-  // El cliente que escanea el QR está sentado en la mesa: quiere la carta en
-  // 2 segundos, no explorar el sitio. Nada de navbar, footer ni splash —
-  // todo eso lo invita a irse justo cuando iba a pedir.
-  // WhatsApp SÍ se queda: desde la mesa, "reservá tu mesa" no molesta y sirve.
   const chromeCompleto = !isAdmin && !isQr;
 
-  const cookieStore = await cookies();
-  const hasSeenLoader = cookieStore.get("loader_visto")?.value === "true";
-
   return (
-    <html lang="es" className="scroll-smooth" data-scroll-behavior="smooth">
+    <html
+      lang="es"
+      className="scroll-smooth"
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SPLASH_SCRIPT }} />
+      </head>
       <body
         className={`${barlow.variable} ${libreBaskerville.variable} font-sans bg-brand-black-100 text-brand-white-100 antialiased`}
       >
-        {chromeCompleto && <SplashLoader hasSeenLoader={hasSeenLoader} />}
+        {chromeCompleto && <SplashLoader />}
         {chromeCompleto && <Navbar />}
 
         <main className="flex-grow">{children}</main>
 
         {chromeCompleto && <Footer />}
-        {!isAdmin && <WhatsAppFAB />}
+        {chromeCompleto && <WhatsAppFAB />}
       </body>
     </html>
   );

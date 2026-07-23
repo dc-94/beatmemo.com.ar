@@ -49,10 +49,10 @@ export async function middleware(request: NextRequest) {
   // sin que la URL fea aparezca en la pantalla del cliente.
   if (hostname.startsWith(QR_PREFIX)) {
     if (pathname === '/') {
-      url.pathname = '/menu';
-      // REWRITE, no redirect: un redirect agrega un round-trip HTTP completo
-      // justo en el camino más sensible a latencia (escaneo del QR con la wifi
-      // del bar). Con rewrite, la URL queda limpia Y se sirve en un solo viaje.
+      // Ruta dedicada: la RUTA es el contexto. Antes /menu preguntaba por
+      // headers() si venía del QR, y eso ataba la página a render dinámico.
+      // El rewrite conserva los searchParams (?tipo=hh) automáticamente.
+      url.pathname = '/qr';
       return noIndex(NextResponse.rewrite(url));
     }
     return noIndex(NextResponse.next({ request: { headers: request.headers } }));

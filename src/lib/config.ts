@@ -73,7 +73,11 @@ export const SITE_URL =
 export const GOOGLE_REVIEW_URL = "https://g.page/r/CZ8oHnT2ZcQjEAE/review";
 
 
-// En config.ts
+export const SOCIAL = {
+  instagram: "https://instagram.com/beatmemo_rosario",
+  facebook: "https://www.facebook.com/beatmemopub",
+} as const;
+
 export const LEGAL = {
   razonSocial: "BEATMEMO S.R.L.",
   cuit: "30-71883910-2",
