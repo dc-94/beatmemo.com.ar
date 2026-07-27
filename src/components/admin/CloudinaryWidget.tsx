@@ -6,9 +6,11 @@ import { CldUploadWidget } from 'next-cloudinary';
 interface Props {
   onSuccess: (url: string) => void;
   label?: string;
+  folder?: string;
+
 }
 
-export default function CloudinaryWidget({ onSuccess, label }: Props) {
+export default function CloudinaryWidget({ onSuccess, label, folder }: Props) {
   return (
     <CldUploadWidget 
       uploadPreset="beatmemo_preset" // El que creaste en Cloudinary
@@ -19,7 +21,9 @@ export default function CloudinaryWidget({ onSuccess, label }: Props) {
       options={{
         sources: ['local'],
         multiple: false,
-        cropping: false, // La IA de recorte la manejaremos con parámetros de URL
+        cropping: false,
+        ...(folder ? { folder } : {}),
+
       }}
     >
       {({ open }) => (

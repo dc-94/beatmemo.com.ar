@@ -85,3 +85,25 @@ export const LEGAL = {
   ciudad: "Rosario, Santa Fe, Argentina",
   ultimaActualizacion: "22 de enero de 2026",
 } as const;
+
+/**
+ * Calendly — visitas guiadas para instituciones educativas.
+ * DOS tipos de evento separados (español / inglés): un solo calendario con
+ * selector produjo reservas en el idioma equivocado.
+ * Los parámetros de color integran el widget a la paleta oscura del sitio.
+ */
+const CALENDLY_PARAMS =
+  "hide_gdpr_banner=1&background_color=111111&text_color=e8e6e1&primary_color=c5a059";
+
+export const CALENDLY_VISITAS = {
+  es: {
+    label: "Español",
+    ayuda: "La visita se dicta en español",
+    url: `https://calendly.com/beatmemopub/visitas-guiadas-espanol?${CALENDLY_PARAMS}`,
+  },
+  en: {
+    label: "English",
+    ayuda: "The tour is conducted in English",
+    url: `https://calendly.com/beatmemopub/visitas-guiadas-ingles?${CALENDLY_PARAMS}`,
+  },
+} as const;

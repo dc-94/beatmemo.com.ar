@@ -214,7 +214,7 @@ useEffect(() => {
             <div>
               <label className="block text-sm text-neutral-400 mb-2">Imagen Promocional *</label>
               {/* Le agregamos { shouldValidate: true } para que Zod sepa que se llenó */}
-              <CloudinaryWidget onSuccess={(url: string) => setValue("url_imagen", url, { shouldValidate: true })} />
+              <CloudinaryWidget folder="beatmemo/shows" onSuccess={(url: string) => setValue("url_imagen", url, { shouldValidate: true })} />
               {errors.url_imagen && <p className="text-red-500 text-xs mt-1">{errors.url_imagen.message as string}</p>}
             </div>
 

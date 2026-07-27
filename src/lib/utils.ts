@@ -11,6 +11,6 @@ export const getOptimizedImageUrl = (url: string, width = 600, height = 400) => 
   if (url.includes('/upload/c_fill')) return url;
 
   // Insertamos las transformaciones de forma segura
-  const transformation = `c_fill,w_${width},h_${height},g_face,q_auto,f_auto`;
+  const transformation = `c_fill,w_${width},h_${height},g_auto,q_auto,f_auto`;
   return url.replace('/upload/', `/upload/${transformation}/`);
 };

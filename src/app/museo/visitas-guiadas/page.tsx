@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { whatsappLink, WA_MESSAGES } from "@/lib/config";
-
+import CalendlyVisitas from "@/components/museo/CalendlyVisitas";
 export default function VisitasGuiadasPage() {
   return (
     <main className="min-h-screen bg-brand-black-200 text-brand-white-100 overflow-hidden font-sans pb-32">
@@ -133,32 +133,19 @@ export default function VisitasGuiadasPage() {
               Acercamos la cultura musical a las nuevas generaciones mediante una propuesta pedagógica adaptada. Organizamos recorridos estructurados para colegios, facilitando un espacio de aprendizaje dinámico sobre el impacto sociocultural de la banda.
             </p>
             <span className="font-sans font-bold tracking-[0.2em] uppercase text-xs text-[#C5A059] mt-2">
-              Reservá tu visita a continuación
+              Elegí el idioma y reservá tu visita:
             </span>
           </motion.div>
         </div>
 
         {/* CONTENEDOR CALENDLY ESTRUCTURADO */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
-          className="w-full max-w-5xl mx-auto h-[600px] bg-[#111111] border border-[#8B6D3B]/30 flex flex-col items-center justify-center shadow-2xl relative"
         >
-          {/* Este div interno es meramente estético para el placeholder */}
-          <div className="flex flex-col items-center gap-4 opacity-50 z-10 text-center px-4">
-            <svg className="w-12 h-12 text-[#C5A059]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <p className="font-sans font-bold tracking-[0.2em] text-xs uppercase text-[#E6C987]">
-              Módulo de Calendly para Escuelas
-            </p>
-            <p className="text-xs text-brand-white-300 max-w-md">
-              (El iframe o script de integración de Calendly se inyectará en este contenedor para evitar alteraciones en el Layout).
-            </p>
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#111111] via-transparent to-[#C5A059]/5" />
+          <CalendlyVisitas />
         </motion.div>
       </section>
 

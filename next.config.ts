@@ -18,10 +18,7 @@ const csp = [
 
   // `connect-src 'self' ${SUPABASE_URL} wss://${SUPABASE_URL.replace("https://", "")} https://api.cloudinary.com https://res.cloudinary.com https://www.google-analytics.com https://region1.google-analytics.com`,
 
-  // `frame-src 'self' https://upload-widget.cloudinary.com https://widget.cloudinary.com https://accounts.google.com https://calendly.com`,
-
-  // `img-src 'self' data: blob: https://res.cloudinary.com ${SUPABASE_URL} https://www.google-analytics.com https://www.googletagmanager.com`,
-  
+  `frame-src 'self' https://upload-widget.cloudinary.com https://widget.cloudinary.com https://accounts.google.com https://calendly.com`,
   
   
     // ESTILOS. Tailwind y styled-jsx inyectan <style> inline.
@@ -37,8 +34,6 @@ const csp = [
   // Cloudinary (el widget sube por acá).
   `connect-src 'self' ${SUPABASE_URL} wss://${SUPABASE_URL.replace("https://", "")} https://api.cloudinary.com https://res.cloudinary.com`,
 
-  // IFRAMES QUE EL SITIO CARGA: el widget de upload y el consent de Google OAuth.
-  `frame-src 'self' https://upload-widget.cloudinary.com https://widget.cloudinary.com https://accounts.google.com`,
 
   // AUDIO/VIDEO. 'self' + Supabase Storage (para la audioguía cuando migre).
   `media-src 'self' ${SUPABASE_URL}`,

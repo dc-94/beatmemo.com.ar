@@ -205,7 +205,7 @@ const tagsRaw = watch("tags");
             {/* IMAGEN */}
             <div>
               <label className="block text-sm text-neutral-400 mb-2">Imagen *</label>
-              <CloudinaryWidget onSuccess={(url: string) => setValue("url_imagen", url, { shouldValidate: true })} />
+              <CloudinaryWidget folder="beatmemo/pub" onSuccess={(url: string) => setValue("url_imagen", url, { shouldValidate: true })} />
               {errors.url_imagen && <p className="text-red-500 text-xs mt-1">{errors.url_imagen.message as string}</p>}
             </div>
           </form>

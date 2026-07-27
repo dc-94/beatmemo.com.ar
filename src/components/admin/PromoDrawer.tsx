@@ -178,7 +178,7 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
                     </button>
                   </div>
                 ) : (
-                  <CloudinaryWidget label="Subir logo" onSuccess={(url) => setValue("logo_url", url, { shouldValidate: true })} />
+                  <CloudinaryWidget folder="beatmemo/promos" label="Subir logo" onSuccess={(url) => setValue("logo_url", url, { shouldValidate: true })} />
                 )}
               </div>
             ) : (
@@ -197,7 +197,7 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
                     </button>
                   </div>
                 ) : (
-                  <CloudinaryWidget label="Subir imagen" onSuccess={(url) => setValue("imagen_url", url, { shouldValidate: true })} />
+                  <CloudinaryWidget folder="beatmemo/promos" label="Subir imagen" onSuccess={(url) => setValue("imagen_url", url, { shouldValidate: true })} />
                 )}
               </div>
             )}
