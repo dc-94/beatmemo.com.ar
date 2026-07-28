@@ -21,6 +21,7 @@ const ACTION_LABELS: Record<string, string> = {
   CREATE_PROMO: "Creó una promoción",
   UPDATE_PROMO: "Editó una promoción",
   SOFT_DELETE_PROMO: "Eliminó una promoción",
+  UPDATE_SITE_CONTENT: "Editó contenido de página",
 };
 
 // Los intentos no autorizados llegan como UNAUTHORIZED_<X>_ATTEMPT.

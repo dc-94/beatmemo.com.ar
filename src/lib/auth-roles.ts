@@ -1,9 +1,6 @@
 // src/lib/auth-roles.ts
 
-/**
- * Fuente única de verdad para los roles de usuario.
- * Coincide con el enum user_role de Postgres: {SUPERADMIN, CM, VISITOR}
- */
+/* Roles de usuario. */
 export type UserRole = "SUPERADMIN" | "CM" | "VISITOR";
 
 // Roles con permiso de escritura. VISITOR queda afuera (solo lectura).

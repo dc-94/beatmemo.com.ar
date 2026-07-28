@@ -2,7 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Calendar, Coffee, Activity, ShieldAlert } from "lucide-react";
-
+import { explicarError, origenError } from "@/lib/error-helpers";
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
 
@@ -19,6 +19,13 @@ export default async function AdminDashboardPage() {
   ]);
 
   const sinErrores = (erroresAbiertos ?? 0) === 0;
+// Además del count, traé los últimos sin resolver para la lista compacta.
+  const { data: erroresPendientes } = await supabase
+    .from("system_errors")
+    .select("id, error_message, created_at")
+    .eq("resolved", false)
+    .order("created_at", { ascending: false })
+    .limit(4);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -51,6 +58,44 @@ export default async function AdminDashboardPage() {
           </div>
         </Link>
       </section>
+      {/* Lista compacta de errores pendientes. Solo aparece si hay.
+          El detalle completo y el botón de resolver viven en /admin/errores. */}
+      {erroresPendientes && erroresPendientes.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm uppercase tracking-widest text-red-400 font-bold">
+              Errores sin resolver
+            </h2>
+            <Link href="/admin/errores" className="text-neutral-400 text-xs hover:text-white transition">
+              Ver todos →
+            </Link>
+          </div>
+
+          <div className="space-y-2">
+            {erroresPendientes.map((err) => {
+              const info = explicarError(err.error_message);
+              const origen = origenError(err.error_message);
+              return (
+                <Link
+                  key={err.id}
+                  href="/admin/errores"
+                  className="block bg-red-950/20 border border-red-900/40 rounded-lg px-4 py-3 hover:bg-red-950/40 transition"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-white text-sm font-medium truncate">{info.titulo}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-neutral-500 border border-neutral-700 px-1.5 py-0.5 rounded shrink-0">
+                      {origen}
+                    </span>
+                  </div>
+                  <p className="text-neutral-500 text-xs mt-0.5">
+                    {new Date(err.created_at).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" })}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

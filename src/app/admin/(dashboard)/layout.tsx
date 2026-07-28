@@ -53,12 +53,18 @@ if (!isAuthorized) {
   await supabase.auth.signOut();
   redirect("/admin/login?error=unauthorized");
 }
+
+const { count: erroresAbiertos } = await supabase
+  .from("system_errors")
+  .select("*", { count: "exact", head: true })
+  .eq("resolved", false);
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-neutral-950">
       <Toaster position="top-right" theme="dark" richColors />
 
       <aside className="w-64 border-r border-white/10 hidden md:flex flex-col flex-shrink-0">
-        <Sidebar />
+        <Sidebar erroresAbiertos={erroresAbiertos ?? 0} />
       </aside>
 
       <main className="flex-1 h-full overflow-y-auto bg-neutral-950 relative">

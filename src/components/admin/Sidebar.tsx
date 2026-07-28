@@ -5,11 +5,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { 
   Calendar, Coffee, LayoutDashboard, LogOut, 
-  FileText, Megaphone, ShieldAlert, AlertTriangle
+  FileText, Megaphone, ShieldAlert, AlertTriangle, LayoutTemplate
 } from "lucide-react";
 
 const navLinks = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { name: "Contenido", href: "/admin/contenido", icon: LayoutTemplate },
   { name: "Shows", href: "/admin/shows", icon: Calendar },
   { name: "Menús", href: "/admin/menus", icon: FileText },
   { name: "Gastronomía", href: "/admin/gastronomia", icon: Coffee },
@@ -19,7 +20,7 @@ const navLinks = [
 ];
 
 
-export default function Sidebar() {
+export default function Sidebar({ erroresAbiertos = 0 }: { erroresAbiertos?: number }) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
@@ -40,7 +41,13 @@ export default function Sidebar() {
       <div className="flex-1 space-y-1">
         {navLinks.map((link) => {
           const Icon = link.icon;
-          const isActive = pathname === link.href;
+          // El Dashboard (/admin) usa igualdad exacta: si no, se prendería en
+          // TODAS las rutas (todas empiezan con /admin). El resto usa startsWith
+          // para que las subrutas (/admin/shows/nuevo) mantengan el link activo.
+          const isActive =
+            link.href === "/admin"
+              ? pathname === "/admin"
+              : pathname.startsWith(link.href);
           
           return (
             <Link
@@ -53,7 +60,12 @@ export default function Sidebar() {
               }`}
             >
               <Icon size={18} />
-              {link.name}
+            <span className="flex-1">{link.name}</span>
+            {link.href === "/admin/errores" && erroresAbiertos > 0 && (
+              <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                {erroresAbiertos}
+              </span>
+            )}
             </Link>
           );
         })}

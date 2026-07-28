@@ -27,7 +27,9 @@ function fmt(iso: string) {
   return new Date(iso).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" });
 }
 
-export default function ErroresClient({ errores }: { errores: SystemError[] }) {
+export default function ErroresClient({ errores, rol }: { errores: SystemError[]; rol: string }) {
+  const esSuperadmin = rol === "SUPERADMIN";
+
   const [abierto, setAbierto] = useState<string | null>(null);
   const [resolviendo, setResolviendo] = useState<string | null>(null);
 
@@ -88,7 +90,7 @@ export default function ErroresClient({ errores }: { errores: SystemError[] }) {
                 {err.stack_trace && `\n\n${err.stack_trace}`}
               </pre>
             </div>
-            {!err.resolved && (
+             {!err.resolved && esSuperadmin && (
               <button
                 onClick={(e) => { e.stopPropagation(); handleResolver(err.id); }}
                 disabled={resolviendo === err.id}
@@ -96,6 +98,11 @@ export default function ErroresClient({ errores }: { errores: SystemError[] }) {
               >
                 {resolviendo === err.id ? "Marcando…" : "Marcar como resuelto"}
               </button>
+            )}
+            {!err.resolved && !esSuperadmin && (
+              <p className="text-neutral-500 text-xs italic">
+                Avisá a un administrador para resolverlo.
+              </p>
             )}
           </div>
         )}

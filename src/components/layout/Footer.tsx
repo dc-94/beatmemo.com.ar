@@ -5,7 +5,7 @@ import { useRef } from "react";
 import Link from "next/link";
 import { motion, useInView, Variants } from "framer-motion";
 import { usePathname } from "next/navigation";
-import { whatsappLink,GOOGLE_REVIEW_URL } from "@/lib/config";
+import { whatsappLink,GOOGLE_REVIEW_URL, SOCIAL } from "@/lib/config";
 import { Star } from "lucide-react";
 import SellosAccesibilidad from "@/components/shared/SellosAccesibilidad";
 
@@ -137,9 +137,9 @@ export default function Footer() {
                 
                 {/* Instagram */}
                 <a 
-                  href="https://instagram.com/beatmemo_rosario" 
+                  href={SOCIAL.instagram}
                   target="_blank" 
-                  rel="noopener noreferrer" 
+                  rel="noopener noreferrer"
                   className="flex items-center gap-3 text-brand-white-200 hover:text-brand-gold transition-colors font-sans text-sm group w-fit"
                 >
                   <svg className="w-5 h-5 fill-current group-hover:scale-110 transition-transform" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -150,9 +150,9 @@ export default function Footer() {
 
                 {/* Facebook */}
                 <a 
-                  href="https://www.facebook.com/beatmemopub" 
+                  href={SOCIAL.facebook}
                   target="_blank" 
-                  rel="noopener noreferrer" 
+                  rel="noopener noreferrer"
                   className="flex items-center gap-3 text-brand-white-200 hover:text-brand-gold transition-colors font-sans text-sm group w-fit"
                 >
                   <svg className="w-5 h-5 fill-current group-hover:scale-110 transition-transform" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
