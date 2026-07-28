@@ -4,6 +4,10 @@ import Link from "next/link";
 import MuseoTimeline from "@/components/museo/MuseoTimeline";
 import { whatsappLink } from "@/lib/config";
 import { Metadata } from 'next';
+import { getSiteContent } from "@/lib/site-content";
+import { getOptimizedImageUrl } from "@/lib/utils";
+import CTALink from "@/components/shared/CTALink";
+
 
 export const metadata: Metadata = {
   title: 'Museo Beatle',
@@ -15,7 +19,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function MuseoPage() {
+export default async function MuseoPage() {
+  const contenido = await getSiteContent("museo");
   const timelineEvents = [
     {
       year: "1940s",
@@ -48,36 +53,54 @@ export default function MuseoPage() {
     <main className="min-h-screen bg-brand-black-200 text-brand-white-100 overflow-hidden font-sans">
       
       {/* 1. HERO SANGRE COMPLETO */}
+      {/* 1. HERO */}
       <section className="relative h-[60vh] lg:h-[70vh] w-full">
-        <Image 
-          src="/placeholders/museo.jpg" 
-          alt="Beatmemo Museo" 
-          fill 
-          className="object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-1000" 
-          priority 
-          sizes="100vw"
-        />
+        {contenido?.imagen_url ? (
+          <Image
+            src={getOptimizedImageUrl(contenido.imagen_url, 1920, 1080)}
+            alt={contenido.alt_texto || "Museo Beatmemo"}
+            fill
+            className="object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-1000"
+            priority
+            sizes="100vw"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-brand-black-100" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-brand-black-200 via-brand-black-200/40 to-transparent" />
-        <div className="absolute bottom-0 left-0 w-full p-6 lg:p-16 max-w-7xl mx-auto flex flex-col justify-end">
-          <span className="text-[#f9e12e] drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)] uppercase tracking-[0.4em] text-[14px] font-bold mb-4 ">
-            Espacio Cultural Temático
-          </span>
-          <h1 className="font-serif text-5xl lg:text-7xl font-bold leading-tight drop-shadow-lg text-brand-white-100">
-            Más que un bar,<br/>
-            <span className="text-[#E6C987]">una cápsula del tiempo.</span>
-          </h1>
+        <div className="absolute bottom-0 left-0 w-full p-6 lg:p-16 max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            <div className="max-w-3xl">
+              <span className="text-[#f9e12e] drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)] uppercase tracking-[0.4em] text-[14px] font-bold mb-4 block">
+                {contenido?.subtitulo || "Espacio Cultural Temático"}
+              </span>
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-7xl font-bold leading-tight drop-shadow-lg text-brand-white-100">
+                {contenido?.titulo || "Más que un bar, una cápsula del tiempo."}
+              </h1>
+            </div>
+
+            {/* CTA paralelo al título en desktop, debajo en móvil */}
+            {contenido?.cta_mostrar && contenido.cta_texto && contenido.cta_link && (
+              <div className="shrink-0">
+                <CTALink href={contenido.cta_link} texto={contenido.cta_texto} />
+              </div>
+            )}
+          </div>
         </div>
+        
       </section>
 
       {/* 2. INTRODUCCIÓN EDITORIAL CON DROP CAP */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
-        <p className="text-base lg:text-xl text-brand-white-300 leading-relaxed font-light">
-          <span className="first-letter:float-left first-letter:text-6xl lg:first-letter:text-7xl first-letter:font-serif first-letter:text-[#C5A059] first-letter:pr-3 first-letter:pt-2 first-letter:leading-none">
-            B
-          </span>
-          eatmemo es el primer espacio cultural de Sudamérica dedicado exclusivamente a preservar y celebrar el legado de The Beatles. En nuestras paredes descansan objetos inéditos, fotografías históricas y una línea de tiempo meticulosamente curada que invita a fanáticos y curiosos a sumergirse en la historia de la banda que cambió el mundo para siempre.
-        </p>
-      </section>
+      {contenido?.cuerpo && (
+        <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+          <p className="text-base lg:text-xl text-brand-white-300 leading-relaxed font-light">
+            <span className="first-letter:float-left first-letter:text-6xl lg:first-letter:text-7xl first-letter:font-serif first-letter:text-[#C5A059] first-letter:pr-3 first-letter:pt-2 first-letter:leading-none">
+              {contenido.cuerpo}
+            </span>
+          </p>
+          
+        </section>
+      )}
 
       {/* 3. BANNER SUTIL SUPERIOR */}
       <section className="border-y border-[#8B6D3B]/20 bg-brand-black-100/50 backdrop-blur-sm py-4">

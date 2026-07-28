@@ -3,8 +3,10 @@ import Image from "next/image";
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { publicClient } from "@/lib/supabase/public";
+import { getSiteContent } from "@/lib/site-content";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import AtributoBadges from "@/components/pub/AtributoBadges";
+import CTALink from "@/components/shared/CTALink";
 
 export const metadata: Metadata = {
   title: 'Pub y Gastronomía',
@@ -33,6 +35,7 @@ interface PubItem {
 }
 
 export default async function PubPage() {
+  const contenido = await getSiteContent("pub");   // ← ACÁ, primera línea del componente
   const supabase = publicClient;
 
   // 1. DTO Sincronizado con DDL: Se pide tags, y se maneja is_deleted correctamente
@@ -64,16 +67,46 @@ export default async function PubPage() {
   return (
     <main className="min-h-screen bg-[#FAF7F2] text-[#2C2924] scroll-smooth">
       
-      {/* 1. HERO */}
+      {/* 1. HERO — contenido editable desde site_content, con fallbacks
+          por si algún campo quedó vacío en el admin. */}
       <section id="espacio" className="relative h-[70vh] w-full scroll-mt-20">
-        <Image src="/placeholders/pub/burguer.jpg" alt="Pasta Beatmemo" fill className="object-cover" priority sizes="100vw" />
-        <div className="absolute inset-0 bg-black/40" /> 
-        <div className="absolute bottom-16 left-4 lg:left-16 text-white">
-          <span className="text-[#E6C987] uppercase tracking-[0.4em] text-[10px] font-bold mb-4 block">Gastronomía & Barra</span>
-          <h1 className="font-serif text-5xl lg:text-7xl font-bold mb-6">Classic Pub.</h1>
-          <Link href="/menu" className="bg-[#C5A059] text-black px-8 py-3 font-bold uppercase tracking-widest text-xs hover:bg-[#E6C987] transition-colors inline-block">
-            Ver Menú Completo
-          </Link>
+        {contenido?.imagen_url ? (
+          <Image
+            src={getOptimizedImageUrl(contenido.imagen_url, 1920, 1080)}
+            alt={contenido.alt_texto || "Ambiente del pub Beatmemo"}
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+          />
+        ) : (
+          // Fallback: fondo sólido si aún no cargaron imagen. Nunca una
+          // imagen rota ni un hueco.
+          <div className="absolute inset-0 bg-brand-black-200" />
+        )}
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute bottom-16 left-4 lg:left-16 right-4 lg:right-16 text-white">
+          <span className="text-[#E6C987] uppercase tracking-[0.4em] text-[10px] font-bold mb-4 block">
+            {contenido?.subtitulo || "Gastronomía & Barra"}
+          </span>
+          <h1 className="font-serif text-5xl lg:text-7xl font-bold mb-6">
+            {contenido?.titulo || "Classic Pub."}
+          </h1>
+
+          {/* Cuerpo + CTA en paralelo: texto a la izquierda, botón a la derecha
+              en desktop; apilados en móvil. */}
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            {contenido?.cuerpo && (
+              <p className="text-brand-white-200 text-sm lg:text-base leading-relaxed max-w-xl">
+                {contenido.cuerpo}
+              </p>
+            )}
+            {contenido?.cta_mostrar && contenido.cta_texto && contenido.cta_link && (
+              <div className="shrink-0">
+                <CTALink href={contenido.cta_link} texto={contenido.cta_texto} />
+              </div>
+            )}
+          </div>
         </div>
       </section>
 

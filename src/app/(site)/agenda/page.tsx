@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import FullAgendaWrapper from "@/components/agenda/FullAgendaWrapper";
 import BrandSpinner from "@/components/ui/BrandSpinner";
-
+import { getSiteContent } from "@/lib/site-content";
+import { getOptimizedImageUrl } from "@/lib/utils";
 export const revalidate = 600;
 
 export default async function AgendaPage({ 
@@ -14,7 +15,7 @@ export default async function AgendaPage({
 }) {
   const params = await searchParams;
   const view = params.view || 'current';
-
+  const contenido = await getSiteContent("agenda");
   const now = new Date();
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   const nextMonthName = nextMonth.toLocaleString('es-ES', { month: 'long' });
@@ -28,11 +29,26 @@ export default async function AgendaPage({
     <main className="min-h-screen bg-brand-black-200 text-brand-white-100 font-sans pb-32">
       {/* Sección Hero */}
       <section className="relative h-[50vh] lg:h-[60vh] w-full">
-        <Image src="/placeholders/show.JPG" alt="Beatmemo Shows" fill className="object-cover opacity-60" priority sizes="100vw"/>
+        {contenido?.imagen_url ? (
+          <Image
+            src={getOptimizedImageUrl(contenido.imagen_url, 1920, 1080)}
+            alt={contenido.alt_texto || "Shows en vivo en Beatmemo"}
+            fill
+            className="object-cover opacity-60"
+            priority
+            sizes="100vw"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-brand-black-100" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-brand-black-200 via-brand-black-200/60 to-transparent" />
         <div className="absolute bottom-0 left-0 w-full p-6 lg:p-16 max-w-7xl mx-auto flex flex-col justify-end">
-          <span className="text-[#C5A059] uppercase tracking-[0.4em] text-[10px] font-bold mb-4">Música en vivo</span>
-          <h1 className="font-serif text-5xl lg:text-7xl font-bold leading-tight text-brand-white-100">La Cartelera.</h1>
+          <span className="text-[#C5A059] uppercase tracking-[0.4em] text-[10px] font-bold mb-4">
+            {contenido?.subtitulo || "Música en vivo"}
+          </span>
+          <h1 className="font-serif text-5xl lg:text-7xl font-bold leading-tight text-brand-white-100">
+            {contenido?.titulo || "La Cartelera."}
+          </h1>
         </div>
       </section>
 
