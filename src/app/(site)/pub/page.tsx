@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { createClient } from "@/lib/supabase/server";
+import { publicClient } from "@/lib/supabase/public";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import AtributoBadges from "@/components/pub/AtributoBadges";
 
@@ -33,7 +33,7 @@ interface PubItem {
 }
 
 export default async function PubPage() {
-  const supabase = await createClient();
+  const supabase = publicClient;
 
   // 1. DTO Sincronizado con DDL: Se pide tags, y se maneja is_deleted correctamente
   const { data, error } = await supabase
