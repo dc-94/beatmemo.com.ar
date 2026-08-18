@@ -44,15 +44,21 @@ export async function upsertPubItem(formData: FormData, id?: string): Promise<Ac
       };
     }
 
-    // 4. INSERT O UPDATE
-    // El ternario devuelve el builder SIN ejecutar (Regla Crítica del thenable).
-    // Se ejecuta recién en el await de abajo.
+       // 4. NORMALIZACIÓN antes de guardar.
+    // faceta "" → null: el CHECK de la DB acepta null o los 5 valores, no "".
+    // ingredientes vacío → null por prolijidad (no guardar array vacío).
+    const d = validated.data;
+    const payload = {
+      ...d,
+      faceta: d.faceta || null,
+      ingredientes: d.ingredientes && d.ingredientes.length ? d.ingredientes : null,
+    };
+
     const query = id
-      ? supabase.from("pub").update(validated.data).eq("id", id).select("id, nombre").single()
-      : supabase.from("pub").insert(validated.data).select("id, nombre").single();
+      ? supabase.from("pub").update(payload).eq("id", id).select("id, nombre").single()
+      : supabase.from("pub").insert(payload).select("id, nombre").single();
 
     const { data: saved, error: dbError } = await query;
-
     if (dbError) {
       console.error("[DB ERROR UPSERT PUB]:", dbError);
       return { success: false, error: "Error interno al guardar en la base de datos." };

@@ -22,6 +22,7 @@ export default function CloudinaryWidget({ onSuccess, label, folder }: Props) {
         sources: ['local'],
         multiple: false,
         cropping: false,
+        maxFileSize: 10485760,  
         ...(folder ? { folder } : {}),
 
       }}
