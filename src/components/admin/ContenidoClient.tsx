@@ -6,16 +6,29 @@ import { ChevronDown } from "lucide-react";
 import ContenidoForm, { type SeccionData } from "./ContenidoForm";
 
 const NOMBRE_PAGINA: Record<string, string> = {
-  pub: "Pub / Gastronomía",
+  pub: "Pub · Hero",
   museo: "Museo",
   agenda: "Agenda de Shows",
+  pub_cafe: "Pub · Café y meriendas",
+  pub_ejecutivo: "Pub · Menú ejecutivo",
+  pub_cocina: "Pub · La cocina",
+  pub_variedades: "Pub · Variedades",
+  pub_sello_1: "Pub · Sello 1 (Sin TACC)",
+  pub_sello_2: "Pub · Sello 2 (Meat Free)",
+  pub_hh: "Pub · Happy hour",
+  pub_barra: "Pub · Barra de autor",
+  pub_whisky: "Pub · Whisky",
 };
 
 export default function ContenidoClient({ secciones }: { secciones: SeccionData[] }) {
   const [abierta, setAbierta] = useState<string | null>(secciones[0]?.clave ?? null);
 
   // Orden estable: pub, museo, agenda (no el orden que devuelva la DB).
-  const orden = ["pub", "museo", "agenda"];
+  const orden = [
+    "pub", "museo", "agenda",
+    "pub_cafe", "pub_ejecutivo", "pub_cocina", "pub_variedades",
+    "pub_sello_1", "pub_sello_2", "pub_hh", "pub_barra", "pub_whisky",
+  ];
   const ordenadas = [...secciones].sort((a, b) => orden.indexOf(a.clave) - orden.indexOf(b.clave));
 
   return (

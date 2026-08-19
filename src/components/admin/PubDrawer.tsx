@@ -28,12 +28,12 @@ const ATRIBUTOS = [
 export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: Props) {
   const isEditing = !!itemToEdit;
   const [isDeleting, setIsDeleting] = useState(false);
-
-    const { register, handleSubmit, setValue, reset, watch, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, setValue, reset, watch, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(pubItemSchema),
     defaultValues: { disponible: true, categoria: "" },
   });
-const tagsRaw = watch("tags");
+  const tagsRaw = watch("tags");
+  const facetaActual = watch("faceta");
   const tagCount = typeof tagsRaw === "string"
     ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean).length
     : Array.isArray(tagsRaw) ? tagsRaw.length : 0;
@@ -42,8 +42,9 @@ const tagsRaw = watch("tags");
       reset({
         ...itemToEdit,
         categoria: itemToEdit.categoria || "",
-        // tags viene como array desde la DB; el input lo espera como string separado por comas.
         tags: Array.isArray(itemToEdit.tags) ? itemToEdit.tags.join(", ") : "",
+        faceta: itemToEdit.faceta || "",
+        ingredientes: Array.isArray(itemToEdit.ingredientes) ? itemToEdit.ingredientes.join(", ") : "",
       });
     } else {
       reset({
@@ -51,6 +52,7 @@ const tagsRaw = watch("tags");
         es_vegetariano: false, es_vegano: false, es_sin_tacc: false,
         es_nuevo: false, es_recomendado: false,
         destacado_home: false, hero_destacado: false, disponible: true, orden: 0, tags: "",
+        faceta: "", ingredientes: "", 
       });
     }
   }, [itemToEdit, reset]);
@@ -79,9 +81,6 @@ const tagsRaw = watch("tags");
         toast.error(res.error);
       }
     } catch (e) {
-      // Una action puede RECHAZAR (red caída, 500 del server), no solo
-      // devolver { success: false }. Sin esto, el usuario clickea y no pasa
-      // nada visible: el peor tipo de falla, la silenciosa.
       console.error("[PubDrawer] upsert falló:", e);
       toast.error("No se pudo guardar. Revisá tu conexión y probá de nuevo.");
     }
@@ -102,8 +101,6 @@ const tagsRaw = watch("tags");
       console.error("[PubDrawer] delete falló:", e);
       toast.error("No se pudo eliminar. Revisá tu conexión y probá de nuevo.");
     } finally {
-      // Sin este finally, un throw deja isDeleting en true para siempre
-      // y los dos botones del drawer quedan muertos hasta recargar.
       setIsDeleting(false);
     }
   };
@@ -138,7 +135,34 @@ const tagsRaw = watch("tags");
               </select>
               {errors.categoria && <p className="text-red-500 text-xs mt-1">{errors.categoria.message as string}</p>}
             </div>
+              {/* FACETA — en qué bloque de /pub se muestra */}
+            <div>
+              <label className="block text-sm text-neutral-400 mb-1">
+                Seccion <span className="text-neutral-600">(dónde se muestra en la pagina)</span>
+              </label>
+              <select {...register("faceta")} className="w-full bg-neutral-900 border border-neutral-800 text-white p-2.5 rounded text-sm focus:border-brand-red outline-none">
+                <option value="">No mostrar</option>
+                <option value="cafe">Café y meriendas</option>
+                <option value="ejecutivo">Menú ejecutivo</option>
+                <option value="cocina">La cocina</option>
+                <option value="variedad">3 platos</option>
+                <option value="barra_autor">Barra de autor (cóctel)</option>
+              </select>
+            </div>
 
+            {/* INGREDIENTES — solo para cócteles de autor */}
+            {facetaActual === "barra_autor" && (
+              <div>
+                <label className="block text-sm text-neutral-400 mb-1">
+                  Ingredientes <span className="text-neutral-600">(separados por coma, se muestran como lista)</span>
+                </label>
+                <input
+                  {...register("ingredientes")}
+                  placeholder="Ron Bacardí, Limón, Almíbar de almendras, Albahaca"
+                  className="w-full bg-neutral-900 border border-neutral-800 text-white p-2.5 rounded text-sm focus:border-brand-red outline-none"
+                />
+              </div>
+            )}
             {/* DESCRIPCIÓN */}
             <div>
               <label className="block text-sm text-neutral-400 mb-1">Descripción</label>
