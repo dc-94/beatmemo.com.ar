@@ -1,23 +1,42 @@
 "use client";
-
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { 
-  Calendar, Coffee, LayoutDashboard, LogOut, 
-  FileText, Megaphone, ShieldAlert, AlertTriangle, LayoutTemplate
+  Calendar, Coffee, LayoutDashboard, LogOut,
+  FileText, Megaphone, ShieldAlert, AlertTriangle, LayoutTemplate,
+  ChevronDown, Images, Star, UtensilsCrossed,
 } from "lucide-react";
 
-const navLinks = [
+type NavItem = {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ size?: number }>;
+  badge?: boolean;
+  subItems?: { name: string; href: string; icon: React.ComponentType<{ size?: number }> }[];
+};
+
+const navLinks: NavItem[] = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { name: "Contenido", href: "/admin/contenido", icon: LayoutTemplate },
   { name: "Shows", href: "/admin/shows", icon: Calendar },
   { name: "Menús", href: "/admin/menus", icon: FileText },
-  { name: "Gastronomía", href: "/admin/gastronomia", icon: Coffee },
+  {
+    name: "Pub",
+    href: "/admin/pub",
+    icon: Coffee,
+    subItems: [
+      { name: "Nuestro espacio", href: "/admin/pub/espacio", icon: Images },
+      { name: "Destacado home", href: "/admin/pub/destacados", icon: Star },
+      { name: "Gastronomía", href: "/admin/pub/gastronomia", icon: UtensilsCrossed },
+    ],
+  },
   { name: "Promociones", href: "/admin/promociones", icon: Megaphone },
   { name: "Auditoría", href: "/admin/logs", icon: ShieldAlert },
-  { name: "Errores", href: "/admin/errores", icon: AlertTriangle },
+  { name: "Errores", href: "/admin/errores", icon: AlertTriangle, badge: true },
 ];
+
 
 
 export default function Sidebar({ erroresAbiertos = 0 }: { erroresAbiertos?: number }) {
@@ -25,11 +44,17 @@ export default function Sidebar({ erroresAbiertos = 0 }: { erroresAbiertos?: num
   const router = useRouter();
   const supabase = createClient();
 
+  const [pubOpen, setPubOpen] = useState(pathname.startsWith("/admin/pub"));
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push("/login"); // O la ruta de login que definimos
+    router.push("/login"); 
     router.refresh();
   };
+
+
+  const isActive = (href: string) =>
+    href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
 
   return (
     <nav className="flex flex-col h-full p-4">
@@ -41,31 +66,60 @@ export default function Sidebar({ erroresAbiertos = 0 }: { erroresAbiertos?: num
       <div className="flex-1 space-y-1">
         {navLinks.map((link) => {
           const Icon = link.icon;
-          // El Dashboard (/admin) usa igualdad exacta: si no, se prendería en
-          // TODAS las rutas (todas empiezan con /admin). El resto usa startsWith
-          // para que las subrutas (/admin/shows/nuevo) mantengan el link activo.
-          const isActive =
-            link.href === "/admin"
-              ? pathname === "/admin"
-              : pathname.startsWith(link.href);
+          const active = isActive(link.href);
+          if (link.subItems) {
+            return (
+              <div key={link.name}>
+                <button
+                  onClick={() => setPubOpen((v) => !v)}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                    active ? "text-white" : "text-neutral-400 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  <Icon size={18} />
+                  <span className="flex-1 text-left">{link.name}</span>
+                  <ChevronDown size={16} className={`transition-transform ${pubOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {pubOpen && (
+                  <div className="ml-4 mt-1 space-y-1 border-l border-white/10 pl-3">
+                    {link.subItems.map((sub) => {
+                      const SubIcon = sub.icon;
+                      const subActive = pathname.startsWith(sub.href);
+                      return (
+                        <Link
+                          key={sub.href}
+                          href={sub.href}
+                          className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                            subActive ? "bg-white/10 text-white" : "text-neutral-400 hover:text-white hover:bg-white/5"
+                          }`}
+                        >
+                          <SubIcon size={15} />
+                          {sub.name}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          }
           
           return (
             <Link
               key={link.name}
               href={link.href}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                isActive 
-                  ? "bg-white/10 text-white" 
-                  : "text-neutral-400 hover:text-white hover:bg-white/5"
+                active ? "bg-white/10 text-white" : "text-neutral-400 hover:text-white hover:bg-white/5"
               }`}
             >
               <Icon size={18} />
-            <span className="flex-1">{link.name}</span>
-            {link.href === "/admin/errores" && erroresAbiertos > 0 && (
-              <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-                {erroresAbiertos}
-              </span>
-            )}
+              <span className="flex-1">{link.name}</span>
+              {link.badge && erroresAbiertos > 0 && (
+                <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                  {erroresAbiertos}
+                </span>
+              )}
             </Link>
           );
         })}
