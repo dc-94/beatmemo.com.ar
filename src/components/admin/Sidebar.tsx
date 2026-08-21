@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { 
   Calendar, Coffee, LayoutDashboard, LogOut,
   FileText, Megaphone, ShieldAlert, AlertTriangle, LayoutTemplate,
-  ChevronDown, Images, Star, UtensilsCrossed,
+  ChevronDown, Images, Star, UtensilsCrossed, Settings
 } from "lucide-react";
 
 type NavItem = {
@@ -35,6 +35,7 @@ const navLinks: NavItem[] = [
   { name: "Promociones", href: "/admin/promociones", icon: Megaphone },
   { name: "Auditoría", href: "/admin/logs", icon: ShieldAlert },
   { name: "Errores", href: "/admin/errores", icon: AlertTriangle, badge: true },
+  { name: "Configuración", href: "/admin/config", icon: Settings },
 ];
 
 

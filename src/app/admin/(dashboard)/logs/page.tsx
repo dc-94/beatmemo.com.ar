@@ -22,6 +22,10 @@ const ACTION_LABELS: Record<string, string> = {
   UPDATE_PROMO: "Editó una promoción",
   SOFT_DELETE_PROMO: "Eliminó una promoción",
   UPDATE_SITE_CONTENT: "Editó contenido de página",
+  CREATE_ESPACIO: "Creó un espacio del pub",
+  UPDATE_ESPACIO: "Editó un espacio del pub",
+  SOFT_DELETE_ESPACIO: "Eliminó un espacio del pub",
+  UPDATE_CONFIG: "Editó la configuración del sitio",
 };
 
 // Los intentos no autorizados llegan como UNAUTHORIZED_<X>_ATTEMPT.

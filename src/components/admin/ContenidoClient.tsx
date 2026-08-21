@@ -18,6 +18,7 @@ const NOMBRE_PAGINA: Record<string, string> = {
   pub_hh: "Pub · Happy hour",
   pub_barra: "Pub · Barra de autor",
   pub_whisky: "Pub · Whisky",
+  pub_espacio: "Pub · Nuestro espacio",
 };
 
 export default function ContenidoClient({ secciones }: { secciones: SeccionData[] }) {
@@ -27,7 +28,7 @@ export default function ContenidoClient({ secciones }: { secciones: SeccionData[
   const orden = [
     "pub", "museo", "agenda",
     "pub_cafe", "pub_ejecutivo", "pub_cocina", "pub_variedades",
-    "pub_sello_1", "pub_sello_2", "pub_hh", "pub_barra", "pub_whisky",
+    "pub_sello_1", "pub_sello_2", "pub_hh", "pub_barra", "pub_whisky", "pub_espacio"
   ];
   const ordenadas = [...secciones].sort((a, b) => orden.indexOf(a.clave) - orden.indexOf(b.clave));
 

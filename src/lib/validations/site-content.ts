@@ -16,7 +16,7 @@ export const siteContentSchema = z.object({
   clave: z.enum([
     "pub", "museo", "agenda",
     "pub_cafe", "pub_ejecutivo", "pub_cocina", "pub_variedades",
-    "pub_sello_1", "pub_sello_2", "pub_hh", "pub_barra", "pub_whisky",]),
+    "pub_sello_1", "pub_sello_2", "pub_hh", "pub_barra", "pub_whisky", "pub_espacio"]),
   imagen_url: z.string().trim().default(""),
   alt_texto: z.string().trim().max(200, "Máximo 200 caracteres").default(""),
   titulo: z.string().trim().max(120).default(""),

@@ -13,7 +13,7 @@ export default async function ContenidoPage() {
     .in("clave", [
       "pub", "museo", "agenda",
       "pub_cafe", "pub_ejecutivo", "pub_cocina", "pub_variedades",
-      "pub_sello_1", "pub_sello_2", "pub_hh", "pub_barra", "pub_whisky",
+      "pub_sello_1", "pub_sello_2", "pub_hh", "pub_barra", "pub_whisky", "pub_espacio",
     ]);
 
   return <ContenidoClient secciones={data ?? []} />;
