@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { whatsappLink, WA_MESSAGES } from "@/lib/config";
 
-export default function WhatsAppFAB() {
+export default function WhatsAppFAB({ whatsappNumero }: { whatsappNumero: string }) {
+  const href = `https://wa.me/${whatsappNumero}?text=${encodeURIComponent("Hola! Quiero reservar una mesa en Beatmemo.")}`;
 
   return (
     <Link

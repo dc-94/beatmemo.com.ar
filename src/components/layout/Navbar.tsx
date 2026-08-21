@@ -67,7 +67,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full bg-[#1A1A1A] border-b border-brand-black-300">
+      <header className=" z-50 w-full bg-[#1A1A1A] border-b border-brand-black-300">
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
           
           <Link href="/" className="flex items-center shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold rounded-sm">
@@ -143,7 +143,7 @@ export default function Navbar() {
       {/* ================= MOBILE MENU OVERLAY ================= */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 z-[60] h-[100dvh] bg-[#1A1A1A] flex flex-col px-6 pt-8 w-full overflow-y-auto overscroll-contain"
+          className=" inset-0 z-[60] h-[100dvh] bg-[#1A1A1A] flex flex-col px-6 pt-8 w-full overflow-y-auto overscroll-contain"
           style={{ paddingBottom: "calc(6rem + env(safe-area-inset-bottom))" }}
         >
           <div className="flex justify-end w-full mb-5">

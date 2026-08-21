@@ -117,7 +117,7 @@ export default function ConfigClient({ config }: { config: any }) {
               </div>
               <div>
                 <label className={labelCls}>Se apaga solo el <span className="text-neutral-600">(opcional)</span></label>
-                <input type="datetime-local" name="banner_vence" defaultValue={config?.banner_vence ? new Date(config.banner_vence).toISOString().slice(0,16) : ""} className={inputCls} />
+                <input type="datetime-local" name="banner_vence" defaultValue={config?.banner_vence ? new Date(config.banner_vence).toISOString().slice(0,16) : ""} className={` ${inputCls} `} />
               </div>
             </div>
           )}

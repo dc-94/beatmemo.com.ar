@@ -60,7 +60,7 @@ const { count: erroresAbiertos } = await supabase
   .eq("resolved", false);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-neutral-950">
+    <div className="flex h-screen w-full overflow-hidden bg-neutral-950 [color-scheme:dark]">
       <Toaster position="top-right" theme="dark" richColors />
 
       <aside className="w-64 border-r border-white/10 hidden md:flex flex-col flex-shrink-0">

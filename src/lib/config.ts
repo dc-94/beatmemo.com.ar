@@ -22,9 +22,10 @@ export const WHATSAPP_BASE = `https://wa.me/${CONTACT.whatsappNumber}`;
  * sin codificar. Funcionaba de casualidad: el día que un título de show
  * trajera & o #, el mensaje se cortaba a la mitad.
  */
-export function whatsappLink(mensaje?: string): string {
-  if (!mensaje) return WHATSAPP_BASE;
-  return `${WHATSAPP_BASE}?text=${encodeURIComponent(mensaje)}`;
+export function whatsappLink(mensaje?: string, numero?: string): string {
+  const base = `https://wa.me/${numero || CONTACT.whatsappNumber}`;
+  if (!mensaje) return base;
+  return `${base}?text=${encodeURIComponent(mensaje)}`;
 }
 
 /**
