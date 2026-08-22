@@ -86,9 +86,11 @@ export default function Footer({
       </div>
 
       {/* CAPA 2: CONTENIDO E INFORMACIÓN (z-10) */}
-      <div className="relative z-10 w-full flex-grow flex flex-col justify-between bg-black/50 pt-20 pb-8">
+      <div className="relative z-10 w-full flex-grow flex flex-col justify-between bg-black/50 pt-10 pb-2">
+              <SellosAccesibilidad  variant="strip" />
+
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-3  w-full">
           
           {/* Estructura de 3 Columnas con CSS Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
@@ -192,9 +194,6 @@ export default function Footer({
             </div>
 
           </div>
-          <div className="pt-8">
-              <SellosAccesibilidad  variant="strip" />
-            </div>
 
           {/* Fila Inferior: Links Legales y Empleo */}
           <div className="flex flex-wrap gap-4 mt-16 text-brand-white-300 text-xs font-sans items-center md:justify-end">

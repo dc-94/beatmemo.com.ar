@@ -1,224 +1,113 @@
-// src/app/pub/page.tsx
+// src/app/(site)/pub/page.tsx
 import Image from "next/image";
-import Link from 'next/link';
-import { Metadata } from 'next';
-import { publicClient } from "@/lib/supabase/public";
+import { Metadata } from "next";
 import { getSiteContent } from "@/lib/site-content";
+import { getPubFacetas, getWhiskies, getEspacioFotos } from "@/lib/pub-data";
 import { getOptimizedImageUrl } from "@/lib/utils";
-import AtributoBadges from "@/components/pub/AtributoBadges";
 import CTALink from "@/components/shared/CTALink";
 
+import PubSubnav from "@/components/pub/PubSubnav";
+import FacetaCafe from "@/components/pub/FacetaCafe";
+import FacetaEjecutivo from "@/components/pub/FacetaEjecutivo";
+import FacetaCocina from "@/components/pub/FacetaCocina";
+import SellosCocina from "@/components/pub/SellosCocina";
+import FacetaHappyHour from "@/components/pub/FacetaHappyHour";
+import FacetaBarra from "@/components/pub/FacetaBarra";
+import CarruselWhisky from "@/components/pub/CarruselWhisky";
+import SeccionEspacio from "@/components/pub/SeccionEspacio";
+import CierreCTA from "@/components/pub/CierreCTA";
+
 export const metadata: Metadata = {
-  title: 'Pub y Gastronomía',
-  description: 'Nuestra carta de autor, cócteles clásicos y una propuesta gastronómica pensada para disfrutar mientras suena la mejor música.',
+  title: "Pub y Gastronomía",
+  description: "Café, cocina, happy hour, tragos de autor y una colección de whisky en un ambiente temático único.",
   openGraph: {
-    title: 'Pub y Gastronomía | Beatmemo',
-    description: 'Gastronomía de autor y los mejores cócteles en un ambiente temático único.',
-    images: ['/og/pub.jpg'],
+    title: "Pub y Gastronomía | Beatmemo",
+    description: "Gastronomía de autor y los mejores cócteles en un ambiente temático único.",
+    images: ["/og/pub.jpg"],
   },
 };
 
 export const revalidate = 300;
 
-interface PubItem {
-  id: string;
-  nombre: string;
-  descripcion: string | null;
-  url_imagen: string;
-  categoria: string;
-  tags: string[]; // Agregado según esquema DB
-  es_vegetariano: boolean;
-  es_vegano: boolean;
-  es_sin_tacc: boolean;
-  es_nuevo: boolean;
-  es_recomendado: boolean;
-}
-
 export default async function PubPage() {
-  const contenido = await getSiteContent("pub");   // ← ACÁ, primera línea del componente
-  const supabase = publicClient;
+  // Todas las lecturas en paralelo. publicClient → cacheable por ISR.
+  const [
+    hero, cCafe, cEjecutivo, cCocina, cVariedades, cSello1, cSello2, cHH, cBarra, cWhisky, cEspacio,
+    facetas, whiskies, espacioFotos,
+  ] = await Promise.all([
+    getSiteContent("pub"),
+    getSiteContent("pub_cafe"),
+    getSiteContent("pub_ejecutivo"),
+    getSiteContent("pub_cocina"),
+    getSiteContent("pub_variedades"),
+    getSiteContent("pub_sello_1"),
+    getSiteContent("pub_sello_2"),
+    getSiteContent("pub_hh"),
+    getSiteContent("pub_barra"),
+    getSiteContent("pub_whisky"),
+    getSiteContent("pub_espacio"),
+    getPubFacetas(),
+    getWhiskies(),
+    getEspacioFotos(),
+  ]);
 
-  // 1. DTO Sincronizado con DDL: Se pide tags, y se maneja is_deleted correctamente
-  const { data, error } = await supabase
-    .from("pub")
-    .select("id, nombre, descripcion, url_imagen, categoria, tags, es_vegetariano, es_vegano, es_sin_tacc, es_nuevo, es_recomendado")
-    .eq("is_deleted", false)
-    .eq("disponible", true)
-    .order("orden", { ascending: true });
-
-  if (error) {
-    console.error("Error crítico de DB en PubPage:", error);
-  }
-
-  const items = (data as PubItem[]) ?? [];
-
-  // 2. Filtros Normalizados y Defensivos
-  const food = items.filter((i) => {
-    const cat = i.categoria?.trim().toLowerCase() || "";
-    // Agrupamos 'promo' y 'food' en la misma sección para no romper el diseño a rajatabla
-    return cat === "food" || cat === "comida" || cat === "promo";
-  });
-
-  const cocktails = items.filter((i) => {
-    const cat = i.categoria?.trim().toLowerCase() || "";
-    return cat === "cocktail" || cat === "tragos" || cat === "bebida";
-  });
+  // Qué secciones existen, para armar la subnav dinámicamente (solo las que tienen contenido).
+  const secciones = [
+    espacioFotos.length > 0 && { id: "espacio", label: "El espacio" },
+    (facetas.cafe?.length ?? 0) > 0 && { id: "cafe", label: "Café" },
+    (facetas.ejecutivo?.length ?? 0) > 0 && { id: "ejecutivo", label: "Mediodía" },
+    (facetas.cocina?.length ?? 0) > 0 && { id: "cocina", label: "Cocina" },
+    { id: "happyhour", label: "Happy hour" },
+    (facetas.barra_autor?.length ?? 0) > 0 && { id: "barra", label: "Barra" },
+    whiskies.length > 0 && { id: "whisky", label: "Whisky" },
+  ].filter(Boolean) as { id: string; label: string }[];
 
   return (
     <main className="min-h-screen bg-[#FAF7F2] text-[#2C2924] scroll-smooth">
-      
-      {/* 1. HERO — contenido editable desde site_content, con fallbacks
-          por si algún campo quedó vacío en el admin. */}
-      <section id="espacio" className="relative h-[70vh] w-full scroll-mt-20">
-        {contenido?.imagen_url ? (
-          <Image
-            src={getOptimizedImageUrl(contenido.imagen_url, 1920, 1080)}
-            alt={contenido.alt_texto || "Ambiente del pub Beatmemo"}
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-          />
+      {/* HERO — conservado, editable desde site_content. Sin id (espacio es la galería). */}
+      <section className="relative h-[70vh] w-full">
+        {hero?.imagen_url ? (
+          <Image src={getOptimizedImageUrl(hero.imagen_url, 1920, 1080)} alt={hero.alt_texto || "Ambiente del pub Beatmemo"} fill className="object-cover" priority sizes="100vw" />
         ) : (
-          // Fallback: fondo sólido si aún no cargaron imagen. Nunca una
-          // imagen rota ni un hueco.
-          <div className="absolute inset-0 bg-brand-black-200" />
+          <div className="absolute inset-0 bg-[#141414]" />
         )}
         <div className="absolute inset-0 bg-black/40" />
         <div className="absolute bottom-16 left-4 lg:left-16 right-4 lg:right-16 text-white">
           <span className="text-[#E6C987] uppercase tracking-[0.4em] text-[10px] font-bold mb-4 block">
-            {contenido?.subtitulo || "Gastronomía & Barra"}
+            {hero?.subtitulo || "Gastronomía & Barra"}
           </span>
-          <h1 className="font-serif text-5xl lg:text-7xl font-bold mb-6">
-            {contenido?.titulo || "Classic Pub."}
-          </h1>
-
-          {/* Cuerpo + CTA en paralelo: texto a la izquierda, botón a la derecha
-              en desktop; apilados en móvil. */}
+          <h1 className="font-serif text-5xl lg:text-7xl font-bold mb-6">{hero?.titulo || "Classic Pub."}</h1>
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-            {contenido?.cuerpo && (
-              <p className="text-brand-white-200 text-sm lg:text-base leading-relaxed max-w-xl">
-                {contenido.cuerpo}
-              </p>
-            )}
-            {contenido?.cta_mostrar && contenido.cta_texto && contenido.cta_link && (
-              <div className="shrink-0">
-                <CTALink href={contenido.cta_link} texto={contenido.cta_texto} />
-              </div>
+            {hero?.cuerpo && <p className="text-white/80 text-sm lg:text-base leading-relaxed max-w-xl">{hero.cuerpo}</p>}
+            {hero?.cta_mostrar && hero.cta_texto && hero.cta_link && (
+              <div className="shrink-0"><CTALink href={hero.cta_link} texto={hero.cta_texto} /></div>
             )}
           </div>
         </div>
       </section>
 
-      {/* 2. STICKY SUB-NAVBAR */}
-      <nav className="sticky top-[80px] z-40 bg-[#FAF7F2]/95 backdrop-blur-sm border-b border-[#D1CCC0] shadow-sm">
-        <div className="max-w-7xl mx-auto px-4">
-          <ul className="flex items-center justify-center gap-3 sm:gap-10 py-4 w-full">
-            <li>
-              <a href="#espacio" className="font-sans text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[#5C5852] hover:text-[#C5A059] transition-colors">Nuestro Espacio</a>
-            </li>
-            <li className="text-[#C5A059] font-bold text-xl leading-none mt-[-2px]">·</li>
-            <li>
-              <a href="#cocina" className="font-sans text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[#5C5852] hover:text-[#C5A059] transition-colors">
-                <span className="hidden sm:inline">Nuestra </span>Cocina
-              </a>
-            </li>
-            <li className="text-[#C5A059] font-bold text-xl leading-none mt-[-2px]">·</li>
-            <li>
-              <a href="#barra" className="font-sans text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[#5C5852] hover:text-[#C5A059] transition-colors">
-                <span className="hidden sm:inline">Nuestra </span>Barra
-              </a>
-            </li>
-          </ul>
-        </div>
-      </nav>
+      <PubSubnav secciones={secciones} />
 
-      {/* INTRO Y FILTROS */}
-      <section className="py-16 px-4 max-w-4xl mx-auto text-center">
-        <h2 className="font-serif text-3xl mb-6">Sabores que cuentan historias</h2>
-        <p className="text-[#5C5852] leading-relaxed">
-          Nuestra cocina combina la tradición de los bodegones con ingredientes seleccionados. Cada plato y cada trago ha sido curado para ser disfrutado en un entorno que respira historia musical.
-        </p>
+      {/* El orden narra un día: mañana → noche */}
+      <SeccionEspacio contenido={cEspacio} fotos={espacioFotos} />
+      <FacetaCafe contenido={cCafe} items={facetas.cafe ?? []} />
+      <FacetaEjecutivo contenido={cEjecutivo} items={facetas.ejecutivo ?? []} />
+      <FacetaCocina contenido={cCocina} contenidoVariedad={cVariedades} items={facetas.cocina ?? []} variedades={facetas.variedad ?? []} />
+      <SellosCocina sello1={cSello1} sello2={cSello2} />
+      <FacetaHappyHour contenido={cHH} />
+
+      {/* Barra de autor + whisky viven en la misma banda oscura, whisky cierra */}
+      <FacetaBarra contenido={cBarra} items={facetas.barra_autor ?? []} />
+      <section id="whisky" className="py-16 lg:py-24 bg-[#080808] text-white scroll-mt-24">
+        <div className="max-w-6xl mx-auto px-4 text-center mb-10">
+          <p className="text-[#E6C987] uppercase tracking-[0.34em] text-[11px] font-bold mb-2">{cWhisky?.subtitulo || "La colección"}</p>
+          <h2 className="font-serif text-3xl lg:text-4xl font-bold mb-3">{cWhisky?.titulo || "The Whisky Collection"}</h2>
+          {cWhisky?.cuerpo && <p className="text-white/60 max-w-xl mx-auto">{cWhisky.cuerpo}</p>}
+        </div>
+        <CarruselWhisky whiskies={whiskies} />
       </section>
 
-      {/* 3. SECCIÓN: COCINA */}
-      <section id="cocina" className="max-w-7xl mx-auto px-4 py-16 scroll-mt-32">
-        <div className="flex flex-col items-center mb-12">
-           <span className="text-[#A68966] uppercase tracking-[0.3em] text-[10px] font-bold mb-2">Food Menu</span>
-           <h2 className="font-serif text-4xl font-bold">Nuestra Cocina</h2>
-        </div>
-        
-        {food.length === 0 ? (
-          <p className="text-center text-[#5C5852]">Estamos actualizando nuestra carta. Volvé pronto.</p>
-        ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {food.map((item) => (
-            <article key={item.id} className="group flex flex-col md:flex-row gap-6 items-center">
-              <div className="w-full md:w-1/2 aspect-[4/3] relative overflow-hidden bg-white shadow-sm border border-[#D1CCC0]">
-                {/* Fallback visual temporal si url_imagen es null o vacía */}
-                <Image src={item.url_imagen ? getOptimizedImageUrl(item.url_imagen, 600, 450) : '/placeholders/pub/burguer.jpg'} alt={item.nombre} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 768px) 100vw, 50vw" />
-              </div>
-              <div className="w-full md:w-1/2 space-y-2">
-                <span className="text-[#A68966] text-[9px] uppercase font-bold tracking-widest">{item.categoria}</span>
-                <h3 className="font-serif text-xl font-bold">{item.nombre}</h3>
-                {item.descripcion && <p className="text-[#5C5852] text-sm leading-relaxed">{item.descripcion}</p>}
-                {/* El componente hijo ahora recibirá el objeto con la prop 'tags' */}
-                <AtributoBadges item={item} />
-              </div>
-            </article>
-          ))}
-        </div>
-        )}
-      </section>
-
-      {/* SECCIÓN VALORES EDITORIAL */}
-      <section className="py-20 bg-[#F2EDE5] border-y border-[#D1CCC0]/50">
-        <div className="max-w-5xl mx-auto px-4 grid md:grid-cols-2 gap-16 text-center">
-          <div className="space-y-4">
-            <h4 className="font-serif text-xl font-bold text-[#A68966]">Cocina Sin TACC</h4>
-            <p className="text-sm text-[#5C5852]">Contamos con estrictos protocolos de manipulación para ofrecer opciones seguras sin perder el sabor artesanal que nos caracteriza.</p>
-          </div>
-          <div className="space-y-4">
-            <h4 className="font-serif text-xl font-bold text-[#A68966]">Meat Free Monday</h4>
-            <p className="text-sm text-[#5C5852]">Inspirados en la conciencia global, cada lunes nuestra carta destaca opciones basadas en plantas, celebrando los productos de estación.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. SECCIÓN: BARRA */}
-      <section id="barra" className="max-w-7xl mx-auto px-4 py-24 scroll-mt-32">
-        <div className="flex flex-col items-center mb-12">
-           <span className="text-[#A68966] uppercase tracking-[0.3em] text-[10px] font-bold mb-2">Drinks & Co.</span>
-           <h2 className="font-serif text-4xl font-bold">Nuestra Barra</h2>
-        </div>
-
-        {cocktails.length === 0 ? (
-          <p className="text-center text-[#5C5852]">Estamos preparando nuevos tragos. Volvé pronto.</p>
-        ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {cocktails.map((item) => (
-            <article key={item.id} className="group flex flex-col md:flex-row gap-6 items-center">
-              <div className="w-full md:w-1/2 aspect-[4/3] relative overflow-hidden bg-white shadow-sm border border-[#D1CCC0]">
-                <Image src={item.url_imagen ? getOptimizedImageUrl(item.url_imagen, 600, 450) : '/placeholders/pub/cocktail01.jpg'} alt={item.nombre} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 768px) 100vw, 50vw" />
-              </div>
-              <div className="w-full md:w-1/2 space-y-2">
-                <span className="text-[#A68966] text-[9px] uppercase font-bold tracking-widest">{item.categoria}</span>
-                <h3 className="font-serif text-xl font-bold">{item.nombre}</h3>
-                {item.descripcion && <p className="text-[#5C5852] text-sm leading-relaxed">{item.descripcion}</p>}
-                <AtributoBadges item={item} />
-              </div>
-            </article>
-          ))}
-        </div>
-        )}
-      </section>
-
-      {/* FOOTER CTA */}
-      <section className="py-16 text-center">
-        <Link href="/menu" className="border border-[#A68966] text-[#A68966] px-10 py-4 font-bold uppercase tracking-widest text-xs hover:bg-[#A68966] hover:text-white transition-all inline-block">
-          Ver Carta Completa
-        </Link>
-      </section>
+      <CierreCTA />
     </main>
   );
 }

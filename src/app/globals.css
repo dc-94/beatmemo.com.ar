@@ -41,3 +41,16 @@ html {
 html[data-splash="seen"] #splash-overlay {
   display: none;
 }
+
+/* Carrusel de whisky: scroll continuo. */
+
+@keyframes whisky-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-whisky-scroll {
+  animation: whisky-scroll 40s linear infinite;
+}
+.animate-whisky-scroll:hover {
+  animation-play-state: paused;
+}
