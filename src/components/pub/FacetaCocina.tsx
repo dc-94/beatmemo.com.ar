@@ -4,7 +4,7 @@ import { getOptimizedImageUrl } from "@/lib/utils";
 import CTALink from "@/components/shared/CTALink";
 import type { PubItem } from "@/lib/pub-data";
 import type { SiteContent } from "@/lib/site-content";
-
+import AtributoBadges from "@/components/pub/AtributoBadges";
 export default function FacetaCocina({
   contenido, contenidoVariedad, items, variedades,
 }: {
@@ -67,6 +67,9 @@ export default function FacetaCocina({
                     )}
                   </div>
                   <h4 className="font-serif text-sm lg:text-base font-bold text-[#2C2924]">{v.nombre}</h4>
+                  <div className="flex justify-center">
+                    <AtributoBadges item={v} compact max={3} />
+                  </div>
                 </article>
               ))}
             </div>

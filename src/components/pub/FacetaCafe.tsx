@@ -4,7 +4,7 @@ import { getOptimizedImageUrl } from "@/lib/utils";
 import CTALink from "@/components/shared/CTALink";
 import type { PubItem } from "@/lib/pub-data";
 import type { SiteContent } from "@/lib/site-content";
-
+import AtributoBadges from "@/components/pub/AtributoBadges";
 export default function FacetaCafe({ contenido, items }: { contenido: SiteContent | null; items: PubItem[] }) {
   if (items.length === 0) return null; // faceta vacía → no se renderiza
 
@@ -30,7 +30,9 @@ export default function FacetaCafe({ contenido, items }: { contenido: SiteConten
                 )}
               </div>
               <h3 className="font-serif text-lg font-bold text-[#2C2924]">{item.nombre}</h3>
-              {item.descripcion && <p className="text-[#5C5852] text-sm leading-relaxed mt-1">{item.descripcion}</p>}
+              {item.descripcion && 
+              <p className="text-[#5C5852] text-sm leading-relaxed mt-1">{item.descripcion}</p>}
+              <AtributoBadges item={item} max={3} />
             </article>
           ))}
         </div>

@@ -10,7 +10,6 @@ export interface PubItem {
   categoria: string;
   faceta: string | null;
   ingredientes: string[] | null;
-  tags: string[];
   es_vegetariano: boolean;
   es_vegano: boolean;
   es_sin_tacc: boolean;
@@ -38,7 +37,7 @@ export interface EspacioFoto {
 export async function getPubFacetas(): Promise<Record<string, PubItem[]>> {
   const { data } = await publicClient
     .from("pub")
-    .select("id, nombre, descripcion, url_imagen, categoria, faceta, ingredientes, tags, es_vegetariano, es_vegano, es_sin_tacc, es_nuevo, es_recomendado")
+    .select("id, nombre, descripcion, url_imagen, categoria, faceta, ingredientes, es_vegetariano, es_vegano, es_sin_tacc, es_nuevo, es_recomendado")
     .eq("is_deleted", false)
     .eq("disponible", true)
     .not("faceta", "is", null)

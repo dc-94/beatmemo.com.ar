@@ -28,21 +28,19 @@ const ATRIBUTOS = [
 export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: Props) {
   const isEditing = !!itemToEdit;
   const [isDeleting, setIsDeleting] = useState(false);
-  const { register, handleSubmit, setValue, reset, watch, formState: { errors, isSubmitting } } = useForm({
+  
+  const { register, handleSubmit, setValue, reset, watch, setError, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(pubItemSchema),
     defaultValues: { disponible: true, categoria: "" },
   });
-  const tagsRaw = watch("tags");
+  
   const facetaActual = watch("faceta");
-  const tagCount = typeof tagsRaw === "string"
-    ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean).length
-    : Array.isArray(tagsRaw) ? tagsRaw.length : 0;
+  
   useEffect(() => {
     if (itemToEdit) {
       reset({
         ...itemToEdit,
         categoria: itemToEdit.categoria || "",
-        tags: Array.isArray(itemToEdit.tags) ? itemToEdit.tags.join(", ") : "",
         faceta: itemToEdit.faceta || "",
         ingredientes: Array.isArray(itemToEdit.ingredientes) ? itemToEdit.ingredientes.join(", ") : "",
       });
@@ -51,7 +49,7 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
         nombre: "", categoria: "", descripcion: "", url_imagen: "",
         es_vegetariano: false, es_vegano: false, es_sin_tacc: false,
         es_nuevo: false, es_recomendado: false,
-        destacado_home: false, hero_destacado: false, disponible: true, orden: 0, tags: "",
+        destacado_home: false, hero_destacado: false, disponible: true, orden: 0,
         faceta: "", ingredientes: "", 
       });
     }
@@ -78,7 +76,13 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
         toast.success(isEditing ? "Item actualizado" : "Item creado");
         onClose();
       } else {
-        toast.error(res.error);
+       if (res.fieldErrors) {
+          Object.entries(res.fieldErrors).forEach(([campo, msgs]) => {
+            const msg = Array.isArray(msgs) ? msgs[0] : msgs;
+            if (msg) setError(campo as any, { type: "server", message: msg });
+          });
+        }
+        toast.error(res.error || "Revisá los campos marcados");
       }
     } catch (e) {
       console.error("[PubDrawer] upsert falló:", e);
@@ -178,22 +182,6 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
                 <input type="number" {...register("orden")} placeholder="0"
                   className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded text-white focus:border-brand-red outline-none" />
               </div>
-            </div>
-
-            {/* TAGS */}
-            <div>
-              <label className="block text-sm text-neutral-400 mb-1">
-                Tags de marketing <span className="text-neutral-600">(máx. 3, separados por coma)</span>
-              </label>
-              <input {...register("tags")} placeholder="Happy Hour, Refrescante"
-                className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded text-white focus:border-brand-red outline-none" />
-              <div className="flex items-center justify-between mt-1">
-                <p className="text-neutral-600 text-xs">Se muestran en la carta pública.</p>
-                <span className={`text-xs font-medium ${tagCount > 3 ? "text-red-500" : "text-neutral-500"}`}>
-                  {tagCount}/3
-                </span>
-              </div>
-              {errors.tags && <p className="text-red-500 text-xs mt-1">{errors.tags.message as string}</p>}
             </div>
 
             {/* ATRIBUTOS (checkboxes) */}

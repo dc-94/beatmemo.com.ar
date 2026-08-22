@@ -28,7 +28,7 @@ export default function WhiskyDrawer({ isOpen, onClose, whiskyToEdit }: Props) {
   const isEditing = !!whiskyToEdit;
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const { register, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, setValue, watch, reset, setError, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(whiskySchema),
     // Solo constantes. El dato real entra por reset en el useEffect. Igual que
     // EventDrawer: defaultValues con el dato metía los null de la DB antes de tiempo.
@@ -70,7 +70,14 @@ export default function WhiskyDrawer({ isOpen, onClose, whiskyToEdit }: Props) {
         toast.success(isEditing ? "Whisky actualizado" : "Whisky creado");
         onClose();
       } else {
-        toast.error(res.error || "No se pudo guardar");
+        if (res.fieldErrors) {
+          Object.entries(res.fieldErrors).forEach(([campo, msgs]) => {
+            const msg = Array.isArray(msgs) ? msgs[0] : msgs;
+            if (msg) setError(campo as any, { type: "server", message: msg });
+          });
+        }
+        // El error general (no de campo) sigue yendo al toast.
+        toast.error(res.error || "Revisá los campos marcados");
       }
     } catch (e) {
       console.error("[WhiskyDrawer] upsert falló:", e);

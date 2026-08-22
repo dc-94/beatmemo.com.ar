@@ -13,7 +13,7 @@ export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen:
   const isEditing = !!fotoToEdit;
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, setValue, watch, setError, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(espacioSchema),
     defaultValues: {
       imagen_url: fotoToEdit?.imagen_url ?? "",
@@ -33,9 +33,18 @@ export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen:
       const fd = new FormData();
       Object.entries(data).forEach(([k, v]) => { if (v !== undefined) fd.append(k, v === null ? "" : String(v)); });
       if (isEditing) fd.append("id", fotoToEdit.id);
+
       const res = await upsertEspacio(fd);
       if (res.success) { toast.success(isEditing ? "Foto actualizada" : "Foto agregada"); onClose(); }
-      else { toast.error(res.error || "No se pudo guardar"); }
+      else {
+        if (res.fieldErrors) {
+          Object.entries(res.fieldErrors).forEach(([campo, msgs]) => {
+            const msg = Array.isArray(msgs) ? msgs[0] : msgs;
+            if (msg) setError(campo as any, { type: "server", message: msg });
+          });
+        }
+        toast.error(res.error || "Revisá los campos marcados");
+      }
     } catch (e) { console.error("[EspacioDrawer]", e); toast.error("Error de conexión."); }
   };
 

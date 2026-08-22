@@ -5,7 +5,7 @@ import { useRef } from "react";
 import Link from "next/link";
 import { motion, useInView, Variants } from "framer-motion";
 import { usePathname } from "next/navigation";
-import { whatsappLink,GOOGLE_REVIEW_URL, SOCIAL } from "@/lib/config";
+import { whatsappLink,} from "@/lib/config";
 import { Star } from "lucide-react";
 import SellosAccesibilidad from "@/components/shared/SellosAccesibilidad";
 
@@ -26,7 +26,7 @@ export default function Footer({
   
   // 1. TODOS los hooks DEBEN declararse arriba, antes de cualquier "return"
   const containerRef = useRef(null);
-  const isInView = useInView(containerRef, { once: true, amount: 0.3 });
+  const isInView = useInView(containerRef, { once: false, amount: 0.3 });
 
   const text = "BEATMEMO";
   const letters = Array.from(text);
@@ -61,7 +61,7 @@ export default function Footer({
         
         {/* MOBILE: Texto estático detrás del contenido */}
         <div className="md:hidden w-full text-center">
-          <span className="font-serif font-bold text-brand-gold text-[18vw] leading-none tracking-tighter">
+          <span className="font-serif font-bold text-brand-gold text-[28vw] leading-none tracking-tighter">
             BEATMEMO
           </span>
         </div>
@@ -86,14 +86,16 @@ export default function Footer({
       </div>
 
       {/* CAPA 2: CONTENIDO E INFORMACIÓN (z-10) */}
-      <div className="relative z-10 w-full flex-grow flex flex-col justify-between bg-black/50 pt-10 pb-2">
-              <SellosAccesibilidad  variant="strip" />
+           {/* CAPA 2: CONTENIDO E INFORMACIÓN (z-10) */}
+           <div className="relative z-10 w-full flex-grow flex flex-col justify-between bg-black/80 pb-2">
+        <div className="bg-brand-black-100">
+          <SellosAccesibilidad variant="strip" />
+        </div>
 
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-3  w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-3 w-full ">
           
           {/* Estructura de 3 Columnas con CSS Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-10 px-6 lg:px-0 py-10 md:py-16">
             
             {/* Columna 1: Visitanos */}
             <div className="flex flex-col gap-8">
@@ -132,7 +134,7 @@ export default function Footer({
                 Reserva
               </h3>
               <a 
-                href={whatsappLink("Hola! Quiero hacer una reserva.")}
+                href={whatsappLink("Hola! Quiero hacer una reserva.", whatsappNumero)}
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-brand-gold font-sans text-xl font-bold hover:text-accent-gold-vibrant transition-colors group w-fit"
@@ -196,7 +198,7 @@ export default function Footer({
           </div>
 
           {/* Fila Inferior: Links Legales y Empleo */}
-          <div className="flex flex-wrap gap-4 mt-16 text-brand-white-300 text-xs font-sans items-center md:justify-end">
+          <div className="flex flex-wrap gap-4 my-8  text-brand-white-300 text-xs font-sans items-center md:justify-center gap-2">
              <a href="mailto:beatlesmemo.adm@gmail.com" className="font-bold text-brand-white-100 hover:text-brand-gold transition-colors">
                TRABAJA CON NOSOTROS
              </a>

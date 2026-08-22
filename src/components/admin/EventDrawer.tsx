@@ -22,25 +22,21 @@ interface DrawerProps {
 export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit }: DrawerProps) {
   const isEditing = !!eventToEdit;
     const [isDeleting, setIsDeleting] = useState(false);
-  const { register, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, setValue, watch, reset,setError, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(eventSchema),
-    // Solo constantes seguras. El dato real entra por el useEffect de abajo,
-    // que es la ÚNICA fuente de llenado. defaultValues con eventToEdit metía
-    // los null de la DB antes del reset → doble trabajo y posible flash.
     defaultValues: { es_gratuito: false, precio: null, tipo: "Show", ciclo_id: "" },
   });
 
-  // Si cambia el evento a editar, reseteamos el formulario
+
 useEffect(() => {
     if (eventToEdit) {
-      // MODO EDICIÓN: Forzamos que los nulos sean strings vacíos para que los <select> los reconozcan
+      
       reset({
         ...eventToEdit,
         tipo: eventToEdit.tipo || "SHOW",
         ciclo_id: eventToEdit.ciclo_id || "", 
       });
     } else {
-      // MODO CREACIÓN: Limpieza total de todos los campos
       reset({ 
         es_gratuito: false, 
         precio: null, 
@@ -72,21 +68,22 @@ useEffect(() => {
 
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => {
-        // undefined = el campo no existe en el form → se omite.
-        // null o "" = el usuario lo vació A PROPÓSITO → se manda vacío,
-        // para que el server pueda escribir el vaciado en la base.
-        // Descartar "" y null era el bug: el vaciado nunca llegaba.
         if (value === undefined) return;
         formData.append(key, value === null ? "" : String(value));
       });
 
       const response = await upsertEvento(formData, isEditing ? eventToEdit.id : undefined);
-
       if (response.success) {
         toast.success(isEditing ? "Evento actualizado" : "Evento creado");
         onClose();
       } else {
-        toast.error(response.error || "No se pudo guardar el evento");
+        if (response.fieldErrors) {
+          Object.entries(response.fieldErrors).forEach(([campo, msgs]) => {
+            const msg = Array.isArray(msgs) ? msgs[0] : msgs;
+            if (msg) setError(campo as any, { type: "server", message: msg });
+          });
+        }
+        toast.error(response.error || "Revisá los campos marcados");
       }
     } catch (e) {
       // Una action puede RECHAZAR (red, 500, timeout), no solo devolver

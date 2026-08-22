@@ -9,11 +9,10 @@ interface Props {
     es_nuevo?: boolean;
     es_recomendado?: boolean;
   };
-  // compact: solo ícono, sin texto. Para cards angostas (bento horizontal).
-  // Los atributos de alergia NO se ocultan nunca — solo se comprimen a ícono.
   compact?: boolean;
-  // max: tope de badges visibles. Si sobran, muestra "+N". Default: todos.
   max?: number;
+  variant?: "light" | "dark";
+
 }
 
 const BADGES = [
@@ -24,12 +23,18 @@ const BADGES = [
   { key: "es_recomendado", label: "Recomendado", Icon: Star },
 ] as const;
 
-export default function AtributoBadges({ item, compact = false, max }: Props) {
+export default function AtributoBadges({ item, compact = false, max , variant = "light" }: Props) {
   const activos = BADGES.filter((b) => item[b.key as keyof typeof item]);
   if (activos.length === 0) return null;
 
   const visibles = max ? activos.slice(0, max) : activos;
   const ocultos = activos.length - visibles.length;
+
+  const color = variant === "dark"
+    ? "text-[#E6C987] border-[#E6C987]/40"
+    : "text-[#A68966] border-[#A68966]/30";
+  const colorExtra = variant === "dark" ? "text-[#E6C987]/70" : "text-[#A68966]/70";
+
 
   return (
     <div className="flex flex-wrap gap-1.5 mt-2">
@@ -38,7 +43,7 @@ export default function AtributoBadges({ item, compact = false, max }: Props) {
           key={key}
           title={compact ? label : undefined}
           aria-label={compact ? label : undefined}
-          className={`inline-flex items-center gap-1 uppercase tracking-widest font-bold text-[#A68966] border border-[#A68966]/30 rounded-none ${
+          className={`inline-flex items-center gap-1 uppercase tracking-widest font-bold ${color} border border-${color.split('/')[0].split(' ')[1]}/30 rounded-none ${
             compact ? "p-1" : "text-[9px] px-2 py-1"
           }`}
         >
@@ -47,7 +52,7 @@ export default function AtributoBadges({ item, compact = false, max }: Props) {
         </span>
       ))}
       {ocultos > 0 && (
-        <span className="inline-flex items-center text-[9px] uppercase font-bold text-[#A68966]/70 px-1.5 py-1">
+        <span className={`inline-flex items-center text-[9px] uppercase font-bold ${colorExtra} px-1.5 py-1`}>
           +{ocultos}
         </span>
       )}

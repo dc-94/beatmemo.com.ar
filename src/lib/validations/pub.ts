@@ -22,20 +22,6 @@ export const pubItemSchema = z.object({
   hero_destacado: z.boolean().default(false),  
   disponible: z.boolean().default(true),
   orden: z.coerce.number().int().default(0),
-
-  // tags es text[] en la DB. El form manda un string separado por comas;
-  // acá lo normalizamos a array de strings limpios.
-  tags: z
-      .union([z.string(), z.array(z.string())])
-      .optional()
-      .transform((val) => {
-        if (!val) return [];
-        const arr = Array.isArray(val) ? val : val.split(",");
-        return arr.map((t) => t.trim()).filter((t) => t.length > 0);
-      })
-      .refine((arr) => arr.length <= 3, {
-        message: "Máximo 3 tags. Quitá alguno.",
-      }),
   faceta: z
     .enum(["cafe", "ejecutivo", "cocina", "variedad", "barra_autor", ""])
     .optional()

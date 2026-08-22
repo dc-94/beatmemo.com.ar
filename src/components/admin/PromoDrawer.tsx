@@ -25,7 +25,7 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [dias, setDias] = useState<number[]>([]);
 
-  const { register, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, setValue, watch, reset, setError, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(promocionSchema),
     defaultValues: { tipo: "local", activo: true, prioridad: 0 },
   });
@@ -59,9 +59,7 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
       });
     }
   }, [promoToEdit, reset]);
-// Al cambiar de tipo, limpia el asset que ya no corresponde.
-  // banco → usa logo (card CSS). local/fecha_especial → usa imagen.
-  // Sin esto, un logo viejo queda colgado y se pinta como imagen rota.
+
   useEffect(() => {
     if (!isOpen) return;
     if (tipo === "banco") {
@@ -91,7 +89,14 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
         toast.success(isEditing ? "Promoción actualizada" : "Promoción creada");
         onClose();
       } else {
-        toast.error(res.error || "No se pudo guardar");
+        if (res.fieldErrors) {
+          Object.entries(res.fieldErrors).forEach(([campo, msgs]) => {
+            const msg = Array.isArray(msgs) ? msgs[0] : msgs;
+            if (msg) setError(campo as any, { type: "server", message: msg });
+          });
+        }
+        // El error general (no de campo) sigue yendo al toast.
+        toast.error(res.error || "Revisá los campos marcados");
       }
     } catch (e) {
       console.error("[PromoDrawer] upsert falló:", e);
