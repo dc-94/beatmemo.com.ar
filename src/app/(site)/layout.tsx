@@ -1,20 +1,24 @@
 // src/app/(site)/layout.tsx
-// Layout del SITIO PÚBLICO: agrega el chrome (navbar, footer, splash, FAB).
-// Todo lo que está bajo (site)/ lo hereda. El QR y el admin NO están acá,
-// así que no lo reciben — la estructura reemplaza la condición con headers().
+
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import { getSiteConfig, bannerVisible } from "@/lib/site-config";
 import AvisoBanner from "@/components/layout/AvisoBanner";
 import SplashLoader from "@/components/layout/SplashLoader";
+import { buildBeatmemoSchema } from "@/lib/structured-data";
+import { SITE_URL } from "@/lib/config";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const config = await getSiteConfig();
   const mostrarBanner = bannerVisible(config);
+  const schema = buildBeatmemoSchema(config, SITE_URL);
+
 
   return (
     <>
+     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}/>
+      
       <div className="sticky top-0 z-50">
         {mostrarBanner && <AvisoBanner mensaje={config.banner_mensaje!} />}
         <Navbar />
