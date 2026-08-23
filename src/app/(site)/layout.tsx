@@ -18,10 +18,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
   return (
     <>
-    <SkipToContent />
-      {/* structured data, banner, navbar... */}
-      <main id="contenido-principal" className="flex-grow">{children}</main>
-      
+    <SkipToContent />      
      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}/>
       
       <div className="sticky top-0 z-50">
@@ -29,7 +26,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         <Navbar />
       </div>
       <SplashLoader />
-      <main className="flex-grow">{children}</main>
+      <main id="contenido-principal" className="flex-grow">{children}</main>
       <Footer
         whatsappNumero={config.whatsapp_numero}
         instagramUrl={config.instagram_url}
