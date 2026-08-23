@@ -6,6 +6,7 @@ import { getPubFacetas, getWhiskies, getEspacioFotos } from "@/lib/pub-data";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import CTALink from "@/components/shared/CTALink";
 
+import RevealSection from "@/components/pub/RevealSection";
 import PubSubnav from "@/components/pub/PubSubnav";
 import FacetaCafe from "@/components/pub/FacetaCafe";
 import FacetaEjecutivo from "@/components/pub/FacetaEjecutivo";
@@ -89,25 +90,43 @@ export default async function PubPage() {
       <PubSubnav secciones={secciones} />
 
       {/* El orden narra un día: mañana → noche */}
-      <SeccionEspacio contenido={cEspacio} fotos={espacioFotos} />
-      <FacetaCafe contenido={cCafe} items={facetas.cafe ?? []} />
-      <FacetaEjecutivo contenido={cEjecutivo} items={facetas.ejecutivo ?? []} />
-      <FacetaCocina contenido={cCocina} contenidoVariedad={cVariedades} items={facetas.cocina ?? []} variedades={facetas.variedad ?? []} />
-      <SellosCocina sello1={cSello1} sello2={cSello2} />
-      <FacetaHappyHour contenido={cHH} />
+      <RevealSection>
+        <SeccionEspacio contenido={cEspacio} fotos={espacioFotos} />
+      </RevealSection>
+      <RevealSection>
+        <FacetaCafe contenido={cCafe} items={facetas.cafe ?? []} />
+      </RevealSection>
+      <RevealSection>
+        <FacetaEjecutivo contenido={cEjecutivo} items={facetas.ejecutivo ?? []} />
+      </RevealSection>
+      <RevealSection>
+        <FacetaCocina contenido={cCocina} contenidoVariedad={cVariedades} items={facetas.cocina ?? []} variedades={facetas.variedad ?? []} />
+      </RevealSection>
+      <RevealSection>
+        <SellosCocina sello1={cSello1} sello2={cSello2} />
+      </RevealSection>
+      <RevealSection>
+        <FacetaHappyHour contenido={cHH} />
+      </RevealSection>
 
       {/* Barra de autor + whisky viven en la misma banda oscura, whisky cierra */}
-      <FacetaBarra contenido={cBarra} items={facetas.barra_autor ?? []} />
-      <section id="whisky" className="py-16 lg:py-24 bg-[#080808] text-white scroll-mt-24">
-        <div className="max-w-6xl mx-auto px-4 text-center mb-10">
-          <p className="text-[#E6C987] uppercase tracking-[0.34em] text-[11px] font-bold mb-2">{cWhisky?.subtitulo || "La colección"}</p>
-          <h2 className="font-serif text-3xl lg:text-4xl font-bold mb-3">{cWhisky?.titulo || "The Whisky Collection"}</h2>
-          {cWhisky?.cuerpo && <p className="text-white/60 max-w-xl mx-auto">{cWhisky.cuerpo}</p>}
+      <RevealSection>
+        <FacetaBarra contenido={cBarra} items={facetas.barra_autor ?? []} />
+      </RevealSection>
+      <RevealSection>
+        <section id="whisky" className="py-16 lg:py-24 bg-[#080808] text-white scroll-mt-24">
+          <div className="max-w-6xl mx-auto px-4 text-center mb-10">
+            <p className="text-[#E6C987] uppercase tracking-[0.34em] text-[11px] font-bold mb-2">{cWhisky?.subtitulo || "La colección"}</p>
+            <h2 className="font-serif text-3xl lg:text-4xl font-bold mb-3">{cWhisky?.titulo || "The Whisky Collection"}</h2>
+            {cWhisky?.cuerpo && <p className="text-white/60 max-w-xl mx-auto">{cWhisky.cuerpo}</p>}
         </div>
-        <CarruselWhisky whiskies={whiskies} />
-      </section>
+          <CarruselWhisky whiskies={whiskies} />
+        </section>
 
-      <CierreCTA />
+        </RevealSection>
+      <RevealSection>
+        <CierreCTA />
+      </RevealSection>
     </main>
   );
 }

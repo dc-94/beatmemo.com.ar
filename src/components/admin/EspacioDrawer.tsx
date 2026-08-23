@@ -1,6 +1,7 @@
 // src/components/admin/EspacioDrawer.tsx
 "use client";
 
+import { useDrawerA11y } from "@/hooks/useDrawerA11y";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -8,6 +9,7 @@ import { toast } from "sonner";
 import CloudinaryWidget from "./CloudinaryWidget";
 import { upsertEspacio, deleteEspacio } from "@/actions/espacio";
 import { espacioSchema } from "@/lib/validations/espacio";
+
 
 export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen: boolean; onClose: () => void; fotoToEdit?: any }) {
   const isEditing = !!fotoToEdit;
@@ -25,6 +27,7 @@ export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen:
   });
 
   const imagenUrl = watch("imagen_url");
+  const drawerRef = useDrawerA11y(isOpen, onClose);
 
   if (!isOpen) return null;
 
@@ -64,7 +67,7 @@ export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen:
   return (
     <>
       <div className="fixed inset-0 bg-black/60 z-40" onClick={onClose} />
-      <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-neutral-900 z-50 flex flex-col shadow-2xl">
+      <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-neutral-900 z-50 flex flex-col shadow-2xl" ref={drawerRef}>
         <div className="p-6 border-b border-neutral-800">
           <h2 className="text-xl font-bold text-white">{isEditing ? "Editar foto" : "Nueva foto"}</h2>
         </div>

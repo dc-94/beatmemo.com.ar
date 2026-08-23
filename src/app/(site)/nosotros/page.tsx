@@ -2,8 +2,19 @@
 import Image from "next/image";
 import { getCulturalEvents, type PublicEvent } from "@/actions/shows";
 import { whatsappLink, WA_MESSAGES } from "@/lib/config";
+import type { Metadata } from "next";
 
-// Helper puro para resolver el gradiente de la bandera según el ciclo
+
+export const metadata: Metadata = {
+  title: "Nosotros",
+  description: "Beatmemo es un núcleo de intercambio cultural en Rosario, declarado sitio de interés. Gastronomía, idiomas y el amor por The Beatles.",
+  openGraph: {
+    title: "Nosotros | Beatmemo",
+    description: "Un núcleo cultural declarado sitio de interés en Rosario.",
+    images: ["/og/nosotros.jpg"],
+  },
+};
+
 function getBorderTheme(ciclo?: string | null) {
   const normalized = (ciclo ?? "").toLowerCase();
   if (normalized.includes("italiano")) {

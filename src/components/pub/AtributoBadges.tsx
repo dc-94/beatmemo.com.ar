@@ -30,10 +30,10 @@ export default function AtributoBadges({ item, compact = false, max , variant = 
   const visibles = max ? activos.slice(0, max) : activos;
   const ocultos = activos.length - visibles.length;
 
-  const color = variant === "dark"
+    const color = variant === "dark"
     ? "text-[#E6C987] border-[#E6C987]/40"
-    : "text-[#A68966] border-[#A68966]/30";
-  const colorExtra = variant === "dark" ? "text-[#E6C987]/70" : "text-[#A68966]/70";
+    : "text-[#7D6841] border-[#7D6841]/40";   
+  const colorExtra = variant === "dark" ? "text-[#E6C987]/70" : "text-[#7D6841]/70";
 
 
   return (

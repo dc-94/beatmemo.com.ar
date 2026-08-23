@@ -1,5 +1,6 @@
 "use client";
 
+import { useDrawerA11y } from "@/hooks/useDrawerA11y";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CloudinaryWidget from "./CloudinaryWidget";
@@ -116,12 +117,14 @@ useEffect(() => {
       setIsDeleting(false);
     }
   };
+    const drawerRef = useDrawerA11y(isOpen, onClose);
+
 
   return (
     <>
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onClick={onClose} />
       
-      <div className="fixed top-0 right-0 h-full w-full md:w-[60%] lg:w-[40%] bg-neutral-950 border-l border-neutral-800 z-50 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+      <div ref={drawerRef} className="fixed top-0 right-0 h-full w-full md:w-[60%] lg:w-[40%] bg-neutral-950 border-l border-neutral-800 z-50 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
         
         <div className="p-6 border-b border-neutral-800 bg-neutral-900 flex justify-between">
           <h2 className="text-xl font-bold text-white">{isEditing ? "Editar Evento" : "Nuevo Evento"}</h2>

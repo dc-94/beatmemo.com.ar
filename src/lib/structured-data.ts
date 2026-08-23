@@ -13,8 +13,7 @@ export function buildBeatmemoSchema(config: SiteConfig, siteUrl: string) {
 
   return {
     "@context": "https://schema.org",
-    "@type": "BarOrPub",
-    additionalType: "https://schema.org/TouristAttraction",
+    "@type": ["BarOrPub", "TouristAttraction"],
     "@id": `${siteUrl}/#business`,
     name: "Beatmemo",
     description:
@@ -31,6 +30,13 @@ export function buildBeatmemoSchema(config: SiteConfig, siteUrl: string) {
       addressRegion: "Santa Fe",
       addressCountry: "AR",
     },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: -32.935105,
+      longitude: -60.655938,
+    },
+    image: `${siteUrl}/og/home.jpg`,
+    menu: `${siteUrl}/menu`,
     openingHoursSpecification: HORARIOS_SCHEMA.map((h) => ({
       "@type": "OpeningHoursSpecification",
       dayOfWeek: h.dias,

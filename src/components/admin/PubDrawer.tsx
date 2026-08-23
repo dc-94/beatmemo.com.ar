@@ -1,6 +1,7 @@
 // src/components/admin/PubDrawer.tsx
 "use client";
 
+import { useDrawerA11y } from "@/hooks/useDrawerA11y";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
@@ -108,11 +109,12 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
       setIsDeleting(false);
     }
   };
+  const drawerRef = useDrawerA11y(isOpen, onClose);
 
   return (
     <>
       <div className="fixed inset-0 bg-black/60 z-40" onClick={onClose} />
-      <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-neutral-900 z-50 flex flex-col shadow-2xl">
+      <div ref={drawerRef} className="fixed inset-y-0 right-0 w-full max-w-lg bg-neutral-900 z-50 flex flex-col shadow-2xl">
         <div className="p-4 md:p-6 border-b border-neutral-800">
           <h2 className="text-xl font-bold text-white">
             {isEditing ? "Editar item" : "Nuevo item"}

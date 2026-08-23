@@ -8,6 +8,7 @@ import AvisoBanner from "@/components/layout/AvisoBanner";
 import SplashLoader from "@/components/layout/SplashLoader";
 import { buildBeatmemoSchema } from "@/lib/structured-data";
 import { SITE_URL } from "@/lib/config";
+import SkipToContent from "@/components/layout/SkipToContent";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const config = await getSiteConfig();
@@ -17,6 +18,10 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
   return (
     <>
+    <SkipToContent />
+      {/* structured data, banner, navbar... */}
+      <main id="contenido-principal" className="flex-grow">{children}</main>
+      
      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}/>
       
       <div className="sticky top-0 z-50">

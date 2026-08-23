@@ -1,12 +1,8 @@
 // src/components/admin/MenuDrawer.tsx
-// NOTA DE ARQUITECTURA: este drawer usa useState manual, NO react-hook-form
-// como los otros drawers (Pub/Event/Promo). Es a propósito: además de los 3
-// campos (nombre/tipo/activo), maneja un flujo de subida de PDF con estado
-// propio (uploading/warning/progress) que no encaja natural en RHF. Si vas a
-// tocarlo, seguí el patrón useState existente; no lo migres a RHF sin una
-// razón fuerte — funciona y está probado.
+
 "use client";
 
+import {useDrawerA11y} from "@/hooks/useDrawerA11y";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { UploadCloud, FileCheck, AlertTriangle } from "lucide-react";
@@ -22,6 +18,7 @@ interface Props {
 
 export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
   const isEditing = !!menuToEdit;
+  const drawerRef = useDrawerA11y(isOpen, onClose);
   const router = useRouter();
 
   const [nombre, setNombre] = useState("");
@@ -161,7 +158,7 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
   return (
     <>
       <div className="fixed inset-0 bg-black/60 z-40" onClick={onClose} />
-      <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-neutral-900 z-50 flex flex-col shadow-2xl">
+      <div ref={drawerRef} className="fixed inset-y-0 right-0 w-full max-w-lg bg-neutral-900 z-50 flex flex-col shadow-2xl">
         <div className="p-4 md:p-6 border-b border-neutral-800">
           <h2 className="text-xl font-bold text-white">
             {isEditing ? "Editar carta" : "Nueva carta"}

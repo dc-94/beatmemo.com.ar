@@ -2,10 +2,22 @@
 import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import FullAgendaWrapper from "@/components/agenda/FullAgendaWrapper";
 import BrandSpinner from "@/components/ui/BrandSpinner";
 import { getSiteContent } from "@/lib/site-content";
 import { getOptimizedImageUrl } from "@/lib/utils";
+
+export const metadata: Metadata = {
+  title: "Agenda de Shows",
+  description: "Cartelera de shows en vivo, música y eventos culturales en Beatmemo Rosario. Consultá la programación del mes.",
+  openGraph: {
+    title: "Agenda de Shows | Beatmemo",
+    description: "Shows en vivo y eventos culturales en el pub temático de Rosario.",
+    images: ["/og/agenda.jpg"],
+  },
+};
+
 export const revalidate = 600;
 
 export default async function AgendaPage({ 
