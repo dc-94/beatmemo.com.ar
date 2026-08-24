@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import CloudinaryWidget from "./CloudinaryWidget";
 import { updateSiteContent } from "@/actions/site-content";
+import Button from "../ui/Button";
 
 export interface SeccionData {
   clave: string;
@@ -117,10 +118,9 @@ export default function ContenidoForm({ seccion }: { seccion: SeccionData }) {
           </div>
         )}
       </div>
-
-      <button type="submit" disabled={guardando} className="bg-brand-red hover:bg-red-700 text-white font-semibold px-5 py-2.5 rounded transition text-sm disabled:opacity-50">
-        {guardando ? "Guardando…" : "Guardar cambios"}
-      </button>
+        <Button type="submit" disabled={guardando} className="px-6">
+          {guardando ? "Guardando…" : "Guardar configuración"}
+        </Button>
     </form>
   );
 }

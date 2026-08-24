@@ -9,7 +9,8 @@ import { toast } from "sonner";
 import CloudinaryWidget from "./CloudinaryWidget";
 import { upsertEspacio, deleteEspacio } from "@/actions/espacio";
 import { espacioSchema } from "@/lib/validations/espacio";
-
+import { Settings2 } from "lucide-react";
+import Button from "../ui/Button";
 
 export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen: boolean; onClose: () => void; fotoToEdit?: any }) {
   const isEditing = !!fotoToEdit;
@@ -106,13 +107,13 @@ export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen:
         </div>
         <div className="p-6 border-t border-neutral-800 flex gap-3">
           {isEditing && (
-            <button type="button" onClick={handleDelete} disabled={isDeleting} className="px-4 py-3 bg-neutral-950 border border-red-900/50 hover:bg-red-950 text-red-500 font-semibold rounded-lg text-sm disabled:opacity-50">
+            <Button variant="danger" onClick={handleDelete} disabled={isDeleting || isSubmitting} className="w-full md:w-auto">
               {isDeleting ? "Borrando…" : "Eliminar"}
-            </button>
+            </Button>
           )}
-          <button type="submit" form="espacio-form" disabled={isSubmitting || isDeleting} className="flex-1 bg-brand-red hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm disabled:opacity-50">
+          <Button type="submit" form="espacio-form" disabled={isSubmitting || isDeleting} fullWidth className="flex-1">
             {isSubmitting ? "Guardando…" : (isEditing ? "Actualizar" : "Guardar")}
-          </button>
+          </Button>
         </div>
       </div>
     </>

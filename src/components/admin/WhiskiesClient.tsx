@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import WhiskyDrawer from "./WhiskyDrawer";
+import Button from "../ui/Button";
 
 const COL_LABEL: Record<string, string> = {
   blended: "Blended", blended_malts: "Blended Malts", irish: "Irish",
@@ -29,9 +30,9 @@ export default function WhiskiesClient({ whiskies }: { whiskies: any[] }) {
           <h1 className="text-2xl font-serif text-white">Whisky Collection</h1>
           <p className="text-neutral-400 text-sm">{whiskies.length} etiquetas cargadas</p>
         </div>
-        <button onClick={() => abrir()} className="flex items-center gap-2 bg-brand-red hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded transition text-sm">
-          <Plus size={16} /> Nuevo whisky
-        </button>
+        <Button onClick={() => abrir()}>
+          <Plus size={18} /> Nuevo Whisky
+        </Button>
       </div>
 
       {whiskies.length === 0 ? (

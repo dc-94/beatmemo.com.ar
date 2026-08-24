@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Plus, EyeOff } from "lucide-react";
 import EspacioDrawer from "./EspacioDrawer";
 import { getOptimizedImageUrl } from "@/lib/utils";
+import Button from "../ui/Button";
 
 export default function EspacioClient({ fotos }: { fotos: any[] }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,9 +21,9 @@ export default function EspacioClient({ fotos }: { fotos: any[] }) {
           <h1 className="text-2xl font-bold text-white">Nuestro espacio</h1>
           <p className="text-neutral-400 text-sm">{fotos.length} fotos de la galería del bar</p>
         </div>
-        <button onClick={() => abrir()} className="flex items-center gap-2 bg-brand-red hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-lg transition text-sm">
-          <Plus size={18} /> Nueva foto
-        </button>
+        <Button onClick={() => abrir()}>
+          <Plus size={18} /> Nueva Foto
+        </Button>
       </header>
 
       {fotos.length === 0 ? (

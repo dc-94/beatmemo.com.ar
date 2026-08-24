@@ -8,7 +8,7 @@ import { upsertEvento, deleteEvento } from "@/actions/eventos";
 import { eventSchema } from "@/lib/validations/eventos";
 import { toast } from "sonner"; // Usamos tu sistema de notificaciones
 import { useEffect,useState } from "react";
-
+import Button from "../ui/Button";
 interface Ciclo {
   id: string;
   nombre: string;
@@ -215,24 +215,14 @@ export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit }: Dr
         <div className="p-4 md:p-6 border-t border-neutral-800 bg-neutral-900 flex flex-col md:flex-row gap-3">
           {/* El botón eliminar SOLO aparece si estamos editando */}
           {isEditing && (
-            <button 
-              type="button" 
-              onClick={handleDelete}
-              disabled={isDeleting || isSubmitting}
-              className="w-full md:w-auto px-4 py-3 bg-neutral-950 border border-red-900/50 hover:bg-red-950 text-red-500 font-semibold rounded-lg transition text-sm disabled:opacity-50"
-            >
-              {isDeleting ? "Borrando..." : "Eliminar"}
-            </button>
+            <Button variant="danger" onClick={handleDelete} disabled={isDeleting || isSubmitting} className="w-full md:w-auto">
+              {isDeleting ? "Borrando…" : "Eliminar"}
+            </Button>
           )}
           
-          <button 
-            type="submit" 
-            form="event-form" 
-            disabled={isSubmitting || isDeleting}
-            className="w-full flex-1 bg-brand-red hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition text-sm disabled:opacity-50"
-          >
-            {isSubmitting ? "Guardando..." : (isEditing ? "Actualizar cambios" : "Confirmar y Guardar")}
-          </button>
+          <Button type="submit" form="event-form" disabled={isSubmitting || isDeleting} fullWidth className="flex-1">
+            {isSubmitting ? "Guardando…" : (isEditing ? "Actualizar" : "Guardar")}
+          </Button>
         </div>
       </div>
     </>

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 import { updateConfigSitio } from "@/actions/config-sitio";
+import Button from "@/components/ui/Button";
 
 type Horario = { dias: string; horario: string };
 
@@ -123,10 +124,9 @@ export default function ConfigClient({ config }: { config: any }) {
           )}
         </div>
       </section>
-
-      <button type="submit" disabled={guardando} className="bg-brand-red hover:bg-red-700 text-white font-semibold px-6 py-2.5 rounded transition text-sm disabled:opacity-50">
-        {guardando ? "Guardando…" : "Guardar configuración"}
-      </button>
+        <Button type="submit" disabled={guardando} className="px-6">
+          {guardando ? "Guardando…" : "Guardar configuración"}
+        </Button>
     </form>
   );
 }

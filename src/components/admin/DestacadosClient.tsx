@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Plus, Star, EyeOff } from "lucide-react";
 import PubDrawer from "./PubDrawer";
 import { getOptimizedImageUrl } from "@/lib/utils";
+import Button from "@/components/ui/Button";
 
 interface PubItem {
   id: string;
@@ -44,12 +45,9 @@ export default function GastronomiaClient({ items, categorias }: Props) {
           <h1 className="text-2xl font-bold text-white">Destacado en el Home</h1>
           <p className="text-neutral-400 text-sm">{items.length} items que aparecen en la portada</p>
         </div>
-        <button
-          onClick={openNew}
-          className="flex items-center gap-2 bg-brand-red hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-lg transition text-sm"
-        >
+        <Button onClick={openNew}>
           <Plus size={18} /> Nuevo item
-        </button>
+        </Button>
       </header>
 
       {items.length === 0 ? (

@@ -2,10 +2,11 @@
 
 
 import { useState } from "react";
-import { Settings2 } from "lucide-react";
+import { Plus, Settings2 } from "lucide-react";
 import EventDrawer from "@/components/admin/EventDrawer";
 import CiclosDrawer from "@/components/admin/CiclosDrawer";
 import { getOptimizedImageUrl } from "@/lib/utils";
+import Button from "@/components/ui/Button";
 
 export default function ShowsClient({ shows, ciclos: ciclosIniciales }: any) {
   const [isOpen, setIsOpen] = useState(false);
@@ -55,18 +56,12 @@ return (
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-white">Shows y Eventos</h1>
         <div className="flex gap-2">
-          <button
-            onClick={() => setCiclosOpen(true)}
-            className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 text-white font-semibold px-4 py-2.5 rounded-lg transition text-sm"
-          >
+          <Button variant="secondary" onClick={() => setCiclosOpen(true)}>
             <Settings2 size={16} /> Gestionar ciclos
-          </button>
-          <button
-            onClick={() => { setEventToEdit(null); setIsOpen(true); }}
-            className="bg-brand-red hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-lg transition text-sm"
-          >
-            + Nuevo evento
-          </button>
+          </Button>
+          <Button onClick={handleCreateNew}>
+            <Plus size={18} /> Nuevo Evento
+          </Button>
         </div>
       </div>
 

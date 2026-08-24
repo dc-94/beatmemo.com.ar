@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import CloudinaryWidget from "./CloudinaryWidget";
 import { upsertWhisky, deleteWhisky } from "@/actions/whiskies";
 import { whiskySchema, COLECCIONES } from "@/lib/validations/whiskies";
+import Button from "../ui/Button";
 
 interface Props {
   isOpen: boolean;
@@ -184,15 +185,13 @@ const drawerRef = useDrawerA11y(isOpen, onClose);
 
         <div className="p-4 md:p-6 border-t border-neutral-800 flex flex-col md:flex-row gap-3">
           {isEditing && (
-            <button type="button" onClick={handleDelete} disabled={isDeleting || isSubmitting}
-              className="w-full md:w-auto px-4 py-3 bg-neutral-950 border border-red-900/50 hover:bg-red-950 text-red-500 font-semibold rounded-lg transition text-sm disabled:opacity-50">
+            <Button variant="danger" onClick={handleDelete} disabled={isDeleting || isSubmitting} className="w-full md:w-auto">
               {isDeleting ? "Borrando…" : "Eliminar"}
-            </button>
+            </Button>
           )}
-          <button type="submit" form="whisky-form" disabled={isSubmitting || isDeleting}
-            className="w-full flex-1 bg-brand-red hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition text-sm disabled:opacity-50">
+          <Button type="submit" form="whisky-form" disabled={isSubmitting || isDeleting} fullWidth className="flex-1">
             {isSubmitting ? "Guardando…" : (isEditing ? "Actualizar" : "Guardar")}
-          </button>
+          </Button>
         </div>
       </div>
     </>
