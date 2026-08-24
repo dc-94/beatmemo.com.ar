@@ -15,6 +15,7 @@ export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen:
   const isEditing = !!fotoToEdit;
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const drawerRef = useDrawerA11y(isOpen, onClose);
   const { register, handleSubmit, setValue, watch, setError, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(espacioSchema),
     defaultValues: {
@@ -27,7 +28,6 @@ export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen:
   });
 
   const imagenUrl = watch("imagen_url");
-  const drawerRef = useDrawerA11y(isOpen, onClose);
 
   if (!isOpen) return null;
 

@@ -13,4 +13,5 @@ export interface Show {
 export interface Ciclo {
   id: string;
   nombre: string;
+  tipo: string;
 }

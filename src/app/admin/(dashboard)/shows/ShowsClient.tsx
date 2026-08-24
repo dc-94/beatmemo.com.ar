@@ -1,20 +1,23 @@
 "use client";
 
+
 import { useState } from "react";
+import { Settings2 } from "lucide-react";
 import EventDrawer from "@/components/admin/EventDrawer";
-import { getOptimizedImageUrl } from "@/lib/utils"; // Tu utilidad de imágenes
+import CiclosDrawer from "@/components/admin/CiclosDrawer";
+import { getOptimizedImageUrl } from "@/lib/utils";
 
-export default function ShowsClient({ shows, ciclos }: any) {
-  // 1. ESTADOS DEL MODAL
+export default function ShowsClient({ shows, ciclos: ciclosIniciales }: any) {
   const [isOpen, setIsOpen] = useState(false);
-  const [eventToEdit, setEventToEdit] = useState<any>(null); // <- AQUÍ ESTÁ LA SOLUCIÓN AL ERROR
+  const [eventToEdit, setEventToEdit] = useState<any>(null);
+  const [ciclosOpen, setCiclosOpen] = useState(false);
 
-  // 2. ESTADOS DE LOS FILTROS
+  const [ciclos, setCiclos] = useState(ciclosIniciales ?? []);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filterTipo, setFilterTipo] = useState("");
   const [filterCiclo, setFilterCiclo] = useState("");
 
-  // 3. LÓGICA DE FILTRADO COMBINADO
   const filteredShows = shows.filter((show: any) => {
     const matchesSearch = show.titulo.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTipo = filterTipo ? show.tipo === filterTipo : true;
@@ -23,7 +26,7 @@ export default function ShowsClient({ shows, ciclos }: any) {
     return matchesSearch && matchesTipo && matchesCiclo;
   });
 
-  // Funciones de ayuda
+
   const getNombreCiclo = (id: string | null) => {
     if (!id) return "Sin ciclo";
     const ciclo = ciclos.find((c: any) => c.id === id);
@@ -36,13 +39,11 @@ export default function ShowsClient({ shows, ciclos }: any) {
     return `${day}/${month}/${year}`;
   };
 
-  // Función para abrir el modal en modo edición
   const handleEdit = (show: any) => {
     setEventToEdit(show);
     setIsOpen(true);
   };
 
-  // Función para abrir el modal en modo creación (limpio)
   const handleCreateNew = () => {
     setEventToEdit(null);
     setIsOpen(true);
@@ -50,17 +51,23 @@ export default function ShowsClient({ shows, ciclos }: any) {
 
 return (
     <div className="w-full min-h-screen space-y-6 flex flex-col">
-      {/* HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Gestión de Eventos</h1>
+       {/* Header  */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-white">Shows y Eventos</h1>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setCiclosOpen(true)}
+            className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 text-white font-semibold px-4 py-2.5 rounded-lg transition text-sm"
+          >
+            <Settings2 size={16} /> Gestionar ciclos
+          </button>
+          <button
+            onClick={() => { setEventToEdit(null); setIsOpen(true); }}
+            className="bg-brand-red hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-lg transition text-sm"
+          >
+            + Nuevo evento
+          </button>
         </div>
-        <button 
-          onClick={handleCreateNew} 
-          className="bg-brand-red hover:bg-red-700 text-white font-bold px-6 py-3 rounded-lg transition w-full sm:w-auto"
-        >
-          + Nuevo Evento
-        </button>
       </div>
 
       {/* BARRA DE FILTROS (Optimizada para Móvil y Desktop) */}
@@ -150,6 +157,12 @@ return (
           setEventToEdit(null); // Limpiamos al cerrar
         }} 
         eventToEdit={eventToEdit} // Le pasamos los datos si estamos editando
+      />
+      <CiclosDrawer
+        isOpen={ciclosOpen}
+        onClose={() => setCiclosOpen(false)}
+        ciclos={ciclos}
+        onCiclosChange={setCiclos}
       />
     </div>
   );

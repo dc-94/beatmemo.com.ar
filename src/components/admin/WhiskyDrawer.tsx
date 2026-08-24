@@ -25,10 +25,12 @@ const COL_LABEL: Record<string, string> = {
   bourbon: "Bourbon",
 };
 
-export default function WhiskyDrawer({ isOpen, onClose, whiskyToEdit }: Props) {
+
+  export default function WhiskyDrawer({ isOpen, onClose, whiskyToEdit }: Props) {
   const isEditing = !!whiskyToEdit;
   const [isDeleting, setIsDeleting] = useState(false);
 
+const drawerRef = useDrawerA11y(isOpen, onClose);
   const { register, handleSubmit, setValue, watch, reset, setError, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(whiskySchema),
     // Solo constantes. El dato real entra por reset en el useEffect. Igual que
@@ -102,7 +104,6 @@ export default function WhiskyDrawer({ isOpen, onClose, whiskyToEdit }: Props) {
     }
   };
 
-  const drawerRef = useDrawerA11y(isOpen, onClose);
   const inputCls = "w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded text-white focus:border-brand-red outline-none text-sm";
 
   return (

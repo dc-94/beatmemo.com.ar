@@ -37,6 +37,7 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
   
   const facetaActual = watch("faceta");
   
+  const drawerRef = useDrawerA11y(isOpen, onClose);
   useEffect(() => {
     if (itemToEdit) {
       reset({
@@ -109,7 +110,6 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
       setIsDeleting(false);
     }
   };
-  const drawerRef = useDrawerA11y(isOpen, onClose);
 
   return (
     <>

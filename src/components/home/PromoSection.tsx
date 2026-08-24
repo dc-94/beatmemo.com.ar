@@ -4,11 +4,17 @@ import { isPromoVigente, type PromoData } from "@/lib/promo-helpers";
 import PromoCard from "./PromoCard";
 
 export default async function PromoSection() {
+  const hoyAr = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date());
+
   const { data, error } = await publicClient
     .from("promociones")
     .select("id, tipo, titulo, descripcion, entidad, imagen_url, logo_url, alt_texto, dias_semana, fecha_desde, fecha_hasta, activo, prioridad")
     .eq("is_deleted", false)
     .eq("activo", true)
+    .or(`fecha_hasta.is.null,fecha_hasta.gte.${hoyAr}`)
     .order("prioridad", { ascending: false });
 
   if (error) {

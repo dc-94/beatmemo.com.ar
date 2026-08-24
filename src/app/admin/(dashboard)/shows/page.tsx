@@ -16,7 +16,7 @@ export default async function ShowsPage() {
   // 2. Traemos los ciclos para los filtros y nombres
   const { data: ciclos, error: ciclosError } = await supabase
     .from('ciclos')
-    .select('id, nombre');
+    .select('id, nombre,tipo').order('nombre');
 
   if (ciclosError) console.error("Error al cargar ciclos:", ciclosError);
   // Pasamos los datos al componente cliente

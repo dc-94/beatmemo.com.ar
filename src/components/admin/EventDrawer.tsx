@@ -12,6 +12,7 @@ import { useEffect,useState } from "react";
 interface Ciclo {
   id: string;
   nombre: string;
+  tipo: string;
 }
 
 interface DrawerProps {
@@ -22,45 +23,41 @@ interface DrawerProps {
 }
 export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit }: DrawerProps) {
   const isEditing = !!eventToEdit;
-    const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const { register, handleSubmit, setValue, watch, reset,setError, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(eventSchema),
-    defaultValues: { es_gratuito: false, precio: null, tipo: "Show", ciclo_id: "" },
+    defaultValues: { es_gratuito: false, precio: null, tipo: "SHOW", ciclo_id: "" },
   });
 
+  const drawerRef = useDrawerA11y(isOpen, onClose);
 
-useEffect(() => {
+  const esGratuito = watch("es_gratuito");
+  const tipoEvento = watch("tipo");
+  const ciclosFiltrados = ciclos.filter((c) => c.tipo === tipoEvento);
+ 
+
+  useEffect(() => {
     if (eventToEdit) {
-      
+      const tipoDelEvento = eventToEdit.tipo || "SHOW";
       reset({
         ...eventToEdit,
-        tipo: eventToEdit.tipo || "SHOW",
-        ciclo_id: eventToEdit.ciclo_id || "", 
+        tipo: tipoDelEvento,
+        ciclo_id: eventToEdit.ciclo_id || "",
       });
     } else {
-      reset({ 
-        es_gratuito: false, 
-        precio: null, 
-        tipo: "SHOW", 
-        ciclo_id: "",
-        titulo: "",
-        fecha: "",
-        hora: "",
-        descripcion: "",
-        integrantes: "",
-        url_imagen: ""
+      reset({
+        es_gratuito: false, precio: null, tipo: "SHOW", ciclo_id: "",
+        titulo: "", fecha: "", hora: "", descripcion: "", integrantes: "", url_imagen: "",
       });
     }
   }, [eventToEdit, reset]);
 
-  const esGratuito = watch("es_gratuito");
-  const tipoEvento = watch("tipo");
-
+ 
   if (!isOpen) return null;
 
   const onSubmit = async (data: any) => {
     try {
-      // 1. Cache-busting en la imagen
       if (data.url_imagen && !data.url_imagen.includes('?t=')) {
         data.url_imagen = `${data.url_imagen}?t=${new Date().getTime()}`;
       }
@@ -87,8 +84,6 @@ useEffect(() => {
         toast.error(response.error || "Revisá los campos marcados");
       }
     } catch (e) {
-      // Una action puede RECHAZAR (red, 500, timeout), no solo devolver
-      // { success: false }. Sin catch, el click no muestra nada.
       console.error("[EventDrawer] upsert falló:", e);
       toast.error("No se pudo guardar. Revisá tu conexión y probá de nuevo.");
     }
@@ -107,17 +102,12 @@ useEffect(() => {
         toast.error(response.error || "No se pudo eliminar el evento");
       }
     } catch (e) {
-      // Una action puede RECHAZAR (red, 500, timeout), no solo devolver
-      // { success: false }. Sin catch, el click no muestra nada.
       console.error("[EventDrawer] delete falló:", e);
       toast.error("No se pudo eliminar. Revisá tu conexión y probá de nuevo.");
     } finally {
-      // Sin finally, un throw deja isDeleting en true para siempre y los
-      // botones del drawer quedan muertos hasta recargar la página.
       setIsDeleting(false);
     }
   };
-    const drawerRef = useDrawerA11y(isOpen, onClose);
 
 
   return (
@@ -138,7 +128,7 @@ useEffect(() => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm text-neutral-400 mb-1">Tipo de Evento *</label>
-                <select {...register("tipo")} className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded text-white focus:border-brand-red outline-none">
+                <select {...register("tipo")} onChange={(e) => { register("tipo").onChange(e); setValue("ciclo_id", "");}} className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded text-white focus:border-brand-red outline-none">
                   <option value="SHOW">Show / Concierto</option>
                   <option value="EVENTO_CULTURAL">Evento Cultural</option>
                 </select>
@@ -149,7 +139,7 @@ useEffect(() => {
                 <label className="block text-sm text-neutral-400 mb-1">Ciclo *</label>
                 <select {...register("ciclo_id")} className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded text-white focus:border-brand-red outline-none">
                   <option value="">Selecciona un ciclo</option>
-                  {ciclos.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                  {ciclosFiltrados.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
                 </select>
                 {errors.ciclo_id && <p className="text-red-500 text-xs mt-1">{errors.ciclo_id.message as string}</p>}
               </div>

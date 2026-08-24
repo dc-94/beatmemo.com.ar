@@ -13,6 +13,7 @@ export interface ActionResponse {
   success: boolean;
   error?: string;
   fieldErrors?: Record<string, string[]>;
+  newId?: string;  
 }
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;

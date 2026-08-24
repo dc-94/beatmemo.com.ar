@@ -34,6 +34,7 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
   const tipo = watch("tipo");
   const logoUrl = watch("logo_url");
   const imagenUrl = watch("imagen_url");
+  const drawerRef = useDrawerA11y(isOpen, onClose);
 
   useEffect(() => {
 
@@ -121,7 +122,6 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
     }
   };
 
-  const drawerRef = useDrawerA11y(isOpen, onClose);
 
   return (
     <>

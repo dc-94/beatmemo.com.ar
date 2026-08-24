@@ -26,6 +26,9 @@ const ACTION_LABELS: Record<string, string> = {
   UPDATE_ESPACIO: "Editó un espacio del pub",
   SOFT_DELETE_ESPACIO: "Eliminó un espacio del pub",
   UPDATE_CONFIG: "Editó la configuración del sitio",
+  CREATE_CICLO: "Creó un ciclo",
+  UPDATE_CICLO: "Editó un ciclo",
+  DELETE_CICLO: "Eliminó un ciclo",
 };
 
 // Los intentos no autorizados llegan como UNAUTHORIZED_<X>_ATTEMPT.
