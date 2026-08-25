@@ -100,6 +100,10 @@ export default function ConfigClient({ config }: { config: any }) {
           <label className={labelCls}>Link de reseña de Google</label>
           <input name="google_review_url" defaultValue={config?.google_review_url ?? ""} className={inputCls} />
         </div>
+        <div>
+          <label className={labelCls}>Link de Rooftop <span className="text-neutral-600">(IG, WhatsApp o web)</span></label>
+          <input name="rooftop_url" defaultValue={config?.rooftop_url ?? ""} placeholder="https://instagram.com/..." className={inputCls} />
+        </div>
       </section>
 
       {/* BANNER */}

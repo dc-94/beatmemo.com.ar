@@ -37,6 +37,7 @@ export async function updateConfigSitio(formData: FormData): Promise<ActionRespo
       banner_activo: d.banner_activo,
       banner_mensaje: d.banner_mensaje || null,
       banner_vence: d.banner_vence || null,
+      rooftop_url: d.rooftop_url || null,
     };
 
     // UPDATE de la fila singleton (id=1). No se crea ni se borra.

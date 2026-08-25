@@ -16,6 +16,8 @@ export const configSitioSchema = z.object({
   banner_activo: z.boolean().default(false),
   banner_mensaje: z.string().trim().max(200).default(""),
   banner_vence: z.string().trim().default(""),
+
+    rooftop_url: z.string().trim().default(""),
 }).superRefine((data, ctx) => {
   // Si el banner está activo, el mensaje es obligatorio: una barra vacía
   // arriba del sitio es un bug visible.

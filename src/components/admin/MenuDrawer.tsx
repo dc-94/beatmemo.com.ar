@@ -9,6 +9,7 @@ import { UploadCloud, FileCheck, AlertTriangle } from "lucide-react";
 import { upsertMenu, deleteMenu } from "@/actions/menus";
 import { uploadMenuPdf } from "@/actions/menu-uploads";
 import { useRouter } from "next/navigation";
+import Button from "@/components/ui/Button";
 
 interface Props {
   isOpen: boolean;
@@ -241,31 +242,17 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
 
         <div className="p-4 md:p-6 border-t border-neutral-800 flex flex-col md:flex-row gap-3">
           {isEditing && (
-            <button
-              onClick={handleDelete}
-              disabled={busy}
-              className="w-full md:w-auto px-4 py-3 bg-neutral-950 border border-red-900/50 hover:bg-red-950 text-red-500 font-semibold rounded-lg transition text-sm disabled:opacity-50"
-            >
+            <Button variant="danger" onClick={handleDelete} disabled={busy} className="w-full md:w-auto">
               {deleting ? "Borrando…" : "Eliminar"}
-            </button>
+            </Button>
           )}
-          {/* Cancelar NO se bloquea por `uploading`: siempre debe poder salirse.
-              Solo se bloquea durante una escritura en curso (guardar/borrar). */}
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={saving || deleting}
-            className="w-full md:w-auto px-4 py-3 bg-neutral-950 border border-neutral-700 hover:bg-neutral-800 text-neutral-300 font-semibold rounded-lg transition text-sm disabled:opacity-50"
-          >
+          {/* Cancelar: variante ghost. Nunca se bloquea por uploading, solo por escritura en curso. */}
+          <Button variant="ghost" type="button" onClick={onClose} disabled={saving || deleting} className="w-full md:w-auto border border-neutral-700">
             Cancelar
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={busy}
-            className="w-full flex-1 bg-brand-red hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition text-sm disabled:opacity-50"
-          >
-            {saving ? "Guardando…" : isEditing ? "Actualizar" : "Crear carta"}
-          </button>
+          </Button>
+          <Button onClick={handleSave} disabled={busy} fullWidth className="flex-1">
+            {saving ? "Guardando…" : isEditing ? "Actualizar" : "Guardar"}
+          </Button>
         </div>
       </div>
     </>

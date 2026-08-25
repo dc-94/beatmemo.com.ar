@@ -30,8 +30,10 @@ const navLinks = [
   { label: "Nosotros", href: "/nosotros" },
 ];
 
-export default function Navbar() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+
+export default function Navbar({ rooftopUrl }: { rooftopUrl?: string }) {
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // Estado para controlar qué acordeones están abiertos en Mobile (Pub abierto por defecto)
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
     Pub: true, 
@@ -120,10 +122,20 @@ export default function Navbar() {
               );
             })}
             
-            {/* ROOFTOP Logo */}
-            <a href="#" target="_blank" rel="noopener noreferrer" className="ml-4 px-3 py-1.5 rounded-sm flex items-center justify-center opacity-90 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold">
-              <span className="block w-20 h-4 bg-brand-white-100" style={{ WebkitMaskImage: "url('/brand/logo_ROOFTOP.svg')", WebkitMaskSize: "contain", WebkitMaskRepeat: "no-repeat", WebkitMaskPosition: "center", maskImage: "url('/brand/logo_ROOFTOP.svg')" }} />
-            </a>
+                        {/* ROOFTOP — solo si hay URL cargada en admin/config */}
+            {rooftopUrl && (
+              
+              <a  href={rooftopUrl} target="_blank" rel="noopener noreferrer" className="flex items-center opacity-90 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold rounded-sm" aria-label="Rooftop">
+                <span  className="block w-24 h-5 bg-brand-white-100"
+                  style={{
+                    WebkitMaskImage: "url('/brand/logo_ROOFTOP.svg')",
+                    WebkitMaskSize: "contain",
+                    WebkitMaskRepeat: "no-repeat",
+                    WebkitMaskPosition: "center",
+                  }}
+                />
+              </a>
+            )}
 
             {/* VER CARTA Button */}
             <Link href="/menu" className="bg-brand-gold text-brand-black-100 px-6 py-2 rounded-sm font-sans font-bold uppercase tracking-wider hover:bg-accent-gold-vibrant transition-colors ml-4 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
@@ -211,9 +223,17 @@ export default function Navbar() {
             })}
             
             <div className="mt-12 flex flex-col items-center gap-6 pb-20">
-              <a href="#" target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="px-8 py-3 rounded-sm flex items-center justify-center opacity-90 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold">
-                <span className="block w-24 h-5 bg-brand-white-100" style={{ WebkitMaskImage: "url('/brand/logo_ROOFTOP.svg')", WebkitMaskSize: "contain", WebkitMaskRepeat: "no-repeat", WebkitMaskPosition: "center" }} />
-              </a>
+                          <div className="mt-12 flex flex-col items-center gap-6 pb-20">
+              {rooftopUrl && (
+                <a href={rooftopUrl} target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="px-8 py-3 rounded-sm flex items-center justify-center opacity-90 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold">
+                  <span className="block w-24 h-5 bg-brand-white-100" style={{ WebkitMaskImage: "url('/brand/logo_ROOFTOP.svg')", WebkitMaskSize: "contain", WebkitMaskRepeat: "no-repeat", WebkitMaskPosition: "center" }} />
+                </a>
+              )}
+
+              <Link href="/menu" onClick={() => setIsMobileMenuOpen(false)} className="bg-brand-gold text-brand-black-100 px-8 py-3 rounded-sm font-sans font-bold uppercase tracking-wider w-full text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                VER CARTA
+              </Link>
+            </div>
 
               <Link href="/menu" onClick={() => setIsMobileMenuOpen(false)} className="bg-brand-gold text-brand-black-100 px-8 py-3 rounded-sm font-sans font-bold uppercase tracking-wider w-full text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
                 VER CARTA

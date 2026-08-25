@@ -10,6 +10,7 @@ export interface SiteConfig {
   instagram_url: string;
   facebook_url: string;
   google_review_url: string;
+  rooftop_url: string;
   banner_activo: boolean;
   banner_mensaje: string | null;
   banner_vence: string | null;
@@ -31,6 +32,7 @@ const FALLBACK: SiteConfig = {
   banner_activo: false,
   banner_mensaje: null,
   banner_vence: null,
+  rooftop_url: "https://instagram.com/beatmemo_rosario",
 };
 
 export async function getSiteConfig(): Promise<SiteConfig> {

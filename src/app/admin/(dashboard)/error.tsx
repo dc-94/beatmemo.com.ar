@@ -19,9 +19,6 @@ export default function AdminError({ error, reset }: { error: Error & { digest?:
       <p className="text-neutral-400 max-w-md mb-2 text-sm">Algo falló al cargar esta sección. Ya quedó registrado.</p>
       {error.digest && <p className="text-neutral-600 text-xs mb-6 font-mono">Ref: {error.digest}</p>}
       <div className="flex gap-3">
-        <button onClick={reset} className="bg-brand-red hover:bg-red-700 text-white px-5 py-2.5 rounded font-semibold text-sm transition">
-          Reintentar
-        </button>
         <button onClick={() => router.back()} className="border border-white/20 text-white px-5 py-2.5 rounded font-semibold text-sm hover:bg-white/5 transition">
           Volver
         </button>

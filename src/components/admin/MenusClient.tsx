@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Plus, ArrowUp, ArrowDown, FileText, EyeOff, Pencil } from "lucide-react";
 import MenuDrawer from "./MenuDrawer";
 import { reorderMenus } from "@/actions/menus";
-
+import Button from "@/components/ui/Button";
 interface Menu {
   id: string;
   tipo: string;
@@ -78,12 +78,9 @@ export default function MenusClient({ menus: initialMenus }: Props) {
           <h1 className="text-2xl font-bold text-white">Cartas y Menús</h1>
           <p className="text-neutral-400 text-sm">{menus.length} cartas · se muestran en el visor QR</p>
         </div>
-        <button
-          onClick={openNew}
-          className="flex items-center gap-2 bg-brand-red hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-lg transition text-sm"
-        >
-          <Plus size={18} /> Nueva carta
-        </button>
+        <Button onClick={openNew}>
+          <Plus size={18} /> Nueva Carta
+        </Button>
       </header>
 
       {/* Caption explicativo del reordenamiento */}

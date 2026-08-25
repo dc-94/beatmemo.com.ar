@@ -15,12 +15,14 @@ export default function Footer({
   facebookUrl,
   googleReviewUrl,
   horarios,
+  rooftopUrl,
 }: {
   whatsappNumero: string;
   instagramUrl: string;
   facebookUrl: string;
   googleReviewUrl: string;
   horarios: { dias: string; horario: string }[];
+  rooftopUrl?: string;
 }) {
     const pathname = usePathname();
   
@@ -159,8 +161,31 @@ export default function Footer({
             </div>
             
 
-            {/* Columna 3: Social */}
+            {/* Columna 3: Social & Rooftop */}
             <div className="flex flex-col">
+              {rooftopUrl && (
+                <div className="mb-8">
+                  <h4 className="text-brand-white-100 font-sans font-bold tracking-widest uppercase mb-3 text-xs">
+                    Descubrí
+                  </h4>
+                   <a href={rooftopUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center opacity-90 hover:opacity-100 transition-opacity"
+                    aria-label="Rooftop"
+                  >
+                    <span
+                      className="block w-28 h-6 bg-brand-white-100"
+                      style={{
+                        WebkitMaskImage: "url('/brand/logo_ROOFTOP.svg')",
+                        WebkitMaskSize: "contain",
+                        WebkitMaskRepeat: "no-repeat",
+                        WebkitMaskPosition: "left center",
+                      }}
+                    />
+                  </a>
+                </div>
+              )}
               <h3 className="text-brand-white-100 font-sans font-bold tracking-widest uppercase mb-4 text-sm">
                 Social
               </h3>

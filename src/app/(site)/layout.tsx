@@ -23,7 +23,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       
       <div className="sticky top-0 z-50">
         {mostrarBanner && <AvisoBanner mensaje={config.banner_mensaje!} />}
-        <Navbar />
+        <Navbar rooftopUrl={config.rooftop_url} />
       </div>
       <SplashLoader />
       <main id="contenido-principal" className="flex-grow">{children}</main>
@@ -33,6 +33,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         facebookUrl={config.facebook_url}
         googleReviewUrl={config.google_review_url}
         horarios={config.horarios}  
+        rooftopUrl={config.rooftop_url}
       />
       <WhatsAppFAB whatsappNumero={config.whatsapp_numero} />
     </>
