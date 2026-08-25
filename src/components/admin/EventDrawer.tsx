@@ -158,7 +158,7 @@ export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit }: Dr
                 <textarea 
                   {...register("integrantes")} 
                   rows={2} 
-                  placeholder="Nombres de los músicos, banda..." 
+                  placeholder="Separá los nombres con coma para que se muestren como listado" 
                   className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded text-white focus:border-brand-red outline-none" 
                 />
                 {errors.integrantes && <p className="text-red-500 text-xs mt-1">{errors.integrantes.message as string}</p>}

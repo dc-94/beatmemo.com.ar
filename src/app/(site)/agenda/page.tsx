@@ -1,12 +1,14 @@
 // src/app/agenda/page.tsx
 import { Suspense } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import type { Metadata } from "next";
 import FullAgendaWrapper from "@/components/agenda/FullAgendaWrapper";
+import AgendaScrollHint from "@/components/agenda/AgendaScrollHint";
 import BrandSpinner from "@/components/ui/BrandSpinner";
 import { getSiteContent } from "@/lib/site-content";
+import { getShowsByView } from "@/actions/shows";
 import { getOptimizedImageUrl } from "@/lib/utils";
+import AgendaTabs from "@/components/agenda/AgendaTabs";
 
 export const metadata: Metadata = {
   title: "Agenda de Shows",
@@ -31,19 +33,18 @@ export default async function AgendaPage({
   const now = new Date();
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   const nextMonthName = nextMonth.toLocaleString('es-ES', { month: 'long' });
-  const currentMonthName = now.toLocaleString('es-ES', { month: 'long' });
 
-  // NUEVO SISTEMA DE TABS (Pills) PARA MÁXIMA UX MÓVIL
-  const inactiveClass = "px-6 py-2.5 rounded-full border border-[#8B6D3B]/40 text-brand-white-300 font-sans font-bold tracking-[0.15em] text-[11px] uppercase whitespace-nowrap hover:border-[#C5A059] transition-all bg-black/40 backdrop-blur-sm";
-  const activeClass = "px-6 py-2.5 rounded-full bg-[#C5A059] text-brand-black-200 font-sans font-bold tracking-[0.15em] text-[11px] uppercase whitespace-nowrap shadow-[0_0_20px_rgba(197,160,89,0.3)] transition-all";
+const nextResult = await getShowsByView("next", String(nextMonth.getFullYear()), String(nextMonth.getMonth() + 1));
+const hayProximos = nextResult.ok && nextResult.data.length > 0;
+
 
   return (
     <main className="min-h-screen bg-brand-black-200 text-brand-white-100 font-sans pb-32">
       {/* Sección Hero */}
-      <section className="relative h-[50vh] lg:h-[60vh] w-full">
+      <section className="relative h-[38vh] lg:h-[45vh] w-full">
         {contenido?.imagen_url ? (
           <Image
-            src={getOptimizedImageUrl(contenido.imagen_url, 1920, 1080)}
+            src={getOptimizedImageUrl(contenido.imagen_url, 1920, 900)}
             alt={contenido.alt_texto || "Shows en vivo en Beatmemo"}
             fill
             className="object-cover opacity-60"
@@ -63,41 +64,18 @@ export default async function AgendaPage({
           </h1>
         </div>
       </section>
+{/* Tabs sin estilo de botón */}
+      <AgendaTabs view={view} nextMonth={nextMonth} hayProximos={hayProximos} />
 
-      {/* Navegación UX Mobile Premium (Scroll horizontal suave) */}
-      <section className="relative max-w-7xl mx-auto mb-12">
-        {/* Sombras laterales para indicar que hay scroll en móvil */}
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-brand-black-200 to-transparent z-10 md:hidden pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-brand-black-200 to-transparent z-10 md:hidden pointer-events-none" />
-        
-        <div className="px-4 py-8 flex items-center overflow-x-auto gap-4 no-scrollbar relative z-0 snap-x snap-mandatory">
-          <Link 
-            href="/agenda?view=past" 
-            className={`${view === 'past' ? activeClass : inactiveClass} snap-start shrink-0`}
-          >
-            Anteriores
-          </Link>
-          <Link 
-            href="/agenda?view=current" 
-            className={`${view === 'current' ? activeClass : inactiveClass} snap-start shrink-0`}
-          >
-            {currentMonthName}
-          </Link>
-          <Link 
-            href={`/agenda?view=next&mes=${nextMonth.getMonth() + 1}&year=${nextMonth.getFullYear()}`} 
-            className={`${view === 'next' ? activeClass : inactiveClass} snap-start shrink-0`}
-          >
-            {nextMonthName}
-          </Link>
-        </div>
-      </section>
-
-      {/* Zona Protegida de Contenido */}
+      {/* Contenido */}
       <section className="max-w-7xl mx-auto px-4 min-h-[40vh]">
         <Suspense fallback={<BrandSpinner />}>
           <FullAgendaWrapper view={view} year={params.year} mes={params.mes} />
         </Suspense>
       </section>
+
+      {/* Desplazamiento sutil al entrar, para asomar la primera fila */}
+      <AgendaScrollHint />
     </main>
   );
 }

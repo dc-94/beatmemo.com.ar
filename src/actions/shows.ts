@@ -18,7 +18,7 @@ export interface PublicEvent {
   descripcion: string;
   integrantes: string;
   tipo: string;
-  ciclos: { nombre: string } | null;
+  ciclos: { nombre: string; estilo_tema: string | null } | null;
 }
 
 export type EventosResult =
@@ -76,15 +76,10 @@ function getLocalTodayString(): string {
   });
 }
 
-/**
- * ⚠️ REGLA CRÍTICA: los query builders de Supabase son thenables; un `await`
- * sobre ellos EJECUTA la query. Este helper es SÍNCRONO y recibe el cliente
- * por parámetro. Nunca convertirlo en async ni hacerle await. (Ver AGENTS.md)
- */
 function buildEventosBaseQuery(supabase: SupabaseClient) {
   return supabase
     .from("eventos")
-    .select("*, ciclos(nombre)")
+    .select("*, ciclos(nombre, estilo_tema)")
     .eq("is_deleted", false);
 }
 
@@ -122,7 +117,9 @@ export async function getShowsByView(
     const { safeYear, safeMonth } = sanitizeYearMonth(year, month);
     const mm = String(safeMonth).padStart(2, "0");
     const lastDay = new Date(safeYear, safeMonth, 0).getDate();
-    const startStr = `${safeYear}-${mm}-01`;
+    const hoy = getLocalTodayString();
+    const primerDiaMes = `${safeYear}-${mm}-01`;
+    const startStr = view === "current" && primerDiaMes < hoy ? hoy : primerDiaMes;
     const endStr = `${safeYear}-${mm}-${String(lastDay).padStart(2, "0")}`;
 
     const { data, error } = await buildEventosBaseQuery(supabase)
