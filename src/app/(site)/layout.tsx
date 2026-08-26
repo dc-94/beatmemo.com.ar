@@ -21,6 +21,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     <SkipToContent />      
      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}/>
       
+  <div style={{ "--chrome-h": mostrarBanner ? "116px" : "80px" } as React.CSSProperties}>
       <div className="sticky top-0 z-50">
         {mostrarBanner && <AvisoBanner mensaje={config.banner_mensaje!} />}
         <Navbar rooftopUrl={config.rooftop_url} />
@@ -36,6 +37,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         rooftopUrl={config.rooftop_url}
       />
       <WhatsAppFAB whatsappNumero={config.whatsapp_numero} />
+    </div>
     </>
   );
 }

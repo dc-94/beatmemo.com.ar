@@ -24,7 +24,7 @@ export default function PubSubnav({ secciones }: { secciones: { id: string; labe
   if (secciones.length === 0) return null;
 
   return (
-    <nav className="sticky top-20 z-30 bg-[#FAF7F2]/90 backdrop-blur border-y border-[#D1CCC0]/50">
+  <nav className="sticky z-40 bg-[#FAF7F2]/95 backdrop-blur border-y border-[#D1CCC0]/50" style={{ top: "var(--chrome-h, 80px)" }}>
       <div className="max-w-6xl mx-auto px-4 flex gap-6 justify-center flex-wrap py-3 overflow-x-auto">
         {secciones.map((s) => (
           <a
