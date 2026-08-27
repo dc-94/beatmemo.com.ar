@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { 
   Calendar, Coffee, LayoutDashboard, LogOut,
   FileText, Megaphone, ShieldAlert, AlertTriangle, LayoutTemplate,
-  ChevronDown, Images, Star, UtensilsCrossed, Settings
+  ChevronDown, Images, Star, UtensilsCrossed, Wine, Settings
 } from "lucide-react";
 
 type NavItem = {
@@ -30,6 +30,7 @@ const navLinks: NavItem[] = [
       { name: "Nuestro espacio", href: "/admin/pub/espacio", icon: Images },
       { name: "Destacado home", href: "/admin/pub/destacados", icon: Star },
       { name: "Gastronomía", href: "/admin/pub/gastronomia", icon: UtensilsCrossed },
+      { name: "Whiskies", href: "/admin/pub/whiskies", icon: Wine },
     ],
   },
   { name: "Promociones", href: "/admin/promociones", icon: Megaphone },

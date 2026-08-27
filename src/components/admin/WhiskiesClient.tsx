@@ -66,7 +66,7 @@ export default function WhiskiesClient({ whiskies }: { whiskies: any[] }) {
       )}
 
       <WhiskyDrawer
-        key={editing?.id ?? "new"}
+        key={isOpen ? (editing?.id ?? "new") : "closed"}
         isOpen={isOpen}
         onClose={() => { setIsOpen(false); setEditing(undefined); }}
         whiskyToEdit={editing}

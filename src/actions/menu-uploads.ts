@@ -107,7 +107,7 @@ export async function uploadMenuPdf(
     );
 
     // 8. URL pública (bucket público)
-    const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
+const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
 
     // 9. Warning de performance (no bloquea): PDF pesado en móvil
     const warning =

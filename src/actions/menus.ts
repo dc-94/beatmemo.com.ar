@@ -58,16 +58,27 @@ export async function upsertMenu(formData: FormData, id?: string): Promise<Actio
       };
     }
 
-    // 4. INSERT O UPDATE — el ternario devuelve el builder SIN ejecutar
-    //    (Regla Crítica del thenable); se ejecuta recién en el await.
-    //    En UPDATE, el trigger bump_menu_version incrementa version SOLO
-    //    si cambió url_archivo.
+    // 4. INSERT O UPDATE — 
+        // Al reemplazar el PDF, incrementamos version para romper el caché del CDN.
+    // El visor usa este número en la URL (?v=), así el navegador ve cada
+    // reemplazo como un archivo nuevo. Sin esto, el CDN sirve el PDF viejo.
+ let nuevaVersion = 1;
+    if (id) {
+      const { data: actual } = await supabase
+        .from("menus")
+        .select("version")
+        .eq("id", id)
+        .single();
+      nuevaVersion = (actual?.version ?? 0) + 1;
+    }
+
+    const nuevaData = { ...validated.data, version: nuevaVersion };
+
     const query = id
-      ? supabase.from("menus").update(validated.data).eq("id", id).select("id, nombre").single()
-      : supabase.from("menus").insert(validated.data).select("id, nombre").single();
+      ? supabase.from("menus").update(nuevaData).eq("id", id).select("id, nombre").single()
+      : supabase.from("menus").insert(nuevaData).select("id, nombre").single();
 
     const { data: saved, error: dbError } = await query;
-
     if (dbError) {
       console.error("[DB ERROR UPSERT MENU]:", dbError);
       // El error más probable: tipo duplicado (UNIQUE). Lo traducimos.

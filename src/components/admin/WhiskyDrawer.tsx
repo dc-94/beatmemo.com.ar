@@ -4,7 +4,7 @@
 import { useDrawerA11y } from "@/hooks/useDrawerA11y";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import CloudinaryWidget from "./CloudinaryWidget";
 import { upsertWhisky, deleteWhisky } from "@/actions/whiskies";
@@ -41,22 +41,27 @@ const drawerRef = useDrawerA11y(isOpen, onClose);
 
   const logoUrl = watch("logo_url");
 
-  // El drawer se monta/desmonta con isOpen, y el contenedor le pasa
-  // key={editing?.id ?? "new"}. Con la key, cada apertura es una instancia
-  // nueva → el reset del render inicial ya trae el dato correcto. No hace
-  // falta useEffect: la key garantiza el remonte.
-  // Pero como el form se inicializa una vez, seteamos el dato al montar:
-  if (whiskyToEdit && watch("marca") === undefined) {
-    reset({
-      marca: whiskyToEdit.marca ?? "",
-      expresion: whiskyToEdit.expresion ?? "",
-      coleccion: whiskyToEdit.coleccion ?? "blended",
-      logo_url: whiskyToEdit.logo_url ?? "",
-      tiene_hh: whiskyToEdit.tiene_hh ?? false,
-      disponible: whiskyToEdit.disponible ?? true,
-      orden: whiskyToEdit.orden ?? 0,
-    });
-  }
+    // Resetea el form según el whisky a editar. El caso "nuevo" (sin whisky)
+  // limpia a valores vacíos, para que no queden datos del anterior.
+  useEffect(() => {
+    if (!isOpen) return;  
+    if (whiskyToEdit) {
+      reset({
+        marca: whiskyToEdit.marca ?? "",
+        expresion: whiskyToEdit.expresion ?? "",
+        coleccion: whiskyToEdit.coleccion ?? "blended",
+        logo_url: whiskyToEdit.logo_url ?? "",
+        tiene_hh: whiskyToEdit.tiene_hh ?? false,
+        disponible: whiskyToEdit.disponible ?? true,
+        orden: whiskyToEdit.orden ?? 0,
+      });
+    } else {
+      reset({
+        marca: "", expresion: "", coleccion: "blended",
+        logo_url: "", tiene_hh: false, disponible: true, orden: 0,
+      });
+    }
+  }, [whiskyToEdit, reset]);
 
   if (!isOpen) return null;
 

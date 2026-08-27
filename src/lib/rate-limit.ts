@@ -7,8 +7,9 @@ import type { createClient } from "@/lib/supabase/server";
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
 const PRESETS = {
-  mutation: { tokens: 20, windowSecs: 60 },
-  upload:   { tokens: 8,  windowSecs: 60 },
+  mutation: { tokens: 5, windowSecs: 60 },
+  upload:   { tokens: 5,  windowSecs: 60 },
+  auth:     { tokens: 5,  windowSecs: 60 },  
 } as const;
 
 export type LimitPreset = keyof typeof PRESETS;

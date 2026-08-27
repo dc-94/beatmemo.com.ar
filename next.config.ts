@@ -11,22 +11,17 @@ const csp = [
   // SCRIPTS. 'unsafe-inline' es necesario: Next inyecta scripts inline y sin
   // nonce no hay forma de autorizarlos (el nonce mataría el ISR).
   // 'unsafe-eval' SOLO en dev: lo pide React Refresh / HMR.
-    `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ""} https://upload-widget.cloudinary.com https://widget.cloudinary.com`,
+   `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ""} https://upload-widget.cloudinary.com https://widget.cloudinary.com https://www.googletagmanager.com https://assets.calendly.com`,
 
-  // AGREGAR CUANDO CONECTE ANALITYCS Y CALENDLY
-  // `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ""} https://upload-widget.cloudinary.com https://widget.cloudinary.com https://www.googletagmanager.com`,
+   `connect-src 'self' ${SUPABASE_URL} wss://${SUPABASE_URL.replace("https://", "")} https://api.cloudinary.com https://res.cloudinary.com https://www.google-analytics.com https://region1.google-analytics.com https://calendly.com`,
 
-  // `connect-src 'self' ${SUPABASE_URL} wss://${SUPABASE_URL.replace("https://", "")} https://api.cloudinary.com https://res.cloudinary.com https://www.google-analytics.com https://region1.google-analytics.com`,
-
-  `frame-src 'self' https://upload-widget.cloudinary.com https://widget.cloudinary.com https://accounts.google.com https://calendly.com`,
-  
+  `frame-src 'self' https://upload-widget.cloudinary.com https://widget.cloudinary.com https://accounts.google.com https://calendly.com https://assets.calendly.com`,
   
     // ESTILOS. Tailwind y styled-jsx inyectan <style> inline.
   `style-src 'self' 'unsafe-inline'`,
 
   // IMÁGENES. data: y blob: los usa next/image y el render de PDF a canvas.
-  `img-src 'self' data: blob: https://res.cloudinary.com ${SUPABASE_URL}`,
-
+  `img-src 'self' data: blob: https://res.cloudinary.com ${SUPABASE_URL} https://www.google-analytics.com`,
   // FUENTES. next/font las auto-hospeda, así que 'self' alcanza.
   `font-src 'self' data:`,
 
@@ -61,7 +56,7 @@ const securityHeaders = [
   // REPORT-ONLY: declara la política pero NO bloquea nada. Las violaciones
   // aparecen en la consola del navegador. Se pasa a enforce recién cuando
   // el reporte esté limpio.
-  { key: "Content-Security-Policy", value: csp },
+  { key: "Content-Security-Policy-Report-Only", value: csp },
 
   // Impide que el sitio (sobre todo el vault) se cargue en un <iframe> ajeno.
   // Sin esto, alguien puede embeber el login y capturar clicks (clickjacking).
