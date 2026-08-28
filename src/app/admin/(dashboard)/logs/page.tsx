@@ -1,8 +1,10 @@
 // src/app/admin/(dashboard)/logs/page.tsx
-import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import LogsFilters from "@/components/admin/LogsFilters";
 import { Fragment } from "react";
+import { guardAction } from "@/lib/guard";
+import { redirect } from "next/navigation";
+
 // Agregá arriba del componente en logs/page.tsx
 const ACTION_LABELS: Record<string, string> = {
   LOGIN_SUCCESS: "Inició sesión",
@@ -57,16 +59,19 @@ function parseParams(sp: Record<string, string | string[] | undefined>) {
   };
 }
 
-export default async function LogsPage({
-  searchParams,
-}: {
+export default async function LogsPage({ searchParams }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = await searchParams;
   const { page, action, email, desde, hasta } = parseParams(sp);
-
-  const supabase = await createClient();
-
+  const guard = await guardAction({
+    intent: "VIEW_ADMIN_LOGS",
+    table: "admin_logs",
+    roles: ["SUPERADMIN"],
+    limit: "none",
+  });
+  if (!guard.ok) redirect("/admin");
+  const { supabase } = guard;
   // Construcción de la query con filtros como cláusulas en Postgres
   // (NO se filtra en el cliente: directiva anti-data-pollution).
   let query = supabase
