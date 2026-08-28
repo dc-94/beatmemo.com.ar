@@ -2,13 +2,55 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { CALENDLY_VISITAS, whatsappLink } from "@/lib/config";
 
 type Idioma = keyof typeof CALENDLY_VISITAS;
 
 export default function CalendlyVisitas() {
   const [idioma, setIdioma] = useState<Idioma | null>(null);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const reservaOk = searchParams.get("reserva") === "ok";
+  const idiomaReservado = searchParams.get("idioma") as Idioma | null;
 
+// PASO 0 — confirmación propia, tras volver de Calendly.
+  if (reservaOk) {
+    const label = idiomaReservado ? CALENDLY_VISITAS[idiomaReservado]?.label : null;
+    return (
+      <div className="w-full max-w-3xl mx-auto text-center">
+        <div className="bg-[#C5A059] px-6 py-8">
+          <svg className="w-12 h-12 mx-auto mb-4 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+          <p className="font-serif text-2xl lg:text-3xl text-black font-bold mb-2">
+            Tu visita quedó reservada
+          </p>
+          <p className="font-sans text-black/80 text-sm">
+            {label ? `Visita en ${label}. ` : ""}Te enviamos la confirmación por correo.
+          </p>
+        </div>
+
+        <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            type="button"
+            onClick={() => router.replace("/museo/visitas-guiadas")}
+            className="font-sans font-bold uppercase tracking-widest text-xs text-[#C5A059] border-2 border-[#C5A059] px-6 py-3 hover:bg-[#C5A059] hover:text-black transition-colors"
+          >
+            Reservar otra visita
+          </button>
+          
+           <a href={whatsappLink("Hola! Acabo de reservar una visita guiada y quiero hacer una consulta.")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-sans font-bold uppercase tracking-widest text-xs text-brand-white-100 border-2 border-brand-white-100/30 px-6 py-3 hover:border-brand-white-100 transition-colors"
+          >
+            Consultar por WhatsApp
+          </a>
+        </div>
+      </div>
+    );
+  }
   // PASO 1 — elección de idioma. Sin opción preseleccionada.
   if (!idioma) {
     return (

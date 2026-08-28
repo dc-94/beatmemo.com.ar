@@ -4,6 +4,8 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { whatsappLink, WA_MESSAGES } from "@/lib/config";
 import CalendlyVisitas from "@/components/museo/CalendlyVisitas";
+import { Suspense } from "react";
+
 export default function VisitasGuiadasPage() {
   return (
     <main className="min-h-screen bg-brand-black-200 text-brand-white-100 overflow-hidden font-sans pb-32">
@@ -145,7 +147,9 @@ export default function VisitasGuiadasPage() {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
         >
-          <CalendlyVisitas />
+          <Suspense fallback={<div className="h-[700px]" />}>
+            <CalendlyVisitas /> 
+          </Suspense>
         </motion.div>
       </section>
 
