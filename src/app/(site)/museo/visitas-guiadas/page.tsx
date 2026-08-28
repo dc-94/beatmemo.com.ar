@@ -123,7 +123,7 @@ export default function VisitasGuiadasPage() {
             />
           </motion.div>
           
-          <motion.div 
+          <motion.div id="reservar"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -141,7 +141,8 @@ export default function VisitasGuiadasPage() {
         </div>
 
         {/* CONTENEDOR CALENDLY ESTRUCTURADO */}
-        <motion.div
+        <motion.div 
+          style={{ scrollMarginTop: "calc(var(--chrome-h, 80px) + 1.5rem)" }}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}

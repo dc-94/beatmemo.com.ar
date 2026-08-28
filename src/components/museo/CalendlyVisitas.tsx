@@ -34,7 +34,11 @@ export default function CalendlyVisitas() {
         <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
           <button
             type="button"
-            onClick={() => router.replace("/museo/visitas-guiadas")}
+            onClick={() => { router.replace("/museo/visitas-guiadas", { scroll: false });
+              requestAnimationFrame(() => {
+                document.getElementById("reservar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              });
+            }}
             className="font-sans font-bold uppercase tracking-widest text-xs text-[#C5A059] border-2 border-[#C5A059] px-6 py-3 hover:bg-[#C5A059] hover:text-black transition-colors"
           >
             Reservar otra visita
@@ -106,8 +110,7 @@ export default function CalendlyVisitas() {
           <strong className="font-serif text-lg tracking-normal normal-case">{sel.label}</strong>
         </span>
 
-        {/* Cambio DIRECTO al otro idioma: nombra el destino, no la acción
-            genérica. Un clic en vez de volver al selector. */}
+        {/* Cambio DIRECTO al otro idioma*/}
         <button
           type="button"
           onClick={() => setIdioma(otro)}
@@ -130,7 +133,8 @@ export default function CalendlyVisitas() {
           key={idioma}
           src={sel.url}
           title={`Reservar visita guiada en ${sel.label}`}
-          className="w-full h-full border-0"
+          className="h-full border-0"
+          style={{ width: "calc(100% + 18px)" }}
           loading="lazy"
         />
       </div>

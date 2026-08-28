@@ -24,7 +24,7 @@ const navLinks = [
     href: "/museo",
     subLinks: [
       { label: "Recorré el museo", href: "/museo" },
-      { label: "Visitas guiadas", href: "/museo/visitas-guiadas" },
+      { label: "Visitas guiadas", href: "/museo/visitas-guiadas#reservar" },
     ],
   },
   { label: "Nosotros", href: "/nosotros" },
