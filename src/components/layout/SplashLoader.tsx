@@ -5,9 +5,6 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 
 export default function SplashLoader() {
-  // Arranca visible: el servidor ya no sabe si el visitante lo vio.
-  // El script inline del layout marca data-splash="seen" antes del paint,
-  // y el CSS de globals oculta este overlay sin parpadeo.
   const [show, setShow] = useState(true);
   const [isFading, setIsFading] = useState(false);
 
@@ -20,8 +17,8 @@ export default function SplashLoader() {
 
     document.cookie = "loader_visto=true; path=/; max-age=86400";
 
-    const fadeTimer = setTimeout(() => setIsFading(true), 1500);
-    const removeTimer = setTimeout(() => setShow(false), 2000);
+    const fadeTimer = setTimeout(() => setIsFading(true), 600);
+    const removeTimer = setTimeout(() => setShow(false), 900);
 
     return () => {
       clearTimeout(fadeTimer);
@@ -41,7 +38,7 @@ export default function SplashLoader() {
       <div className="relative w-48 h-12 md:w-56 md:h-16 animate-pulse">
         <Image
           src="/brand/logo_BLANCO.svg"
-          alt="Cargando Beatmemo..."
+          alt="Cargando ..."
           fill
           className="object-contain"
           priority
