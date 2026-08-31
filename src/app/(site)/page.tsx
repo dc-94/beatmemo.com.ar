@@ -11,6 +11,8 @@ import { SITE_URL } from "@/lib/config";
 import { Metadata } from "next";
 import { getSiteContent } from "@/lib/site-content";
 import { getSiteConfig } from "@/lib/site-config";
+import ScrollCue from "@/components/home/ScrollCue";
+
 
 export const revalidate = 600;
 export const metadata: Metadata = {
@@ -32,22 +34,23 @@ export default async function HomePage() {
   ]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-brand-black-100 gap-14 lg:gap-20 pb-32">
+    <div className="flex flex-col min-h-screen bg-brand-black-100 pb-32">
       <HeroSection />
-      <SellosAccesibilidad variant="strip" />
+      <div className="-mt-10 lg:-mt-20">
+        <SellosAccesibilidad variant="strip" />
+        <ScrollCue />
+      </div>
 
-      {/* Gancho emocional primero */}
-      <Suspense fallback={<BrandSpinner />}>
-        <AgendaWrapper />
-      </Suspense>
-
-      <Pub />
-
-      {/* Promos debajo del pub — provisional hasta el briefing */}
-      <Suspense fallback={<BrandSpinner />}>
-        <PromoSection />
-      </Suspense>
-      <MuseumPreview contenido={museoContent} museoVisitas={config.museo_visitas} />
+      <div className="flex flex-col gap-14 lg:gap-20 mt-6 lg:mt-8">
+        <Suspense fallback={<BrandSpinner />}>
+          <AgendaWrapper />
+        </Suspense>
+        <Pub />
+        <Suspense fallback={<BrandSpinner />}>
+          <PromoSection />
+        </Suspense>
+        <MuseumPreview contenido={museoContent} museoVisitas={config.museo_visitas} />
+      </div>
     </div>
   );
 }

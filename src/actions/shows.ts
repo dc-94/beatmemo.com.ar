@@ -146,7 +146,7 @@ export async function getUpcomingShows(): Promise<EventosResult> {
       .gte("fecha", getLocalTodayString())
       .order("fecha", { ascending: true })
       .order("hora", { ascending: true })
-      .limit(6);
+      .limit(5);
 
     if (error) throw error;
     return { ok: true, data: (data as PublicEvent[]) ?? [] };

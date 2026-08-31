@@ -36,7 +36,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         horarios={config.horarios}  
         rooftopUrl={config.rooftop_url}
       />
-      <WhatsAppFAB whatsappNumero={config.whatsapp_numero} />
+      <WhatsAppFAB />
     </div>
     </>
   );
