@@ -6,6 +6,8 @@ import { ChevronDown } from "lucide-react";
 import ContenidoForm, { type SeccionData } from "./ContenidoForm";
 
 const NOMBRE_PAGINA: Record<string, string> = {
+  home_pub: "Home · Pub",
+  home_museo: "Home · Museo",
   pub: "Pub · Hero",
   museo: "Museo",
   agenda: "Agenda de Shows",
@@ -15,9 +17,7 @@ export default function ContenidoClient({ secciones }: { secciones: SeccionData[
   const [abierta, setAbierta] = useState<string | null>(secciones[0]?.clave ?? null);
 
   // Orden estable: pub, museo, agenda (no el orden que devuelva la DB).
-  const orden = [
-    "pub", "museo", "agenda"
-  ];
+  const orden = [ "home_pub", "home_museo", "pub", "museo", "agenda"];
   const ordenadas = [...secciones].sort((a, b) => orden.indexOf(a.clave) - orden.indexOf(b.clave));
 
   return (

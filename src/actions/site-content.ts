@@ -13,6 +13,9 @@ const RUTA_POR_CLAVE: Record<string, string> = {
   pub: "/pub",
   museo: "/museo",
   agenda: "/agenda",
+  home_hero: "/",
+  home_pub: "/",
+  home_museo: "/",
 };
 
 export async function updateSiteContent(formData: FormData): Promise<ActionResponse> {

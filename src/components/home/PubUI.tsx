@@ -1,15 +1,17 @@
 // src/components/home/PubUI.tsx
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef } from "react";
+import type { SiteContent } from "@/lib/site-content";
 import Image from "next/image";
 import Link from "next/link";
+import { WheatOff, Leaf } from "lucide-react";
 import { motion, useInView, Variants } from "framer-motion";
 import AtributoBadges from "@/components/pub/AtributoBadges";
 import { getOptimizedImageUrl } from "@/lib/utils";
 
-interface PubItem {
-  id: string;
+export interface PubItem {
+    id: string;
   nombre: string;
   categoria: string;
   descripcion: string | null;
@@ -27,40 +29,18 @@ const fadeUpVariant: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 1, ease: [0.25, 0.1, 0.25, 1] } },
 };
 
-// Shuffle determinístico: misma semilla → mismo orden. La semilla es la
-// ventana temporal (cambia con revalidate), NO Math.random(). Así el server
-// y el cliente producen el MISMO orden (sin hydration mismatch) y el resultado
-// cachea, pero cambia entre ventanas. Mulberry32: PRNG chico y estable.
-function seededShuffle<T>(arr: T[], seed: number): T[] {
-  const a = [...arr];
-  let s = seed >>> 0;
-  const rand = () => {
-    s |= 0; s = (s + 0x6d2b79f5) | 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-export default function PubUI({ items }: { items: PubItem[] }) {
+export default function PubUI({
+  hero,
+  rest,
+  contenido,
+}: {
+  hero: PubItem | null;
+  rest: PubItem[];
+  contenido: SiteContent | null;
+}) {
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, amount: 0.1 });
 
-  // Hero: primer marcado; si hay 0, cae al primero de la lista (menor orden).
-  // Nunca se rompe con 0 ni con N marcados. (Fallback opción 3.)
-  // El resto rota por ventana horaria; el hero NO rota (es tu elección curada).
-  const { hero, rest } = useMemo(() => {
-    if (items.length === 0) return { hero: null, rest: [] as PubItem[] };
-    const heroItem = items.find((i) => i.hero_destacado) ?? items[0];
-    const others = items.filter((i) => i.id !== heroItem.id);
-    const windowSeed = Math.floor(Date.now() / (1000 * 60 * 60)); // cambia cada hora
-    return { hero: heroItem, rest: seededShuffle(others, windowSeed) };
-  }, [items]);
 
   return (
     <section
@@ -86,18 +66,14 @@ export default function PubUI({ items }: { items: PubItem[] }) {
             variants={fadeUpVariant} initial="hidden"
             animate={isInView ? "visible" : "hidden"}
             className="flex flex-col justify-center"
-          >
-            <span className="text-brand-black-100 uppercase tracking-[0.3em] text-[10px] font-bold mb-6">
-              Nuestra Cocina
-            </span>
+          >           
+            
             <h2 className="font-serif font-bold text-4xl lg:text-6xl text-brand-black-100 tracking-tight leading-tight mb-8">
-              Classic Pub.<br />Premium Taste.
+              {contenido?.titulo ?? <>Classic Pub.<br />Premium Taste.</>}
             </h2>
             <p className="font-sans text-gray-600 text-base lg:text-lg leading-relaxed mb-10 max-w-lg">
-              No solo somos el templo del rock, somos el punto de encuentro donde
-              la gastronomía de alto vuelo se cruza con la historia. Descubrí
-              nuestra selección de hamburguesas artesanales, tapeo de autor y
-              coctelería clásica.
+              {contenido?.cuerpo ??
+                "No solo somos el templo del rock, somos el punto de encuentro donde la gastronomía de alto vuelo se cruza con la historia. Descubrí nuestra selección de hamburguesas artesanales, tapeo de autor y coctelería clásica."}
             </p>
             <blockquote className="border-l-2 border-accent-gold-vibrant px-6 mt-4 max-w-lg">
               <p className="font-sans text-accent-gold-dark text-sm lg:text-md italic leading-relaxed mb-2">
@@ -119,8 +95,10 @@ export default function PubUI({ items }: { items: PubItem[] }) {
             animate={isInView ? "visible" : "hidden"}
             className="flex flex-col gap-8 lg:gap-10"
           >
-            <div className="border-b border-brand-black-100/10 pb-6">
-              <h3 className="font-serif text-3xl text-brand-black-100">De nuestra cocina</h3>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-around gap-3 mb-6">
+              <span className="text-brand-black-100 uppercase tracking-[0.3em] text-2xl font-bold"> {contenido?.subtitulo ?? "Nuestra Cocina"}
+              </span>
+              <SelloDietario />
             </div>
 
             {/* ZONA SUPERIOR: hero grande (izq) + 2 horizontales apilados (der) */}
@@ -197,6 +175,28 @@ function TipoIcon({ categoria }: { categoria: string }) {
           <path d="M6 3v6a2 2 0 0 0 2 2v10M8 3v5M10 3v5M18 3c-1.5 0-3 1.5-3 5s1.5 4 3 4v9" />
         </svg>
       )}
+    </div>
+  );
+}
+
+// Sello dietario del home: "Somos" + Sin TACC + Vegetariano. Informativo,
+// paralelo al eyebrow. No es por-plato (para eso están los AtributoBadges).
+function SelloDietario() {
+  return (
+    <div className="flex items-center gap-2.5 shrink-0 text-accent-gold-dark">
+      <span className="text-md font-bold uppercase tracking-[0.25em] ">
+        Somos
+      </span>
+      <div className="flex items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 bg-brand-white-100 rounded-full border border-brand-black-100/15 px-2.5 py-1 text-lg font-bold uppercase tracking-wide ">
+          <WheatOff size={13} strokeWidth={2} className="text-accent-gold-dark" aria-hidden="true" />
+          Sin T.A.C.C.
+        </span>
+        <span className="inline-flex items-center gap-1.5 bg-brand-white-100 rounded-full border border-brand-black-100/15 px-2.5 py-1 text-lg font-bold uppercase tracking-wide ">
+          <Leaf size={13} strokeWidth={2} className="text-accent-gold-dark" aria-hidden="true" />
+          Vegetariano
+        </span>
+      </div>
     </div>
   );
 }

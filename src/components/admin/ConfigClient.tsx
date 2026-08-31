@@ -6,26 +6,33 @@ import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 import { updateConfigSitio } from "@/actions/config-sitio";
 import Button from "@/components/ui/Button";
-
+import type { MuseoVisitas } from "@/lib/site-config";
 type Horario = { dias: string; horario: string };
 
 export default function ConfigClient({ config }: { config: any }) {
   const [horarios, setHorarios] = useState<Horario[]>(config?.horarios ?? []);
   const [bannerActivo, setBannerActivo] = useState<boolean>(config?.banner_activo ?? false);
   const [guardando, setGuardando] = useState(false);
-
+  const [museoVisitas, setMuseoVisitas] = useState<MuseoVisitas>(
+    config?.museo_visitas ?? {
+      guia_gratuita: { dia: "Domingos", hora: "11:00", nota: "Sin reserva previa." },
+      escuelas: { reservas_modo: "activas", mensaje: "", mostrar_whatsapp: true, idiomas_nota: "Disponible en Inglés y Español." },
+    }
+  );
   const addHorario = () => setHorarios([...horarios, { dias: "", horario: "" }]);
   const rmHorario = (i: number) => setHorarios(horarios.filter((_, idx) => idx !== i));
   const setHorario = (i: number, campo: keyof Horario, val: string) =>
     setHorarios(horarios.map((h, idx) => (idx === i ? { ...h, [campo]: val } : h)));
-
-  const handleSubmit = async (formData: FormData) => {
+ const setGuia = (campo: keyof MuseoVisitas["guia_gratuita"], val: string) =>
+    setMuseoVisitas((m) => ({ ...m, guia_gratuita: { ...m.guia_gratuita, [campo]: val } }));
+  const setEscuelas = <K extends keyof MuseoVisitas["escuelas"]>(campo: K, val: MuseoVisitas["escuelas"][K]) =>
+    setMuseoVisitas((m) => ({ ...m, escuelas: { ...m.escuelas, [campo]: val } }));
+    const handleSubmit = async (formData: FormData) => {
     setGuardando(true);
     try {
-      // Los horarios (estado local) se serializan a JSON en un campo oculto.
       formData.set("horarios", JSON.stringify(horarios.filter(h => h.dias && h.horario)));
       formData.set("banner_activo", bannerActivo ? "true" : "false");
-
+      formData.set("museo_visitas", JSON.stringify(museoVisitas)); 
       const res = await updateConfigSitio(formData);
       if (res.success) toast.success("Configuración guardada");
       else {
@@ -126,6 +133,81 @@ export default function ConfigClient({ config }: { config: any }) {
               </div>
             </div>
           )}
+        </div>
+      </section>
+
+    {/* MUSEO · VISITAS */}
+      <section className="space-y-4">
+        <h2 className="text-sm uppercase tracking-widest text-brand-gold font-bold">Museo · Visitas</h2>
+
+        <div className="border border-neutral-800 rounded p-4 space-y-3">
+          <p className="text-xs uppercase tracking-widest text-neutral-500 font-bold">Guía gratuita</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className={labelCls}>Día</label>
+              <input value={museoVisitas.guia_gratuita.dia} onChange={(e) => setGuia("dia", e.target.value)} placeholder="Domingos" className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Hora</label>
+              <input value={museoVisitas.guia_gratuita.hora} onChange={(e) => setGuia("hora", e.target.value)} placeholder="11:00" className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Nota</label>
+              <input value={museoVisitas.guia_gratuita.nota} onChange={(e) => setGuia("nota", e.target.value)} placeholder="Sin reserva previa." className={inputCls} />
+            </div>
+          </div>
+        </div>
+
+        <div className="border border-neutral-800 rounded p-4 space-y-3">
+          <p className="text-xs uppercase tracking-widest text-neutral-500 font-bold">Instituciones educativas</p>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setEscuelas("reservas_modo", "activas")}
+              className={`flex-1 rounded border p-2.5 text-sm font-medium transition ${museoVisitas.escuelas.reservas_modo === "activas" ? "border-brand-red bg-brand-red/10 text-white" : "border-neutral-800 text-neutral-400 hover:border-neutral-700"}`}
+            >
+              Reservas activas
+            </button>
+            <button
+              type="button"
+              onClick={() => setEscuelas("reservas_modo", "mensaje")}
+              className={`flex-1 rounded border p-2.5 text-sm font-medium transition ${museoVisitas.escuelas.reservas_modo === "mensaje" ? "border-brand-red bg-brand-red/10 text-white" : "border-neutral-800 text-neutral-400 hover:border-neutral-700"}`}
+            >
+              Mostrar mensaje
+            </button>
+          </div>
+
+          <p className="text-xs text-neutral-500">
+            {museoVisitas.escuelas.reservas_modo === "activas"
+              ? "Se muestra el calendario de reservas (Calendly) en el sitio."
+              : "Se oculta el calendario y se muestra el mensaje (home, museo y visitas guiadas)."}
+          </p>
+
+          {museoVisitas.escuelas.reservas_modo === "mensaje" && (
+            <div className="space-y-3 pt-1">
+              <div>
+                <label className={labelCls}>Mensaje de aviso</label>
+                <textarea
+                  value={museoVisitas.escuelas.mensaje}
+                  onChange={(e) => setEscuelas("mensaje", e.target.value)}
+                  rows={3}
+                  maxLength={500}
+                  placeholder="Las reservas para instituciones educativas se habilitarán a partir de febrero."
+                  className={inputCls}
+                />
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={museoVisitas.escuelas.mostrar_whatsapp} onChange={(e) => setEscuelas("mostrar_whatsapp", e.target.checked)} className="w-4 h-4 accent-brand-red" />
+                <span className="text-sm text-white font-medium">Mostrar botón de WhatsApp para consultas</span>
+              </label>
+            </div>
+          )}
+
+          <div>
+            <label className={labelCls}>Nota de idiomas</label>
+            <input value={museoVisitas.escuelas.idiomas_nota} onChange={(e) => setEscuelas("idiomas_nota", e.target.value)} placeholder="Disponible en Inglés y Español." className={inputCls} />
+          </div>
         </div>
       </section>
         <Button type="submit" disabled={guardando} className="px-6">

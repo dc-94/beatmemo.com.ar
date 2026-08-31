@@ -4,6 +4,13 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+// En el server component que envuelve el hero:
+import { getSiteContent } from "@/lib/site-content";
+
+const c = await getSiteContent("home_hero");
+const titulo   = c?.titulo   ?? "El lugar Beatle en Rosario.";
+const eyebrow  = c?.subtitulo ?? "Rosario · Bv. Oroño 107 bis";
+const bajada   = c?.cuerpo   ?? "Museo, pub y escenario. Un homenaje a The Beatles en el corazón de Rosario.";
 
 const slides = [
   { id: 1, word: "BEATMEMO", img: "/placeholders/hero/fachada.jpeg" },

@@ -6,7 +6,17 @@ import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { whatsappLink } from "@/lib/config";
-export default function MuseumPreview() {
+import type { SiteContent } from "@/lib/site-content";
+import type { MuseoVisitas } from "@/lib/site-config";
+import EscuelasAviso from "@/components/museo/EscuelasAviso";
+
+export default function MuseumPreview({
+  contenido,
+  museoVisitas,
+}: {
+  contenido: SiteContent | null;
+  museoVisitas: MuseoVisitas;
+}) {
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, amount: 0.1 });
 
@@ -23,7 +33,6 @@ export default function MuseumPreview() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="w-full lg:w-1/2 relative aspect-[4/3] rounded-none overflow-hidden"
           >
-            {/* Recuerda cambiar este src por el placeholder correcto que tengas en tu carpeta */}
             <Image 
               src="/placeholders/museo.jpg" 
               alt="Interior del Museo Beatmemo"
@@ -40,14 +49,15 @@ export default function MuseumPreview() {
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
             className="w-full lg:w-1/2 flex flex-col gap-6"
           >
-            <span className="text-brand-white-300 uppercase tracking-[0.3em] text-[10px] font-bold">
-              Cultura & Legado
+           <span className="text-brand-white-300 uppercase tracking-[0.3em] text-[10px] font-bold">
+              {contenido?.subtitulo ?? "Cultura & Legado"}
             </span>
             <h2 className="font-serif font-bold text-4xl lg:text-6xl text-brand-white-100 leading-tight">
-              Un recorrido por <br/>la historia.
+              {contenido?.titulo ?? <>Un recorrido por <br/>la historia.</>}
             </h2>
             <p className="font-sans text-brand-white-300 text-base leading-relaxed max-w-lg">
-              Beatmemo no es solo un bar, es una cápsula del tiempo. Descubrí nuestra colección exclusiva, recorré los hitos que marcaron una era y viví la experiencia completa del museo a través de nuestras audioguías.
+              {contenido?.cuerpo ??
+                "Beatmemo no es solo un bar, es una cápsula del tiempo. Descubrí nuestra colección exclusiva, recorré los hitos que marcaron una era y viví la experiencia completa del museo a través de nuestras audioguías."}
             </p>
             
             <Link 
@@ -82,8 +92,8 @@ export default function MuseumPreview() {
             {/* Col 1: Gratuita */}
             <div className="flex flex-col gap-2 border-l-0 md:border-l border-brand-white-300/10 md:pl-8 first:border-0 first:pl-0">
               <span className="text-brand-red-100 font-bold uppercase tracking-widest text-[10px]">Guía Gratuita</span>
-              <span className="font-sans text-brand-white-100 font-bold text-sm">Domingos 11:00 hs</span>
-              <span className="text-brand-white-300 text-[11px]">Sin reserva previa.</span>
+              <span className="font-sans text-brand-white-100 font-bold text-sm">{museoVisitas.guia_gratuita.dia} {museoVisitas.guia_gratuita.hora} hs</span>
+              <span className="text-brand-white-300 text-[11px]">{museoVisitas.guia_gratuita.nota}</span>
             </div>
 
             {/* Col 2: Privadas */}
@@ -103,15 +113,19 @@ export default function MuseumPreview() {
               </a>
             </div>
 
-            {/* Col 3: Escuelas */}
+                        {/* Col 3: Escuelas */}
             <div className="flex flex-col gap-2 border-l-0 md:border-l border-brand-white-300/10 md:pl-8">
               <span className="text-brand-red-100 font-bold uppercase tracking-widest text-[10px]">Instituciones Educativas</span>
-              <Link 
-                href="/museo/visitas-guiadas" 
-                className="font-sans text-brand-white-100 font-bold text-sm border-b border-brand-white-100 w-fit pb-0.5 hover:text-brand-red-100 hover:border-brand-red-100 transition-colors mt-1"
-              >
-                Reservar para escuelas
-              </Link>
+              {museoVisitas.escuelas.reservas_modo === "mensaje" ? (
+                <EscuelasAviso escuelas={museoVisitas.escuelas} variant="inline" />
+              ) : (
+                <Link
+                  href="/museo/visitas-guiadas"
+                  className="font-sans text-brand-white-100 font-bold text-sm border-b border-brand-white-100 w-fit pb-0.5 hover:text-brand-red-100 hover:border-brand-red-100 transition-colors mt-1"
+                >
+                  Reservar para escuelas
+                </Link>
+              )}
             </div>
 
           </div>

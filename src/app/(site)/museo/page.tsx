@@ -7,7 +7,8 @@ import { Metadata } from 'next';
 import { getSiteContent } from "@/lib/site-content";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import CTALink from "@/components/shared/CTALink";
-
+import { getSiteConfig } from "@/lib/site-config";
+import EscuelasAviso from "@/components/museo/EscuelasAviso";
 
 export const metadata: Metadata = {
   title: 'Museo Beatle',
@@ -20,7 +21,8 @@ export const metadata: Metadata = {
 };
 
 export default async function MuseoPage() {
-  const contenido = await getSiteContent("museo");
+  const contenido = await getSiteContent("museo");  
+  const config = await getSiteConfig();
   const timelineEvents = [
     {
       year: "1940s",
@@ -52,7 +54,6 @@ export default async function MuseoPage() {
   return (
     <main className="min-h-screen bg-brand-black-200 text-brand-white-100 overflow-hidden font-sans">
       
-      {/* 1. HERO SANGRE COMPLETO */}
       {/* 1. HERO */}
       <section className="relative h-[60vh] lg:h-[70vh] w-full">
         {contenido?.imagen_url ? (
@@ -145,12 +146,11 @@ export default async function MuseoPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 relative z-10">
-            {/* Col 1 */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 relative z-10">            {/* Col 1 */}
             <div className="flex flex-col gap-2 border-l-0 md:border-l border-[#8B6D3B]/20 md:pl-8 first:border-0 first:pl-0">
               <span className="text-[#C5A059] font-bold uppercase tracking-widest text-[10px]">Guía Gratuita</span>
-              <span className="font-sans text-[#E6C987] font-bold text-sm">Domingos 11:00 hs</span>
-              <span className="text-brand-white-300 text-[11px]">Sin reserva previa.</span>
+              <span className="font-sans text-[#E6C987] font-bold text-sm">{config.museo_visitas.guia_gratuita.dia} {config.museo_visitas.guia_gratuita.hora} hs</span>
+              <span className="text-brand-white-300 text-[11px]">{config.museo_visitas.guia_gratuita.nota}</span>
             </div>
 
             {/* Col 2 */}
@@ -166,16 +166,22 @@ export default async function MuseoPage() {
               </a>
             </div>
 
-            {/* Col 3 */}
+         {/* Col 3 */}
             <div className="flex flex-col gap-2 border-l-0 md:border-l border-[#8B6D3B]/20 md:pl-8">
               <span className="text-[#C5A059] font-bold uppercase tracking-widest text-[10px]">Instituciones Educativas</span>
-              <span className="text-brand-white-300 text-[11px]">Disponible en Inglés y Español.</span>
-              <Link 
-                href="/museo/visitas-guiadas" 
-                className="font-sans text-[#E6C987] font-bold text-sm border-b border-[#E6C987] w-fit pb-0.5 hover:text-brand-white-100 hover:border-brand-white-100 transition-colors"
-              >
-                Reservar para escuelas
-              </Link>
+              {config.museo_visitas.escuelas.reservas_modo === "mensaje" ? (
+                <EscuelasAviso escuelas={config.museo_visitas.escuelas} variant="inline" />
+              ) : (
+                <>
+                  <span className="text-brand-white-300 text-[11px]">{config.museo_visitas.escuelas.idiomas_nota}</span>
+                  <Link
+                    href="/museo/visitas-guiadas"
+                    className="font-sans text-[#E6C987] font-bold text-sm border-b border-[#E6C987] w-fit pb-0.5 hover:text-brand-white-100 hover:border-brand-white-100 transition-colors"
+                  >
+                    Reservar para escuelas
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

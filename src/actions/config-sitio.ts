@@ -20,6 +20,11 @@ export async function updateConfigSitio(formData: FormData): Promise<ActionRespo
     } catch {
       return { success: false, error: "Los horarios tienen un formato inválido." };
     }
+        try {
+      raw.museo_visitas = raw.museo_visitas ? JSON.parse(raw.museo_visitas as string) : undefined;
+    } catch {
+      return { success: false, error: "La config del museo tiene un formato inválido." };
+    }
 
     const validated = configSitioSchema.safeParse(raw);
     if (!validated.success) {
@@ -38,6 +43,7 @@ export async function updateConfigSitio(formData: FormData): Promise<ActionRespo
       banner_mensaje: d.banner_mensaje || null,
       banner_vence: d.banner_vence || null,
       rooftop_url: d.rooftop_url || null,
+      museo_visitas: d.museo_visitas,
     };
 
     // UPDATE de la fila singleton (id=1). No se crea ni se borra.

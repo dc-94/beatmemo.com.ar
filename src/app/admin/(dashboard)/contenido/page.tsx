@@ -10,7 +10,7 @@ export default async function ContenidoPage() {
   const { data } = await supabase
     .from("site_content")
     .select("clave, imagen_url, alt_texto, titulo, subtitulo, cuerpo, cta_mostrar, cta_texto, cta_link")
-    .in("clave", ["pub", "museo", "agenda",]);
+    .in("clave", ["home_hero", "home_pub", "home_museo","pub", "museo", "agenda",]);
 
   return <ContenidoClient secciones={data ?? []} />;
 }

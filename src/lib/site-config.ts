@@ -14,8 +14,17 @@ export interface SiteConfig {
   banner_activo: boolean;
   banner_mensaje: string | null;
   banner_vence: string | null;
+  museo_visitas: MuseoVisitas;
 }
-
+export interface MuseoVisitas {
+  guia_gratuita: { dia: string; hora: string; nota: string };
+  escuelas: {
+    reservas_modo: "activas" | "mensaje";
+    mensaje: string;
+    mostrar_whatsapp: boolean;
+    idiomas_nota: string;
+  };
+}
 // Fallbacks: si la DB falla, el sitio no se queda sin datos de contacto.
 const FALLBACK: SiteConfig = {
   telefono_intl: "+5493412023737",
@@ -31,7 +40,11 @@ const FALLBACK: SiteConfig = {
   google_review_url: "https://g.page/r/CZ8oHnT2ZcQjEAE/review",
   banner_activo: false,
   banner_mensaje: null,
-  banner_vence: null,
+  banner_vence: null, 
+   museo_visitas: {
+    guia_gratuita: { dia: "Domingos", hora: "11:00", nota: "Sin reserva previa." },
+    escuelas: { reservas_modo: "activas", mensaje: "", mostrar_whatsapp: true, idiomas_nota: "Disponible en Inglés y Español." },
+  },
   rooftop_url: "https://instagram.com/beatmemo_rosario",
 };
 
