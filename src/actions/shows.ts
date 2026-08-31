@@ -25,15 +25,6 @@ export type EventosResult =
   | { ok: true; data: PublicEvent[] }
   | { ok: false; data: []; error: string };
 
-/**
- * Registra un fallo de datos. Doble destino:
- *  1. console.error con prefijo [DATA_ERROR] → visible en logs de Vercel (efímero).
- *  2. system_errors vía RPC log_system_error → persistente y buscable.
- *
- * La RPC corre SECURITY DEFINER con guarda anti-flood de 60s: el contexto
- * público no escribe directo en la tabla, invoca la función controlada.
- * El logueo NUNCA tumba la respuesta: si la RPC falla, seguimos.
- */
 async function fail(
   supabase: SupabaseClient,
   fnName: string,
@@ -108,8 +99,8 @@ export async function getShowsByView(
       const { data, error } = await buildEventosBaseQuery(supabase)
         .lt("fecha", getLocalTodayString())
         .order("fecha", { ascending: false })
-        .order("hora", { ascending: false });
-
+        .order("hora", { ascending: false })
+        .order("id", { ascending: false });
       if (error) throw error;
       return { ok: true, data: (data as PublicEvent[]) ?? [] };
     }
@@ -126,7 +117,8 @@ export async function getShowsByView(
       .gte("fecha", startStr)
       .lte("fecha", endStr)
       .order("fecha", { ascending: true })
-      .order("hora", { ascending: true });
+      .order("hora", { ascending: true })
+      .order("id", { ascending: true });
 
     if (error) throw error;
     return { ok: true, data: (data as PublicEvent[]) ?? [] };
@@ -146,6 +138,7 @@ export async function getUpcomingShows(): Promise<EventosResult> {
       .gte("fecha", getLocalTodayString())
       .order("fecha", { ascending: true })
       .order("hora", { ascending: true })
+      .order("id", { ascending: true })
       .limit(5);
 
     if (error) throw error;
@@ -164,7 +157,8 @@ export async function getCulturalEvents(): Promise<EventosResult> {
     const { data, error } = await buildEventosBaseQuery(supabase)
       .eq("tipo", "EVENTO_CULTURAL")
       .gte("fecha", getLocalTodayString())
-      .order("fecha", { ascending: true });
+      .order("fecha", { ascending: true })
+      .order("id", { ascending: true });
 
     if (error) throw error;
     return { ok: true, data: (data as PublicEvent[]) ?? [] };

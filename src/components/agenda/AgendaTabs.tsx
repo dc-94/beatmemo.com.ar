@@ -32,7 +32,8 @@ export default function AgendaTabs({ view, nextMonth, hayProximos }: Props) {
           return (
             <Link
               key={t.key}
-              href={t.href}
+              href={t.href} 
+              scroll={false}
               className={`text-center font-serif font-bold capitalize transition-all duration-300  ${
                 activo
                   ? "text-3xl lg:text-4xl text-brand-white-100 leading-none "          // activa = título grande

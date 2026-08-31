@@ -41,7 +41,8 @@ export async function getPubFacetas(): Promise<Record<string, PubItem[]>> {
     .eq("is_deleted", false)
     .eq("disponible", true)
     .not("faceta", "is", null)
-    .order("orden", { ascending: true });
+    .order("orden", { ascending: true })
+    .order("id", { ascending: true });
 
   const items = (data as PubItem[]) ?? [];
   return items.reduce((acc, item) => {
@@ -58,7 +59,8 @@ export async function getWhiskies(): Promise<Whisky[]> {
     .eq("is_deleted", false)
     .eq("disponible", true)
     .order("coleccion", { ascending: true })
-    .order("orden", { ascending: true });
+    .order("orden", { ascending: true })
+    .order("id", { ascending: true });
   return (data as Whisky[]) ?? [];
 }
 
@@ -68,6 +70,7 @@ export async function getEspacioFotos(): Promise<EspacioFoto[]> {
     .select("id, imagen_url, titulo, epigrafe")
     .eq("is_deleted", false)
     .eq("visible", true)
-    .order("orden", { ascending: true });
+    .order("orden", { ascending: true })
+    .order("id", { ascending: true });
   return (data as EspacioFoto[]) ?? [];
 }

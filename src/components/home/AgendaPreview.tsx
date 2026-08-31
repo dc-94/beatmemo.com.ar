@@ -72,13 +72,14 @@ export default function AgendaPreview({ shows }: { shows: any[] }) {
 function DesktopAccordionCard({ show, isExpanded, onHover }: { show: any; isExpanded: boolean; onHover: () => void; }) {
   const dateObj = new Date(`${show.fecha}T${show.hora}`);
   const fechaStr = dateObj.toLocaleDateString("es-AR", { day: "numeric", month: "long" });
+  const fechaCorta = dateObj.toLocaleDateString("es-AR", { day: "numeric", month: "short" });
   const wpUrl = whatsappLink(WA_MESSAGES.reservaShow(show.titulo, show.fecha));
   return (
     <motion.div
       onMouseEnter={onHover}
       animate={{ flex: isExpanded ? 4 : 1 }}
       transition={{ type: "spring", stiffness: 200, damping: 25 }}
-      className="relative h-full rounded-2px overflow-hidden bg-brand-black-200 border border-brand-black-300 cursor-pointer group"
+      className="relative h-full min-w-[112px] rounded-2px overflow-hidden bg-brand-black-200 border border-brand-black-300 cursor-pointer group"
     >
       <Image 
         src={getOptimizedImageUrl(show.url_imagen)} 
@@ -91,12 +92,15 @@ function DesktopAccordionCard({ show, isExpanded, onHover }: { show: any; isExpa
       <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-transparent z-10" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent z-10" />
 
-      <div className="absolute top-6 left-6 z-20">
-        <span className="text-brand-white-100 font-bold text-[12px] uppercase tracking-widest border-b-1 border-brand-red-100 pb-1">
-          {fechaStr}
+      <div className="absolute top-6 left-6 z-20 flex items-center gap-2">
+        {esHoy(show.fecha) && !isExpanded && (
+          <span className="w-2 h-2 rounded-full bg-brand-red-100 animate-pulse shrink-0" aria-label="En vivo hoy" />
+        )}
+        <span className="text-brand-white-100 font-bold text-[12px] uppercase tracking-widest border-b-1 border-brand-red-100 pb-1 whitespace-nowrap">
+          {isExpanded ? fechaStr : fechaCorta}
         </span>
       </div>
-
+      {esHoy(show.fecha) && isExpanded && <LiveTodayBadge />}se 
       <div className="absolute inset-0 z-20 flex flex-col justify-end p-6">
         <h3 className={`font-serif font-bold text-brand-white-100 transition-all duration-300 leading-tight mb-2 ${isExpanded ? "text-4xl" : "text-xl line-clamp-2"}`}>
           {show.titulo}
@@ -161,6 +165,7 @@ function MobileCarouselCard({ show }: { show: any }) {
             {show.fecha ? new Date(`${show.fecha}T${show.hora}`).toLocaleDateString("es-AR", { day: "numeric", month: "long" }) : ""}
           </span>
         </div>
+        {esHoy(show.fecha) && <LiveTodayBadge />}
         <div className="flex flex-col gap-1 w-full">
           <h3
             className={`font-serif font-bold text-brand-white-100 tracking-tight transition-all duration-300 ${
@@ -192,6 +197,23 @@ function MobileCarouselCard({ show }: { show: any }) {
           </a>
         </div>
       </div>
+    </div>
+  );
+}
+
+function esHoy(fecha: string): boolean {
+  const hoyAr = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date());
+  return fecha === hoyAr;
+}
+
+function LiveTodayBadge() {
+  return (
+    <div className="absolute top-6 right-6 z-20 flex items-center gap-1.5 bg-brand-red-100 text-brand-white-100 px-2.5 py-1 text-[10px] font-sans font-bold uppercase tracking-widest rounded-sm shadow-md">
+      <span className="w-1.5 h-1.5 rounded-full bg-brand-white-100 animate-pulse" />
+      Live today
     </div>
   );
 }
