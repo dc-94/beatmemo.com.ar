@@ -10,7 +10,7 @@ import { upsertMenu, deleteMenu } from "@/actions/menus";
 import { uploadMenuPdf } from "@/actions/menu-uploads";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
-
+import ConfirmDialog from "../ui/ConfirmDialog";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -30,11 +30,8 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
   const [uploadWarning, setUploadWarning] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  // Reset SIEMPRE que se abre/cierra o cambia el item, sin importar si es
-  // creación o edición. Antes, los flags (uploading/saving) solo se limpiaban
-  // en la rama de "nuevo", así que un error durante la edición dejaba el
-  // drawer trabado.
   useEffect(() => {
     setNombre(menuToEdit?.nombre ?? "");
     setTipo(menuToEdit?.tipo ?? "");
@@ -133,25 +130,21 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm("¿Eliminar esta carta del visor? El PDF queda en Storage.")) return;
+  const handleDelete = () => {
+    if (!menuToEdit?.id) return;
+    setConfirmOpen(true);
+  };
+  const confirmDelete = async () => {
+    if (!menuToEdit?.id) return;
     setDeleting(true);
-
     try {
       const res = await deleteMenu(menuToEdit.id);
-      if (res.success) {
-        toast.success("Carta eliminada");
-        router.refresh();
-        onClose();
-      } else {
-        toast.error(res.error);
-      }
-    } catch (err) {
-      console.error("[DELETE MENU]", err);
-      toast.error("Error inesperado al eliminar.");
-    } finally {
-      setDeleting(false);
-    }
+      if (res.success) { toast.success("Whisky eliminado"); setConfirmOpen(false); onClose(); }
+      else { toast.error(res.error || "No se pudo eliminar"); }
+    } catch (e) {
+      console.error("[WhiskyDrawer] delete falló:", e);
+      toast.error("No se pudo eliminar. Revisá tu conexión.");
+    } finally { setDeleting(false); }
   };
 
   const busy = saving || deleting || uploading;
@@ -255,6 +248,14 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
           </Button>
         </div>
       </div>
+      <ConfirmDialog
+        open={confirmOpen} danger loading={deleting}
+        title="¿Eliminar esta Carta?"
+        message="Se elimina la carta de la pagina."
+        confirmLabel="Eliminar"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </>
   );
 }

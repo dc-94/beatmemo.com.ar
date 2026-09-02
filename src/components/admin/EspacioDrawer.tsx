@@ -9,12 +9,13 @@ import { toast } from "sonner";
 import CloudinaryWidget from "./CloudinaryWidget";
 import { upsertEspacio, deleteEspacio } from "@/actions/espacio";
 import { espacioSchema } from "@/lib/validations/espacio";
-import { Settings2 } from "lucide-react";
+import ConfirmDialog from "../ui/ConfirmDialog";
 import Button from "../ui/Button";
 
 export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen: boolean; onClose: () => void; fotoToEdit?: any }) {
   const isEditing = !!fotoToEdit;
   const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const drawerRef = useDrawerA11y(isOpen, onClose);
   const { register, handleSubmit, setValue, watch, setError, formState: { errors, isSubmitting } } = useForm({
@@ -52,15 +53,21 @@ export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen:
     } catch (e) { console.error("[EspacioDrawer]", e); toast.error("Error de conexión."); }
   };
 
-  const handleDelete = async () => {
-    if (!fotoToEdit?.id || !window.confirm("¿Eliminar esta foto?")) return;
+  const handleDelete = () => {
+    if (!fotoToEdit?.id) return;
+    setConfirmOpen(true);
+  };
+  const confirmDelete = async () => {
+    if (!fotoToEdit?.id) return;
     setIsDeleting(true);
     try {
       const res = await deleteEspacio(fotoToEdit.id);
-      if (res.success) { toast.success("Foto eliminada"); onClose(); }
+      if (res.success) { toast.success("Whisky eliminado"); setConfirmOpen(false); onClose(); }
       else { toast.error(res.error || "No se pudo eliminar"); }
-    } catch (e) { console.error("[EspacioDrawer delete]", e); toast.error("Error de conexión."); }
-    finally { setIsDeleting(false); }
+    } catch (e) {
+      console.error("[WhiskyDrawer] delete falló:", e);
+      toast.error("No se pudo eliminar. Revisá tu conexión.");
+    } finally { setIsDeleting(false); }
   };
 
   const inputCls = "w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded text-white focus:border-brand-red outline-none text-sm";
@@ -116,6 +123,14 @@ export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen:
           </Button>
         </div>
       </div>
+    <ConfirmDialog
+      open={confirmOpen} danger loading={isDeleting}
+      title="¿Eliminar esta foto?"
+      message="La foto deja de mostrarse en la galería del espacio."
+      confirmLabel="Eliminar"
+      onConfirm={confirmDelete}
+      onCancel={() => setConfirmOpen(false)}
+    />
     </>
   );
 }

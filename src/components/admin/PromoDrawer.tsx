@@ -10,6 +10,7 @@ import CloudinaryWidget from "./CloudinaryWidget";
 import { upsertPromocion, deletePromocion } from "@/actions/promociones";
 import { promocionSchema } from "@/lib/validations/promociones";
 import Button from "../ui/Button";
+import ConfirmDialog from "../ui/ConfirmDialog";
 
 interface Props {
   isOpen: boolean;
@@ -25,6 +26,8 @@ const DIAS = [
 export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
   const isEditing = !!promoToEdit;
   const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
   const [dias, setDias] = useState<number[]>([]);
 
   const { register, handleSubmit, setValue, watch, reset, setError, formState: { errors, isSubmitting } } = useForm({
@@ -107,20 +110,21 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!promoToEdit?.id) return;
-    if (!window.confirm("¿Eliminar esta promoción? Se oculta del sitio, pero queda guardada y se puede recuperar.")) return;
+    setConfirmOpen(true);
+  };
+  const confirmDelete = async () => {
+    if (!promoToEdit?.id) return;
     setIsDeleting(true);
     try {
       const res = await deletePromocion(promoToEdit.id);
-      if (res.success) { toast.success("Promoción eliminada"); onClose(); }
+      if (res.success) { toast.success("Whisky eliminado"); setConfirmOpen(false); onClose(); }
       else { toast.error(res.error || "No se pudo eliminar"); }
     } catch (e) {
-      console.error("[PromoDrawer] delete falló:", e);
-      toast.error("No se pudo eliminar. Revisá tu conexión y probá de nuevo.");
-    } finally {
-      setIsDeleting(false);
-    }
+      console.error("[WhiskyDrawer] delete falló:", e);
+      toast.error("No se pudo eliminar. Revisá tu conexión.");
+    } finally { setIsDeleting(false); }
   };
 
 
@@ -272,6 +276,14 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
           </Button>
         </div>
       </div>
+      <ConfirmDialog
+        open={confirmOpen} danger loading={isDeleting}
+        title="¿Eliminar esta promoción?"
+        message="Se oculta del home. Queda guardada y podés recuperarla."
+        confirmLabel="Eliminar"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </>
   );
 }

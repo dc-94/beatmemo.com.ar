@@ -67,14 +67,13 @@ const { count: erroresAbiertos } = await supabase
         <Sidebar erroresAbiertos={erroresAbiertos ?? 0} />
       </aside>
 
-      <main className="flex-1 h-full overflow-y-auto bg-neutral-950 relative">
-        <div className="p-8 w-full max-w-7xl mx-auto">
+      <main className="flex-1 h-full overflow-y-auto bg-neutral-950 relative pt-2">
+        <div className="p-4 pb-28 md:p-8 w-full max-w-7xl mx-auto">
           {children}
         </div>
       </main>
-
       <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/10 bg-black/90 backdrop-blur-md z-50">
-        <BottomNav />
+        <BottomNav erroresAbiertos={erroresAbiertos ?? 0} />
       </nav>
     </div>
   );

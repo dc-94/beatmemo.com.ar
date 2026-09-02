@@ -40,7 +40,7 @@ export default function GastronomiaClient({ items, categorias }: Props) {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between">
+<header className="flex flex-col md:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-white">Gastronomía</h1>
           <p className="text-neutral-400 text-sm">{items.length} items en el menú</p>
@@ -49,13 +49,40 @@ export default function GastronomiaClient({ items, categorias }: Props) {
           <Plus size={18} /> Nuevo item
         </Button>
       </header>
-
+            {/* MÓVIL — filas compactas */}
+          <div className="md:hidden space-y-2">
+            {items.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => openEdit(item)}
+                className="w-full flex items-center gap-3 p-2.5 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 text-left transition"
+              >
+                <div
+                  className="w-14 h-14 rounded-md flex-none bg-neutral-950 bg-cover bg-center"
+                  style={item.url_imagen ? { backgroundImage: `url(${getOptimizedImageUrl(item.url_imagen, 120, 120)})` } : undefined}
+                />
+                <div className="min-w-0 flex-1">
+                  <span className="block text-[10px] uppercase tracking-wider text-neutral-500 truncate">{item.categoria}</span>
+                  <p className="text-sm font-semibold text-white truncate">{item.nombre}</p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    {item.destacado_home && <span className="text-[9px] bg-amber-500/90 text-black font-bold px-1.5 rounded-full">Home</span>}
+                    {item.hero_destacado && <span className="text-[9px] bg-green-500/90 text-black font-bold px-1.5 rounded-full">Destacado</span>}
+                    {!item.disponible && (
+                      <span className="text-[9px] flex items-center gap-0.5 bg-neutral-700 text-white font-bold px-1.5 rounded-full">
+                        <EyeOff size={9} /> Oculto
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
       {items.length === 0 ? (
         <div className="text-center py-16 text-neutral-500 border border-dashed border-neutral-800 rounded-xl">
           No hay items cargados. Creá el primero con “Nuevo item”.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((item) => (
             <button
               key={item.id}

@@ -10,6 +10,7 @@ import CloudinaryWidget from "./CloudinaryWidget";
 import { upsertPubItem, deletePubItem } from "@/actions/pub";
 import { pubItemSchema } from "@/lib/validations/pub";
 import Button from "../ui/Button";
+import ConfirmDialog from "../ui/ConfirmDialog";
 
 interface Props {
   categorias: string[];
@@ -30,7 +31,7 @@ const ATRIBUTOS = [
 export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: Props) {
   const isEditing = !!itemToEdit;
   const [isDeleting, setIsDeleting] = useState(false);
-  
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const { register, handleSubmit, setValue, reset, watch, setError, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(pubItemSchema),
     defaultValues: { disponible: true, categoria: "" },
@@ -92,23 +93,21 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm("¿Eliminar este item del menú? Podés recuperarlo desde la base si hace falta.")) return;
+  const handleDelete = () => {
+    if (!itemToEdit?.id) return;
+    setConfirmOpen(true);
+  };
+  const confirmDelete = async () => {
+    if (!itemToEdit?.id) return;
     setIsDeleting(true);
     try {
       const res = await deletePubItem(itemToEdit.id);
-      if (res.success) {
-        toast.success("Item eliminado");
-        onClose();
-      } else {
-        toast.error(res.error);
-      }
+      if (res.success) { toast.success("Whisky eliminado"); setConfirmOpen(false); onClose(); }
+      else { toast.error(res.error || "No se pudo eliminar"); }
     } catch (e) {
-      console.error("[PubDrawer] delete falló:", e);
-      toast.error("No se pudo eliminar. Revisá tu conexión y probá de nuevo.");
-    } finally {
-      setIsDeleting(false);
-    }
+      console.error("[WhiskyDrawer] delete falló:", e);
+      toast.error("No se pudo eliminar. Revisá tu conexión.");
+    } finally { setIsDeleting(false); }
   };
 
   return (
@@ -236,6 +235,14 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
           </Button>
         </div>
       </div>
+      <ConfirmDialog
+        open={confirmOpen} danger loading={isDeleting}
+        title="¿Eliminar este item?"
+        message="Se oculta de la carta. Queda guardado y podés recuperarlo."
+        confirmLabel="Eliminar"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </>
   );
 }

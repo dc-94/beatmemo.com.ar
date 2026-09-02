@@ -3,43 +3,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { 
-  Calendar, Coffee, LayoutDashboard, LogOut,
-  FileText, Megaphone, ShieldAlert, AlertTriangle, LayoutTemplate,
-  ChevronDown, Images, Star, UtensilsCrossed, Wine, Settings
-} from "lucide-react";
-
-type NavItem = {
-  name: string;
-  href: string;
-  icon: React.ComponentType<{ size?: number }>;
-  badge?: boolean;
-  subItems?: { name: string; href: string; icon: React.ComponentType<{ size?: number }> }[];
-};
-
-const navLinks: NavItem[] = [
-  { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Contenido", href: "/admin/contenido", icon: LayoutTemplate },
-  { name: "Shows", href: "/admin/shows", icon: Calendar },
-  { name: "Menús", href: "/admin/menus", icon: FileText },
-  {
-    name: "Pub",
-    href: "/admin/pub",
-    icon: Coffee,
-    subItems: [
-      { name: "Nuestro espacio", href: "/admin/pub/espacio", icon: Images },
-      { name: "Destacado home", href: "/admin/pub/destacados", icon: Star },
-      { name: "Gastronomía", href: "/admin/pub/gastronomia", icon: UtensilsCrossed },
-      { name: "Whiskies", href: "/admin/pub/whiskies", icon: Wine },
-    ],
-  },
-  { name: "Promociones", href: "/admin/promociones", icon: Megaphone },
-  { name: "Auditoría", href: "/admin/logs", icon: ShieldAlert },
-  { name: "Errores", href: "/admin/errores", icon: AlertTriangle, badge: true },
-  { name: "Configuración", href: "/admin/config", icon: Settings },
-];
-
-
+import { LogOut, ChevronDown} from "lucide-react";
+import { ADMIN_NAV as navLinks, type NavItem } from "./nav-config";
 
 export default function Sidebar({ erroresAbiertos = 0 }: { erroresAbiertos?: number }) {
   const pathname = usePathname();

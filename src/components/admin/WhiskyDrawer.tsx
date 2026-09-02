@@ -10,6 +10,7 @@ import CloudinaryWidget from "./CloudinaryWidget";
 import { upsertWhisky, deleteWhisky } from "@/actions/whiskies";
 import { whiskySchema, COLECCIONES } from "@/lib/validations/whiskies";
 import Button from "../ui/Button";
+import ConfirmDialog from "../ui/ConfirmDialog";
 
 interface Props {
   isOpen: boolean;
@@ -30,6 +31,7 @@ const COL_LABEL: Record<string, string> = {
   export default function WhiskyDrawer({ isOpen, onClose, whiskyToEdit }: Props) {
   const isEditing = !!whiskyToEdit;
   const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
 const drawerRef = useDrawerA11y(isOpen, onClose);
   const { register, handleSubmit, setValue, watch, reset, setError, formState: { errors, isSubmitting } } = useForm({
@@ -94,20 +96,21 @@ const drawerRef = useDrawerA11y(isOpen, onClose);
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!whiskyToEdit?.id) return;
-    if (!window.confirm("¿Eliminar este whisky? Se oculta del sitio pero queda guardado.")) return;
+    setConfirmOpen(true);
+  };
+  const confirmDelete = async () => {
+    if (!whiskyToEdit?.id) return;
     setIsDeleting(true);
     try {
       const res = await deleteWhisky(whiskyToEdit.id);
-      if (res.success) { toast.success("Whisky eliminado"); onClose(); }
+      if (res.success) { toast.success("Whisky eliminado"); setConfirmOpen(false); onClose(); }
       else { toast.error(res.error || "No se pudo eliminar"); }
     } catch (e) {
       console.error("[WhiskyDrawer] delete falló:", e);
       toast.error("No se pudo eliminar. Revisá tu conexión.");
-    } finally {
-      setIsDeleting(false);
-    }
+    } finally { setIsDeleting(false); }
   };
 
   const inputCls = "w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded text-white focus:border-brand-red outline-none text-sm";
@@ -198,6 +201,14 @@ const drawerRef = useDrawerA11y(isOpen, onClose);
             {isSubmitting ? "Guardando…" : (isEditing ? "Actualizar" : "Guardar")}
           </Button>
         </div>
+      <ConfirmDialog
+        open={confirmOpen} danger loading={isDeleting}
+        title="¿Eliminar este whisky?"
+        message="Se oculta de la carta de whiskies. Queda guardado y podés recuperarlo."
+        confirmLabel="Eliminar"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
       </div>
     </>
   );
