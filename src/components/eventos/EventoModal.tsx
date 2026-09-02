@@ -7,7 +7,7 @@ import Image from "next/image";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import { getTema, type Superficie } from "@/lib/evento-tema";
 import { useDrawerA11y } from "@/hooks/useDrawerA11y";
-import type { PublicEvent } from "@/actions/shows";
+import type { PublicEvent } from "@/lib/shows-data";
 import { useEffect } from "react";
 
 interface Props {

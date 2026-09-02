@@ -1,5 +1,5 @@
 // src/components/home/AgendaWrapper.tsx
-import { getUpcomingShows } from "@/actions/shows";
+import { getUpcomingShows } from "@/lib/shows-data";
 import AgendaPreview from "./AgendaPreview";
 
 export default async function AgendaWrapper() {

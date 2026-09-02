@@ -145,9 +145,7 @@ export default function PubUI({
   );
 }
 
-// Tarjeta del bento. isHero → ocupa 2x2 y muestra el rótulo de sección encima.
-// Deriva comida vs coctelería desde la categoría. Ajustá las keywords a tus
-// categorías reales (mirá qué valores tenés en pub_chips).
+// Tarjeta del bento. 
 function getTipoItem(categoria: string): "comida" | "trago" {
   const cat = (categoria || "").trim().toLowerCase();
   const esTrago = cat === "cocktail" || cat === "tragos" || cat === "bebida";
@@ -179,8 +177,7 @@ function TipoIcon({ categoria }: { categoria: string }) {
   );
 }
 
-// Sello dietario del home: "Somos" + Sin TACC + Vegetariano. Informativo,
-// paralelo al eyebrow. No es por-plato (para eso están los AtributoBadges).
+// Sello dietario del home: "Somos" + Sin TACC + Vegetariano. 
 function SelloDietario() {
   return (
     <div className="flex items-center gap-2.5 shrink-0 text-accent-gold-dark">

@@ -1,12 +1,10 @@
-// src/actions/shows.ts
-"use server";
+// src/lib/shows-data.ts
+// Lecturas públicas de eventos. NO es "use server"
 
+import "server-only";
 import { publicClient } from "@/lib/supabase/public";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-// ============================================================================
-// TIPOS
-// ============================================================================
 export interface PublicEvent {
   id: string;
   titulo: string;
@@ -25,11 +23,11 @@ export type EventosResult =
   | { ok: true; data: PublicEvent[] }
   | { ok: false; data: []; error: string };
 
-async function fail(
-  supabase: SupabaseClient,
-  fnName: string,
-  err: unknown
-): Promise<EventosResult> {
+// Columnas explícitas: nunca select("*") en queries public-facing.
+const EVENTO_COLS =
+  "id, titulo, fecha, hora, precio, es_gratuito, url_imagen, descripcion, integrantes, tipo, ciclos(nombre, estilo_tema)";
+
+async function fail(fnName: string, err: unknown): Promise<EventosResult> {
   const e = err as { message?: string; code?: string; details?: string; hint?: string };
   const code = e?.code ?? e?.message ?? "UNKNOWN";
 
@@ -38,18 +36,14 @@ async function fail(
     JSON.stringify({ message: e?.message, code: e?.code, details: e?.details, hint: e?.hint })
   );
 
-  // dedup_key agrupa el mismo error de la misma función dentro de la ventana.
-  const dedupKey = `shows:${fnName}:${code}`;
-  const message = `[${fnName}] ${e?.message ?? "Unknown error"}`;
-  const stack = e?.details || e?.hint
-    ? `details: ${e?.details ?? "-"} | hint: ${e?.hint ?? "-"}`
-    : null;
+  const stack =
+    e?.details || e?.hint ? `details: ${e?.details ?? "-"} | hint: ${e?.hint ?? "-"}` : null;
 
   try {
-    await supabase.rpc("log_system_error", {
-      p_message: message,
+    await publicClient.rpc("log_system_error", {
+      p_message: `[${fnName}] ${e?.message ?? "Unknown error"}`,
       p_stack: stack,
-      p_dedup_key: dedupKey,
+      p_dedup_key: `shows:${fnName}:${code}`,
     });
   } catch (logErr) {
     console.error(`[DATA_ERROR][${fnName}] fallo al persistir en system_errors:`, logErr);
@@ -58,51 +52,41 @@ async function fail(
   return { ok: false, data: [], error: code };
 }
 
-// ============================================================================
-// HELPERS
-// ============================================================================
 function getLocalTodayString(): string {
   return new Date().toLocaleDateString("en-CA", {
     timeZone: "America/Argentina/Buenos_Aires",
   });
 }
 
+// Síncrono y recibe el cliente: nunca async devolviendo un builder (regla del thenable).
 function buildEventosBaseQuery(supabase: SupabaseClient) {
-  return supabase
-    .from("eventos")
-    .select("*, ciclos(nombre, estilo_tema)")
-    .eq("is_deleted", false);
+  return supabase.from("eventos").select(EVENTO_COLS).eq("is_deleted", false);
 }
 
 function sanitizeYearMonth(year?: string, month?: string) {
   const now = new Date();
   const y = Number(year);
   const m = Number(month);
-  const safeYear =
-    Number.isInteger(y) && y >= 2020 && y <= 2100 ? y : now.getFullYear();
-  const safeMonth =
-    Number.isInteger(m) && m >= 1 && m <= 12 ? m : now.getMonth() + 1;
+  const safeYear = Number.isInteger(y) && y >= 2020 && y <= 2100 ? y : now.getFullYear();
+  const safeMonth = Number.isInteger(m) && m >= 1 && m <= 12 ? m : now.getMonth() + 1;
   return { safeYear, safeMonth };
 }
 
-// ============================================================================
 // 1. SHOWS POR VISTA (/agenda)
-// ============================================================================
 export async function getShowsByView(
   view: "past" | "current" | "next",
   year?: string,
   month?: string
 ): Promise<EventosResult> {
-  const supabase = await publicClient;
   try {
     if (view === "past") {
-      const { data, error } = await buildEventosBaseQuery(supabase)
+      const { data, error } = await buildEventosBaseQuery(publicClient)
         .lt("fecha", getLocalTodayString())
         .order("fecha", { ascending: false })
         .order("hora", { ascending: false })
         .order("id", { ascending: false });
       if (error) throw error;
-      return { ok: true, data: (data as PublicEvent[]) ?? [] };
+      return { ok: true, data: (data as unknown as PublicEvent[]) ?? [] };
     }
 
     const { safeYear, safeMonth } = sanitizeYearMonth(year, month);
@@ -113,7 +97,7 @@ export async function getShowsByView(
     const startStr = view === "current" && primerDiaMes < hoy ? hoy : primerDiaMes;
     const endStr = `${safeYear}-${mm}-${String(lastDay).padStart(2, "0")}`;
 
-    const { data, error } = await buildEventosBaseQuery(supabase)
+    const { data, error } = await buildEventosBaseQuery(publicClient)
       .gte("fecha", startStr)
       .lte("fecha", endStr)
       .order("fecha", { ascending: true })
@@ -121,19 +105,16 @@ export async function getShowsByView(
       .order("id", { ascending: true });
 
     if (error) throw error;
-    return { ok: true, data: (data as PublicEvent[]) ?? [] };
+    return { ok: true, data: (data as unknown as PublicEvent[]) ?? [] };
   } catch (err) {
-    return fail(supabase, "getShowsByView", err);
+    return fail("getShowsByView", err);
   }
 }
 
-// ============================================================================
 // 2. PRÓXIMOS SHOWS (Home)
-// ============================================================================
 export async function getUpcomingShows(): Promise<EventosResult> {
-  const supabase = await publicClient ;
   try {
-    const { data, error } = await buildEventosBaseQuery(supabase)
+    const { data, error } = await buildEventosBaseQuery(publicClient)
       .eq("tipo", "SHOW")
       .gte("fecha", getLocalTodayString())
       .order("fecha", { ascending: true })
@@ -142,27 +123,24 @@ export async function getUpcomingShows(): Promise<EventosResult> {
       .limit(5);
 
     if (error) throw error;
-    return { ok: true, data: (data as PublicEvent[]) ?? [] };
+    return { ok: true, data: (data as unknown as PublicEvent[]) ?? [] };
   } catch (err) {
-    return fail(supabase, "getUpcomingShows", err);
+    return fail("getUpcomingShows", err);
   }
 }
 
-// ============================================================================
 // 3. EVENTOS CULTURALES
-// ============================================================================
 export async function getCulturalEvents(): Promise<EventosResult> {
-  const supabase = await publicClient ;
   try {
-    const { data, error } = await buildEventosBaseQuery(supabase)
+    const { data, error } = await buildEventosBaseQuery(publicClient)
       .eq("tipo", "EVENTO_CULTURAL")
       .gte("fecha", getLocalTodayString())
       .order("fecha", { ascending: true })
       .order("id", { ascending: true });
 
     if (error) throw error;
-    return { ok: true, data: (data as PublicEvent[]) ?? [] };
+    return { ok: true, data: (data as unknown as PublicEvent[]) ?? [] };
   } catch (err) {
-    return fail(supabase, "getCulturalEvents", err);
+    return fail("getCulturalEvents", err);
   }
 }

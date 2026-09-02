@@ -1,6 +1,6 @@
 // src/app/(site)/nosotros/page.tsx
 import Image from "next/image";
-import { getCulturalEvents } from "@/actions/shows";
+import { getCulturalEvents } from "@/lib/shows-data";
 import { getSiteConfig } from "@/lib/site-config";
 import CulturalGrid from "@/components/eventos/CulturalGrid";
 import type { Metadata } from "next";

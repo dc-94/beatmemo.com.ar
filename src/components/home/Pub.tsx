@@ -3,10 +3,7 @@ import { publicClient } from "@/lib/supabase/public";
 import { getSiteContent } from "@/lib/site-content";
 import PubUI, { type PubItem } from "./PubUI";
 
-// Shuffle determinístico por ventana horaria. Vive en el SERVER: el orden se
-// calcula una vez, se serializa y el cliente NO lo recalcula → sin hydration
-// mismatch. (Antes vivía en PubUI con Date.now() en el cliente: esa era la
-// causa real del flip Cocina↔Coctelería.)
+// Shuffle determinístico por ventana horaria.
 function seededShuffle<T>(arr: T[], seed: number): T[] {
   const a = [...arr];
   let s = seed >>> 0;
@@ -34,7 +31,7 @@ export default async function Pub() {
       .eq("disponible", true)
       .eq("destacado_home", true)
       .order("orden", { ascending: true })
-      .order("id", { ascending: true }) // desempate determinista
+      .order("id", { ascending: true }) 
       .limit(7),
     getSiteContent("home_pub"),
   ]);

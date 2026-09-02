@@ -69,9 +69,8 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
 
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          formData.append(key, String(value));
-        }
+        if (value === undefined) return;
+        formData.append(key, value === null ? "" : String(value));
       });
 
       const res = await upsertPubItem(formData, isEditing ? itemToEdit.id : undefined);

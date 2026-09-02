@@ -1,5 +1,5 @@
 // src/components/agenda/FullAgendaWrapper.tsx
-import { getShowsByView } from "@/actions/shows";
+import { getShowsByView } from "@/lib/shows-data";
 import AgendaGrid from "./AgendaGrid";
 import { getSiteConfig } from "@/lib/site-config";
 import { whatsappLink } from "@/lib/config";

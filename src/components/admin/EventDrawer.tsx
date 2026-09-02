@@ -6,9 +6,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import CloudinaryWidget from "./CloudinaryWidget";
 import { upsertEvento, deleteEvento } from "@/actions/eventos";
 import { eventSchema } from "@/lib/validations/eventos";
-import { toast } from "sonner"; // Usamos tu sistema de notificaciones
+import { toast } from "sonner"; 
 import { useEffect,useState } from "react";
 import Button from "../ui/Button";
+import ConfirmDialog from "../ui/ConfirmDialog";
+
+
 interface Ciclo {
   id: string;
   nombre: string;
@@ -20,11 +23,16 @@ interface DrawerProps {
   isOpen: boolean;
   onClose: () => void;
   eventToEdit?: any;
+  userRole?: string;
 }
-export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit }: DrawerProps) {
+
+export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit, userRole }: DrawerProps) {
   const isEditing = !!eventToEdit;
   const [isDeleting, setIsDeleting] = useState(false);
-
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  // Sin rol conocido asumimos el peor caso (permanente). Over-warnear es seguro;
+  // decir "recuperable" cuando en realidad borra es la falla peligrosa.
+  const borradoPermanente = userRole !== "CM";
   const { register, handleSubmit, setValue, watch, reset,setError, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(eventSchema),
     defaultValues: { es_gratuito: false, precio: null, tipo: "SHOW", ciclo_id: "" },
@@ -89,14 +97,19 @@ export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit }: Dr
     }
   };
   // LÓGICA DE BORRADO
-  const handleDelete = async () => {
-      if (!eventToEdit?.id) return;
-    if (!window.confirm("¿Eliminar este Evento?")) return;
+   const handleDelete = () => {
+    if (!eventToEdit?.id) return;
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!eventToEdit?.id) return;
     setIsDeleting(true);
     try {
       const response = await deleteEvento(eventToEdit.id);
       if (response.success) {
-        toast.success("Evento eliminado correctamente");
+        toast.success(borradoPermanente ? "Evento eliminado" : "Evento archivado");
+        setConfirmOpen(false);
         onClose();
       } else {
         toast.error(response.error || "No se pudo eliminar el evento");
@@ -225,6 +238,20 @@ export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit }: Dr
           </Button>
         </div>
       </div>
+     <ConfirmDialog
+        open={confirmOpen}
+        danger
+        loading={isDeleting}
+        title="¿Eliminar este evento?"
+        message={
+          borradoPermanente
+            ? "Se elimina de forma permanente. Esta acción no se puede deshacer."
+            : "El evento se archivará y dejará de mostrarse en el sitio. Un superadmin puede recuperarlo."
+        }
+        confirmLabel={borradoPermanente ? "Eliminar definitivamente" : "Archivar evento"}
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </>
   );
 }

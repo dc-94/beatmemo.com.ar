@@ -1,6 +1,6 @@
 // src/components/home/HeroSection.tsx
 import { getSiteContent } from "@/lib/site-content";
-import { getUpcomingShows } from "@/actions/shows";
+import { getUpcomingShows } from "@/lib/shows-data";
 import { getSiteConfig } from "@/lib/site-config";
 import { publicClient } from "@/lib/supabase/public";
 import { isPromoVigente, type PromoData } from "@/lib/promo-helpers";

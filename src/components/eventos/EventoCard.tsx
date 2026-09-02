@@ -7,7 +7,7 @@
 import Image from "next/image";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import { getTema } from "@/lib/evento-tema";
-import type { PublicEvent } from "@/actions/shows";
+import type { PublicEvent } from "@/lib/shows-data";
 
 interface Props {
   evento: PublicEvent;

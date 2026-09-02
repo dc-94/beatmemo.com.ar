@@ -5,7 +5,7 @@ import { useState } from "react";
 import EventoCard from "@/components/eventos/EventoCard";
 import EventoModal from "@/components/eventos/EventoModal";
 import ArchivoEventos from "@/components/eventos/ArchivoEventos";
-import type { PublicEvent } from "@/actions/shows";
+import type { PublicEvent } from "@/lib/shows-data";
 
 interface Props {
   shows: PublicEvent[];

@@ -8,7 +8,7 @@ import CiclosDrawer from "@/components/admin/CiclosDrawer";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 
-export default function ShowsClient({ shows, ciclos: ciclosIniciales }: any) {
+export default function ShowsClient({ shows, ciclos: ciclosIniciales ,userRole}: any) {
   const [isOpen, setIsOpen] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<any>(null);
   const [ciclosOpen, setCiclosOpen] = useState(false);
@@ -152,6 +152,7 @@ return (
           setEventToEdit(null); // Limpiamos al cerrar
         }} 
         eventToEdit={eventToEdit} // Le pasamos los datos si estamos editando
+        userRole={userRole}
       />
       <CiclosDrawer
         isOpen={ciclosOpen}

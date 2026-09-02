@@ -6,7 +6,7 @@ import FullAgendaWrapper from "@/components/agenda/FullAgendaWrapper";
 import AgendaScrollHint from "@/components/agenda/AgendaScrollHint";
 import BrandSpinner from "@/components/ui/BrandSpinner";
 import { getSiteContent } from "@/lib/site-content";
-import { getShowsByView } from "@/actions/shows";
+import { getShowsByView } from "@/lib/shows-data";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import AgendaTabs from "@/components/agenda/AgendaTabs";
 
