@@ -13,10 +13,9 @@ export interface TickerItem {
 }
 
 const SLIDES = [
-  { img: "/placeholders/hero/fachada.jpeg", alt: "Fachada de Beatmemo en Rosario" },
-  { img: "/placeholders/hero/show.jpeg", alt: "Show en vivo en Beatmemo" },
-  { img: "/placeholders/hero/food.jpeg", alt: "Gastronomía de Beatmemo" },
-  { img: "/placeholders/hero/cultural.jpeg", alt: "Museo temático de Beatmemo" },
+  { word: "el pub", img: "/placeholders/hero/food.jpeg", alt: "Gastronomía y barra de Beatmemo" },
+  { word: "los shows", img: "/placeholders/hero/show.jpeg", alt: "Show en vivo en Beatmemo" },
+  { word: "nuestro museo", img: "/placeholders/hero/cultural.jpeg", alt: "Museo temático de Beatmemo" },
 ];
 
 const WORDS = ["el pub", "los shows", "nuestro museo"];
@@ -33,18 +32,11 @@ export default function HeroSectionView({
   tickerItems: TickerItem[];
 }) {
   const reduce = useReducedMotion();
-  const [imgIndex, setImgIndex] = useState(0);
-  const [wordIndex, setWordIndex] = useState(0);
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
     if (reduce) return;
-    const t = setInterval(() => setImgIndex((i) => (i + 1) % SLIDES.length), 6000);
-    return () => clearInterval(t);
-  }, [reduce]);
-
-  useEffect(() => {
-    if (reduce) return;
-    const t = setInterval(() => setWordIndex((i) => (i + 1) % WORDS.length), 3000);
+    const t = setInterval(() => setIndex((i) => (i + 1) % SLIDES.length), 4000);
     return () => clearInterval(t);
   }, [reduce]);
 
@@ -69,7 +61,7 @@ export default function HeroSectionView({
       `}</style>
 
       {SLIDES.map((s, i) => (
-        <div key={s.img} className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${i === imgIndex ? "opacity-100" : "opacity-0"}`}>
+        <div key={s.img} className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${i === index ? "opacity-100" : "opacity-0"}`}>
           <div className={`relative h-full w-full ${reduce ? "" : "bm-kenburns"}`}>
             <Image src={s.img} alt={s.alt} fill priority={i === 0} className="object-cover opacity-70" sizes="100vw" />
           </div>
@@ -91,8 +83,15 @@ export default function HeroSectionView({
           <span className="font-serif text-brand-white-100 text-xl lg:text-3xl">Descubrí</span>
           <span className="relative inline-flex items-center overflow-hidden h-[1.6em] leading-none text-xl lg:text-3xl">
             <AnimatePresence mode="wait">
-              <motion.span key={WORDS[wordIndex]} initial={reduce ? { opacity: 0 } : { y: "110%", opacity: 0 }} animate={reduce ? { opacity: 1 } : { y: "0%", opacity: 1 }} exit={reduce ? { opacity: 0 } : { y: "-110%", opacity: 0 }} transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 200, damping: 22 }} className="font-serif italic text-accent-gold-vibrant whitespace-nowrap">
-                {WORDS[wordIndex]}
+               <motion.span
+                key={SLIDES[index].word}
+                initial={reduce ? { opacity: 0 } : { y: "110%", opacity: 0 }}
+                animate={reduce ? { opacity: 1 } : { y: "0%", opacity: 1 }}
+                exit={reduce ? { opacity: 0 } : { y: "-110%", opacity: 0 }}
+                transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 200, damping: 22 }}
+                className="font-serif italic text-accent-gold-vibrant whitespace-nowrap"
+              >
+                {SLIDES[index].word}
               </motion.span>
             </AnimatePresence>
           </span>

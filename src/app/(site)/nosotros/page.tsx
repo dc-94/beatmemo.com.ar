@@ -4,7 +4,7 @@ import { getCulturalEvents } from "@/lib/shows-data";
 import { getSiteConfig } from "@/lib/site-config";
 import CulturalGrid from "@/components/eventos/CulturalGrid";
 import type { Metadata } from "next";
-
+import SellosAccesibilidad from "@/components/shared/SellosAccesibilidad";
 export const metadata: Metadata = {
   title: "Nosotros",
   description: "Beatmemo es un núcleo de intercambio cultural en Rosario, declarado sitio de interés. Gastronomía, idiomas y el amor por The Beatles.",
@@ -34,7 +34,7 @@ export default async function NosotrosPage() {
           </h1>
         </div>
       </section>
-
+      <SellosAccesibilidad variant="strip" surface="light" />
       {/* INTRO EDITORIAL — igual */}
       <section className="py-16 px-4 max-w-3xl mx-auto text-center lg:text-left">
         <p className="text-lg lg:text-xl text-gray-700 leading-relaxed font-light">

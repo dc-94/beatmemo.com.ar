@@ -6,6 +6,9 @@ import MenuView from "@/components/menu/MenuView";
 export const metadata: Metadata = {
   title: "Carta Digital",
   description: "Nuestras cartas: cocina, barra, happy hour y whisky collection.",
+  openGraph:{
+  images: ["/og/pub.jpg"],
+  }
 };
 
 // Sin `revalidate`: searchParams fuerza render dinámico igual, y declarar

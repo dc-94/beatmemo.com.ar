@@ -1,7 +1,7 @@
 // src/app/agenda/page.tsx
 import { Suspense } from "react";
 import Image from "next/image";
-import type { Metadata } from "next";
+import  { Metadata } from "next";
 import FullAgendaWrapper from "@/components/agenda/FullAgendaWrapper";
 import AgendaScrollHint from "@/components/agenda/AgendaScrollHint";
 import BrandSpinner from "@/components/ui/BrandSpinner";

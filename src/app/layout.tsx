@@ -26,6 +26,12 @@ export const metadata: Metadata = {
     template: "%s | Beatmemo",
   },
   description: "El punto de encuentro de los fans de The Beatles en Rosario.",
+    openGraph: {
+    type: "website",
+    siteName: "Beatmemo",
+    locale: "es_AR",
+    images: ["/og/default.jpg"],
+  },
 };
 
 // Marca "splash ya visto" antes de la hidratación, sin cookies() en server.

@@ -7,6 +7,11 @@ export const metadata: Metadata = {
   title: "Visitas Guiadas",
   description:
     "Visitas guiadas al museo Beatmemo: free tour dominical y recorridos para instituciones educativas en español e inglés.",
+ openGraph: {
+    title: 'Visitas Guiadas | Beatmemo',
+    description: 'Elegí como recorrer nuestro museo.',
+    images: ["/og/visitas.jpg"]
+  }
 };
 
 export const revalidate = 300;

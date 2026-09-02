@@ -5,7 +5,6 @@
 
 import { useState } from "react";
 import EventoCard from "@/components/eventos/EventoCard";
-import EventoModal from "@/components/eventos/EventoModal";
 import type { PublicEvent } from "@/lib/shows-data";
 
 export default function CulturalGrid({ eventos, whatsappNumero }: { eventos: PublicEvent[]; whatsappNumero: string }) {
