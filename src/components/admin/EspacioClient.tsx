@@ -16,7 +16,7 @@ export default function EspacioClient({ fotos }: { fotos: any[] }) {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-white">Nuestro espacio</h1>
           <p className="text-neutral-400 text-sm">{fotos.length} fotos de la galería del bar</p>
@@ -31,7 +31,7 @@ export default function EspacioClient({ fotos }: { fotos: any[] }) {
           Todavía no hay fotos del espacio. Agregá la primera.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
           {fotos.map((f) => (
             <button key={f.id} onClick={() => abrir(f)}
               className="text-left bg-neutral-900 border border-white/10 rounded-lg overflow-hidden hover:bg-white/5 transition">

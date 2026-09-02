@@ -4,6 +4,7 @@ import LogsFilters from "@/components/admin/LogsFilters";
 import { Fragment } from "react";
 import { guardAction } from "@/lib/guard";
 import { redirect } from "next/navigation";
+import LogsFiltersToggle from "@/components/admin/LogsFiltersToggle";
 
 // Agregá arriba del componente en logs/page.tsx
 const ACTION_LABELS: Record<string, string> = {
@@ -64,6 +65,7 @@ export default async function LogsPage({ searchParams }: {
 }) {
   const sp = await searchParams;
   const { page, action, email, desde, hasta } = parseParams(sp);
+  const hayFiltro = Boolean(action || email || desde || hasta);
   const guard = await guardAction({
     intent: "VIEW_ADMIN_LOGS",
     table: "admin_logs",
@@ -107,19 +109,20 @@ export default async function LogsPage({ searchParams }: {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-serif text-white">Auditoría del Sistema</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <h1 className="text-xl md:text-2xl font-serif text-white">Auditoría del Sistema</h1>
         <span className="text-neutral-500 text-sm">{total} registros</span>
       </div>
+      <LogsFiltersToggle hayFiltro={hayFiltro}>
+        <LogsFilters
+          currentAction={action}
+          currentEmail={email}
+          currentDesde={desde}
+          currentHasta={hasta}
+        />
+      </LogsFiltersToggle>
 
-      <LogsFilters
-        currentAction={action}
-        currentEmail={email}
-        currentDesde={desde}
-        currentHasta={hasta}
-      />
-
-      <div className="bg-neutral-900 border border-white/10 rounded-lg overflow-x-auto">
+      <div className="hidden md:block bg-neutral-900 border border-white/10 rounded-lg overflow-x-auto">
         <table className="w-full text-sm text-left">
           <thead className="bg-neutral-800 text-neutral-400">
             <tr>
@@ -204,7 +207,48 @@ export default async function LogsPage({ searchParams }: {
           </tbody>
         </table>
       </div>
-
+      {/* MÓVIL — tarjetas (la tabla no entra en pantalla chica) */}
+      <div className="md:hidden space-y-2">
+        {(logs ?? []).length === 0 ? (
+          <div className="p-8 text-center text-neutral-500 bg-neutral-900 border border-white/10 rounded-lg">
+            No hay registros con estos filtros.
+          </div>
+        ) : (
+          logs!.map((log, i) => {
+            const opts = { timeZone: "America/Argentina/Buenos_Aires", day: "numeric", month: "long" } as const;
+            const fecha = new Date(log.created_at).toLocaleDateString("es-AR", opts);
+            const fechaPrev = i > 0 ? new Date(logs![i - 1].created_at).toLocaleDateString("es-AR", opts) : null;
+            const nuevoDia = fecha !== fechaPrev;
+            const { texto, alerta } = labelAccion(log.action_type);
+            const detalle =
+              log.action_type === "LOGIN_SUCCESS"
+                ? "Acceso exitoso"
+                : log.metadata?.item_nombre || log.metadata?.show_titulo || log.metadata?.promo_titulo || log.metadata?.menu_nombre || log.metadata?.message || "Acción registrada";
+            const hora = new Date(log.created_at).toLocaleTimeString("es-AR", {
+              timeZone: "America/Argentina/Buenos_Aires", hour: "2-digit", minute: "2-digit",
+            });
+            return (
+              <Fragment key={log.id}>
+                {nuevoDia && (
+                  <p className="px-1 pt-3 pb-1 text-[11px] uppercase tracking-widest text-neutral-500 font-bold capitalize">{fecha}</p>
+                )}
+                <div className="p-3 bg-neutral-900 border border-white/5 rounded-lg">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className={`text-sm font-medium ${alerta ? "text-amber-400" : "text-brand-red-100"}`}>{texto}</span>
+                    <span className="text-[11px] text-neutral-500 whitespace-nowrap flex-none">{hora}</span>
+                  </div>
+                  <p className="text-xs text-neutral-400 mt-1">{(log.metadata?.email || "—") + " · " + detalle}</p>
+                  {log.table_name && (
+                    <p className="text-[10px] text-neutral-600 font-mono mt-1 truncate">
+                      {log.table_name}{log.record_id ? ` · ${log.record_id}` : ""}
+                    </p>
+                  )}
+                </div>
+              </Fragment>
+            );
+          })
+        )}
+      </div>
       {/* Paginación */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
