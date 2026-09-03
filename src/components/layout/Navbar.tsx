@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { Menu, X } from "lucide-react";
 
 
 // Estructura de navegación jerárquica
@@ -30,7 +31,16 @@ const navLinks = [
   { label: "Nosotros", href: "/nosotros" },
 ];
 
-
+function MenuIcon({ open }: { open: boolean }) {
+  const base = "block absolute left-0 h-[2px] w-6 bg-current rounded-full transition-all duration-300 ease-in-out";
+  return (
+    <span className="relative block w-6 h-5" aria-hidden="true">
+      <span className={`${base} ${open ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0.5"}`} />
+      <span className={`${base} top-1/2 -translate-y-1/2 ${open ? "opacity-0" : "opacity-100"}`} />
+      <span className={`${base} ${open ? "top-1/2 -translate-y-1/2 -rotate-45" : "bottom-0.5"}`} />
+    </span>
+  );
+}
 
 export default function Navbar({ rooftopUrl }: { rooftopUrl?: string }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -144,34 +154,24 @@ export default function Navbar({ rooftopUrl }: { rooftopUrl?: string }) {
           </nav>
 
           {/* ================= MOBILE MENU TOGGLE ================= */}
-          <button className="lg:hidden text-brand-white-100 p-2 hover:text-brand-gold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold rounded-sm" onClick={toggleMenu} aria-expanded={isMobileMenuOpen}>
-            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+          <button
+            className="lg:hidden text-brand-white-100 p-2 hover:text-brand-gold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold rounded-sm"
+            onClick={toggleMenu}
+            aria-expanded={isMobileMenuOpen}
+            aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+          >
+            <MenuIcon open={isMobileMenuOpen} />
           </button>
         </div>
       </header>
 
       {/* ================= MOBILE MENU OVERLAY ================= */}
       {isMobileMenuOpen && (
-        <div
-          className=" inset-0 z-[60] h-[100dvh] bg-[#1A1A1A] flex flex-col px-6 pt-8 w-full overflow-y-auto overscroll-contain"
-          style={{ paddingBottom: "calc(6rem + env(safe-area-inset-bottom))" }}
+        <div  className="fixed left-0 right-0 bottom-0 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-400 z-40 bg-[#1A1A1A] flex flex-col w-full overflow-y-auto overscroll-contain"
+          style={{ top: "var(--chrome-h, 80px)", paddingBottom: "calc(6rem + env(safe-area-inset-bottom))" }}
         >
-          <div className="flex justify-end w-full mb-5">
-            <button onClick={toggleMenu} className="flex items-center text-brand-white-200 hover:text-brand-gold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold rounded-sm p-1">
-              <span className="font-sans text-sm mr-2 font-bold tracking-widest uppercase">Cerrar</span>
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          <div className="flex justify-center mb-6">
-             <Image src="/brand/logo_BLANCO.svg" alt="Beatmemo Logo" width={150} height={28} className="h-6 w-auto opacity-80" />
-          </div>
-
-          <nav className="flex flex-col w-full max-w-sm mx-auto">
+          {/* Top-bar idéntico al header: logo izq + ✕ en el MISMO lugar que el ☰ */}
+          <nav className="flex flex-col w-full max-w-sm mx-auto px-6 pt-8 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-2 motion-safe:duration-300">
             {navLinks.map((link) => {
               const isActive = pathname.startsWith(link.href);
               const hasSubLinks = !!link.subLinks;
@@ -221,24 +221,15 @@ export default function Navbar({ rooftopUrl }: { rooftopUrl?: string }) {
                 </div>
               );
             })}
-            
-            <div className="mt-12 flex flex-col items-center gap-6 pb-20">
-                          <div className="mt-12 flex flex-col items-center gap-6 pb-20">
+                        <div className="mt-12 flex flex-col items-center gap-6 pb-20">
               {rooftopUrl && (
                 <a href={rooftopUrl} target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="px-8 py-3 rounded-sm flex items-center justify-center opacity-90 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold">
                   <span className="block w-24 h-5 bg-brand-white-100" style={{ WebkitMaskImage: "url('/brand/logo_ROOFTOP.svg')", WebkitMaskSize: "contain", WebkitMaskRepeat: "no-repeat", WebkitMaskPosition: "center" }} />
                 </a>
               )}
-
               <Link href="/menu" onClick={() => setIsMobileMenuOpen(false)} className="bg-brand-gold text-brand-black-100 px-8 py-3 rounded-sm font-sans font-bold uppercase tracking-wider w-full text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
                 VER CARTA
               </Link>
-            </div>
-
-              <Link href="/menu" onClick={() => setIsMobileMenuOpen(false)} className="bg-brand-gold text-brand-black-100 px-8 py-3 rounded-sm font-sans font-bold uppercase tracking-wider w-full text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
-                VER CARTA
-              </Link>
-
             </div>
           </nav>
         </div>

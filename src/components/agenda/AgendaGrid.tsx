@@ -29,14 +29,18 @@ export default function AgendaGrid({ shows, whatsappNumero, modoArchivo = false 
         <ArchivoEventos
           eventos={shows.map((s) => ({ ...s, estilo_tema: s.ciclos?.estilo_tema ?? null }))}
           superficie="dark"
-          onEventoClick={(ev) => setAbierto(ev)}
+          onEventoClick={(ev) => setAbierto(ev as PublicEvent)}
         />
       ) : (
-            <div className="flex flex-wrap justify-center gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {shows.map((show) => (
-            <div key={show.id} className="w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.125rem)] max-w-sm">
-                <EventoCard evento={show} estiloTema={temaDe(show)} superficie="dark" onClick={() => setAbierto(show)} />
-            </div>
+            <EventoCard
+              key={show.id}
+              evento={show}
+              estiloTema={temaDe(show)}
+              superficie="dark"
+              onClick={() => setAbierto(show)}
+            />
           ))}
         </div>
       )}
