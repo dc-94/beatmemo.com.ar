@@ -115,7 +115,7 @@ export async function getShowsByView(
 export async function getUpcomingShows(): Promise<EventosResult> {
   try {
     const { data, error } = await buildEventosBaseQuery(publicClient)
-      .eq("tipo", "SHOW")
+      .in("tipo", ["SHOW", "EVENTO_CULTURAL"])
       .gte("fecha", getLocalTodayString())
       .order("fecha", { ascending: true })
       .order("hora", { ascending: true })

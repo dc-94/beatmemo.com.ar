@@ -233,7 +233,7 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
           </label>
         </div>
 
-        <div className="p-4 md:p-6 border-t border-neutral-800 flex flex-col md:flex-row gap-3">
+        <div className="p-4 md:p-6 border-t border-neutral-800 flex flex-col md:flex-row gap-3 mb-24">
           {isEditing && (
             <Button variant="danger" onClick={handleDelete} disabled={busy} className="w-full md:w-auto">
               {deleting ? "Borrando…" : "Eliminar"}

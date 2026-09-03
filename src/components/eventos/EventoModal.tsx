@@ -58,7 +58,7 @@ export default function EventoModal({ evento, estiloTema, superficie = "dark", w
 
   const fechaObj = new Date(`${evento.fecha}T${evento.hora}`);
   const fechaLarga = fechaObj.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" });
-  const horaStr = fechaObj.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+  const horaStr = fechaObj.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" , hour12: false, timeZone: "America/Argentina/Buenos_Aires" });
 
   // Mensaje de WhatsApp con nombre + fecha del evento.
   const mensaje = `Hola! Quiero reservar para "${evento.titulo}" el ${fechaLarga}.`;

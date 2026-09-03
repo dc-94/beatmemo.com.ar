@@ -265,7 +265,7 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
           </form>
         </div>
 
-        <div className="p-4 md:p-6 border-t border-neutral-800 flex flex-col md:flex-row gap-3">
+        <div className="p-4 md:p-6 border-t border-neutral-800 flex flex-col md:flex-row gap-3 mb-24">
           {isEditing && (
             <Button variant="danger" onClick={handleDelete} disabled={isDeleting || isSubmitting} className="w-full md:w-auto">
               {isDeleting ? "Borrando…" : "Eliminar"}

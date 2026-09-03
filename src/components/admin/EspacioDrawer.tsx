@@ -112,7 +112,7 @@ export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen:
             </label>
           </form>
         </div>
-        <div className="p-6 border-t border-neutral-800 flex gap-3">
+        <div className="p-6 border-t border-neutral-800 flex gap-3 mb-24">
           {isEditing && (
             <Button variant="danger" onClick={handleDelete} disabled={isDeleting || isSubmitting} className="w-full md:w-auto">
               {isDeleting ? "Borrando…" : "Eliminar"}

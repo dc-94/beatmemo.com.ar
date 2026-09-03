@@ -6,6 +6,7 @@ import EventoCard from "@/components/eventos/EventoCard";
 import EventoModal from "@/components/eventos/EventoModal";
 import ArchivoEventos from "@/components/eventos/ArchivoEventos";
 import type { PublicEvent } from "@/lib/shows-data";
+import EventoCardCompact from "@/components/eventos/EventoCardCompact";
 
 interface Props {
   shows: PublicEvent[];
@@ -32,17 +33,20 @@ export default function AgendaGrid({ shows, whatsappNumero, modoArchivo = false 
           onEventoClick={(ev) => setAbierto(ev as PublicEvent)}
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {shows.map((show) => (
-            <EventoCard
-              key={show.id}
-              evento={show}
-              estiloTema={temaDe(show)}
-              superficie="dark"
-              onClick={() => setAbierto(show)}
-            />
-          ))}
-        </div>
+        <>
+          {/* MÓVIL — grilla 2 col compacta */}
+          <div className="grid grid-cols-2 gap-4 sm:hidden">
+            {shows.map((show) => (
+              <EventoCardCompact key={show.id} evento={show} estiloTema={temaDe(show)} superficie="dark" onClick={() => setAbierto(show)} />
+            ))}
+          </div>
+          {/* DESKTOP — card completa */}
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {shows.map((show) => (
+              <EventoCard key={show.id} evento={show} estiloTema={temaDe(show)} superficie="dark" onClick={() => setAbierto(show)} />
+            ))}
+          </div>
+        </>
       )}
 
       <EventoModal

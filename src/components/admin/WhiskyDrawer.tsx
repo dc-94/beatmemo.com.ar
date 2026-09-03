@@ -191,7 +191,7 @@ const drawerRef = useDrawerA11y(isOpen, onClose);
           </form>
         </div>
 
-        <div className="p-4 md:p-6 border-t border-neutral-800 flex flex-col md:flex-row gap-3">
+        <div className="p-4 md:p-6 border-t border-neutral-800 flex flex-col md:flex-row gap-3 pb-24">
           {isEditing && (
             <Button variant="danger" onClick={handleDelete} disabled={isDeleting || isSubmitting} className="w-full md:w-auto">
               {isDeleting ? "Borrando…" : "Eliminar"}

@@ -225,7 +225,7 @@ export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit, user
         </div>
 
         {/* FOOTER: Botones apilados en móvil, uno al lado del otro en escritorio */}
-        <div className="p-4 md:p-6 border-t border-neutral-800 bg-neutral-900 flex flex-col md:flex-row gap-3">
+        <div className="p-4 md:p-6 border-t border-neutral-800 bg-neutral-900 flex flex-col md:flex-row gap-3 mb-24">
           {/* El botón eliminar SOLO aparece si estamos editando */}
           {isEditing && (
             <Button variant="danger" onClick={handleDelete} disabled={isDeleting || isSubmitting} className="w-full md:w-auto">

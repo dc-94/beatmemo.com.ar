@@ -34,7 +34,7 @@ export default function EventoCard({ evento, estiloTema, superficie="dark", onCl
 
   const fechaObj = new Date(`${evento.fecha}T${evento.hora}`);
   const diaStr = fechaObj.toLocaleDateString("es-AR", { weekday: "short", day: "numeric" });
-  const horaStr = fechaObj.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+  const horaStr = fechaObj.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/Argentina/Buenos_Aires" });
 
   const precioTexto = evento.es_gratuito || !evento.precio
     ? "Entrada libre"
@@ -86,7 +86,7 @@ export default function EventoCard({ evento, estiloTema, superficie="dark", onCl
               </h3>
               <div className={`text-right leading-tight shrink-0 ${dark ? "text-neutral-400" : "text-neutral-600"}`} style={{ fontFamily: "var(--font-barlow-condensed)" }}>
                 <span className={`block font-semibold text-sm capitalize ${dark ? "text-white" : "text-neutral-900"}`}>{diaStr}</span>
-                <span className="text-xs">{horaStr} hs</span>
+                <span className="text-xs">{horaStr}hs</span>
               </div>
             </div>
           </>
@@ -98,7 +98,7 @@ export default function EventoCard({ evento, estiloTema, superficie="dark", onCl
               </span>
               <div className={`text-right leading-tight shrink-0 ${dark ? "text-neutral-400" : "text-neutral-600"}`} style={{ fontFamily: "var(--font-barlow-condensed)" }}>
                 <span className={`block font-semibold text-sm capitalize ${dark ? "text-white" : "text-neutral-900"}`}>{diaStr}</span>
-                <span className="text-xs">{horaStr} hs</span>
+                <span className="text-xs">{horaStr}hs</span>
               </div>
             </div>
             <h3 className={`font-serif text-lg font-bold leading-tight mb-2 ${dark ? "text-white" : "text-neutral-900"}`}>{evento.titulo}</h3>
