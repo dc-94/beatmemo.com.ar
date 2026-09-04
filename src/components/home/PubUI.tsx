@@ -40,27 +40,33 @@ export default function PubUI({
 }) {
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, amount: 0.1 });
-
+  
+  if (!hero) return null;
 
   return (
-    <section
-      ref={containerRef}
-      className="w-full bg-[#F5F4F0] py-32 lg:py-48 px-4 sm:px-6 lg:px-8 overflow-hidden"
+    <section   ref={containerRef}
+      className="w-full bg-[#F5F4F0] p-2 py-16 sm:py-20 lg:py-28px-4 sm:px-6 lg:px-8 overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto flex flex-col gap-32 lg:gap-40">
+      <div className="max-w-7xl mx-auto flex flex-col gap-16 sm:gap-24 lg:gap-40">
         {/* BLOQUE A: SPLIT EDITORIAL */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
           <motion.div
             variants={fadeUpVariant} initial="hidden"
             animate={isInView ? "visible" : "hidden"}
-            className="relative w-full aspect-[4/5] lg:aspect-[3/4] rounded-sm overflow-hidden shadow-xl"
+            className="relative w-full aspect-[5/4] lg:aspect-[3/4] rounded-sm overflow-hidden shadow-xl"
           >
             <Image
               src="https://res.cloudinary.com/djmbcrliu/image/upload/v1781528975/DSC_0168_qcrypi.jpg"
               alt="Ambiente Gastronómico Beatmemo"
               fill className="object-cover object-center"
-              sizes="(max-width: 768px) 100vw, 50vw" 
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
+            {/* Título sobre la imagen SOLO en móvil */}
+            <div className="lg:hidden absolute inset-0 flex items-end bg-gradient-to-t from-black/75 via-black/10 to-transparent p-5">
+              <h2 className="font-serif font-bold text-white text-3xl leading-tight tracking-tight">
+                {contenido?.titulo ?? <>Classic Pub. Premium Taste.</>}
+              </h2>
+            </div>
           </motion.div>
           <motion.div
             variants={fadeUpVariant} initial="hidden"
@@ -68,7 +74,7 @@ export default function PubUI({
             className="flex flex-col justify-center"
           >           
             
-            <h2 className="font-serif font-bold text-4xl lg:text-6xl text-brand-black-100 tracking-tight leading-tight mb-8">
+            <h2 className="hidden lg:block font-serif font-bold text-4xl lg:text-6xl text-brand-black-100 tracking-tight leading-tight mb-8">
               {contenido?.titulo ?? <>Classic Pub.<br />Premium Taste.</>}
             </h2>
             <p className="font-sans text-gray-600 text-base lg:text-lg leading-relaxed mb-10 max-w-lg">
@@ -95,12 +101,18 @@ export default function PubUI({
             animate={isInView ? "visible" : "hidden"}
             className="flex flex-col gap-8 lg:gap-10"
           >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-around gap-3 mb-6">
-              <span className="text-brand-black-100 uppercase tracking-[0.3em] text-2xl font-bold"> {contenido?.subtitulo ?? "Nuestra Cocina"}
+          <div className="mb-8 bg-brand-white-100 rounded-md px-6 py-4 lg:px-10 lg:py-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+            <div className="flex items-center justify-between gap-4 ">
+              <span className="text-brand-black-100 uppercase tracking-[0.3em]  text-lg sm:text-sm font-bold">
+                {contenido?.subtitulo ?? "Nuestra Cocina"}
               </span>
+              <div className="hidden sm:block"><SelloDietario /></div>
+            </div>
+            {/* Móvil: sellos en banda propia */}
+            <div className="sm:hidden mt-4 flex items-center justify-center gap-4 border-y border-brand-black-100/10 py-3">
               <SelloDietario />
             </div>
-
+          </div>
             {/* ZONA SUPERIOR: hero grande (izq) + 2 horizontales apilados (der) */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <BentoHero item={hero} />
@@ -179,21 +191,23 @@ function TipoIcon({ categoria }: { categoria: string }) {
 
 // Sello dietario del home: "Somos" + Sin TACC + Vegetariano. 
 function SelloDietario() {
+  const badges = (
+    <>
+      <span className="inline-flex items-center gap-1.5 bg-brand-white-100 rounded-full border border-brand-black-100/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-accent-gold-dark">
+        <WheatOff size={13} strokeWidth={2} className="text-accent-gold-dark" aria-hidden="true" />
+        Sin T.A.C.C.
+      </span>
+      <span className="inline-flex items-center gap-1.5 bg-brand-white-100 rounded-full border border-brand-black-100/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-accent-gold-dark">
+        <Leaf size={13} strokeWidth={2} className="text-accent-gold-dark" aria-hidden="true" />
+        Vegetariano
+      </span>
+    </>
+  );
+
   return (
     <div className="flex items-center gap-2.5 shrink-0 text-accent-gold-dark">
-      <span className="text-md font-bold uppercase tracking-[0.25em] ">
-        Somos
-      </span>
-      <div className="flex items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 bg-brand-white-100 rounded-full border border-brand-black-100/15 px-2.5 py-1 text-lg font-bold uppercase tracking-wide ">
-          <WheatOff size={13} strokeWidth={2} className="text-accent-gold-dark" aria-hidden="true" />
-          Sin T.A.C.C.
-        </span>
-        <span className="inline-flex items-center gap-1.5 bg-brand-white-100 rounded-full border border-brand-black-100/15 px-2.5 py-1 text-lg font-bold uppercase tracking-wide ">
-          <Leaf size={13} strokeWidth={2} className="text-accent-gold-dark" aria-hidden="true" />
-          Vegetariano
-        </span>
-      </div>
+      <span className="text-xs font-bold uppercase tracking-[0.25em] shrink-0">Somos</span>
+      <div className="flex items-center gap-2 flex-wrap">{badges}</div>
     </div>
   );
 }
@@ -265,10 +279,11 @@ function BentoVertical({ item }: { item: PubItem }) {
           className="object-cover transition-transform duration-700 group-hover:scale-105"
           sizes="(max-width: 768px) 100vw, 300px"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-        <h4 className="absolute bottom-3 left-3 right-3 font-sans font-bold text-white uppercase tracking-wide text-sm lg:text-base leading-tight">
+      <div className="pt-3">
+        <h3 className="font-serif font-bold text-brand-black-100 text-base leading-tight line-clamp-2">
           {item.nombre}
-        </h4>
+        </h3>
+        <AtributoBadges item={item} max={3} />
       </div>
       {item.descripcion && (
         <p className="font-sans text-gray-600 text-xs lg:text-sm line-clamp-2 mb-2">
@@ -277,5 +292,6 @@ function BentoVertical({ item }: { item: PubItem }) {
       )}
       <AtributoBadges item={item} compact max={4} />
     </div>
+  </div>
   );
 }

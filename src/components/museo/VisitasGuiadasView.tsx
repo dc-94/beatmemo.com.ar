@@ -13,7 +13,7 @@ export default function VisitasGuiadasView({ escuelas }: { escuelas: MuseoVisita
     <main className="min-h-screen bg-brand-black-200 text-brand-white-100 overflow-hidden font-sans pb-32">
       
       {/* HEADER MINIMALISTA */}
-      <section className="pt-32 pb-16 px-4 text-center max-w-4xl mx-auto">
+      <section className="pb-16 px-4 text-center max-w-4xl mx-auto" style={{ paddingTop: "calc(var(--chrome-h, 80px) + 3rem)" }}>
         <span className="text-[#C5A059] uppercase tracking-[0.4em] text-[10px] font-bold drop-shadow-md block mb-4">
           Descubrí el legado
         </span>

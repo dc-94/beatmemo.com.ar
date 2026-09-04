@@ -22,7 +22,7 @@ export default function MuseumPreview({
 
   return (
     // Sin márgenes, padding generoso, fondo ultra oscuro para contraste tajante
-    <section ref={containerRef} className="w-full bg-brand-black-200 pt-24 pb-32 px-4 sm:px-6 lg:px-8">
+    <section ref={containerRef} className="w-full bg-brand-black-200 py-16 sm:py-20 lg:py-28 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto flex flex-col gap-24">
         
         {/* BLOQUE SUPERIOR: Teaser del Museo */}

@@ -43,7 +43,7 @@ export default async function PromoSection() {
   const promos = ordenadas.slice(0, 6); // tope: vigentes + algunas próximas
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4" aria-label="Promociones">
+    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28" aria-label="Promociones">
       <div className="flex items-center gap-2 mb-6">
         <span className="w-2 h-2 rounded-full bg-accent-gold-vibrant animate-pulse" />
         <h2 className="font-sans font-bold text-accent-gold-vibrant tracking-widest text-xs uppercase">

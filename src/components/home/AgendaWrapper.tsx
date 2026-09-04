@@ -19,5 +19,10 @@ export default async function AgendaWrapper() {
     return null; // AgendaPreview ya devolvía null con lista vacía; se preserva.
   }
 
-  return <AgendaPreview shows={result.data} />;
+  return (
+    <AgendaPreview
+      shows={result.data}
+      whatsappNumero={process.env.NEXT_PUBLIC_WHATSAPP_NUMERO ?? ""}
+    />
+  );
 }

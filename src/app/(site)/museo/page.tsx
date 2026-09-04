@@ -95,7 +95,7 @@ export default async function MuseoPage() {
       {contenido?.cuerpo && (
         <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
           <p className="text-base lg:text-xl text-brand-white-300 leading-relaxed font-light">
-            <span className="first-letter:float-left first-letter:text-6xl lg:first-letter:text-7xl first-letter:font-serif first-letter:text-[#C5A059] first-letter:pr-3 first-letter:pt-2 first-letter:leading-none">
+            <span className="first-letter:float-left first-letter:text-5xl lg:first-letter:text-7xl first-letter:font-serif first-letter:text-[#C5A059] first-letter:pr-3 first-letter:pt-1 first-letter:leading-none">
               {contenido.cuerpo}
             </span>
           </p>
@@ -120,14 +120,14 @@ export default async function MuseoPage() {
         {/* Aquí pasamos los datos al componente animado */}
         <MuseoTimeline events={timelineEvents} />
       </section>
-
       {/* 5. AUDIOGUÍAS */}
-      <section className="w-full bg-[#111111] border-y border-[#8B6D3B]/20 py-20 px-4">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12">
-          <div className="flex flex-col gap-4 text-center md:text-left">
-            <h3 className="font-serif text-3xl text-[#E6C987]">Tu recorrido, a tu ritmo.</h3>
-            <p className="text-brand-white-300">Escaneá el código QR en la entrada del museo y accedé a nuestra audioguía inmersiva.</p>
-          </div>
+      <section className="w-full bg-[#111111] border-y border-[#8B6D3B]/20 py-16 lg:py-20 px-4">
+        <div className="max-w-2xl mx-auto flex flex-col items-center text-center gap-4">
+          <span className="text-[#C5A059] uppercase tracking-[0.34em] text-[10px] font-bold">A tu ritmo</span>
+          <h3 className="font-serif text-2xl lg:text-3xl text-[#E6C987]">Tu recorrido, con audioguía.</h3>
+          <p className="text-brand-white-300 leading-relaxed">
+            Escaneá el código QR en la entrada del museo y accedé a nuestra audioguía inmersiva, en tu idioma y a tu tiempo.
+          </p>
         </div>
       </section>
 
@@ -137,7 +137,7 @@ export default async function MuseoPage() {
           {/* Brillo dorado sutil en el fondo del banner */}
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#C5A059]/5 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="flex flex-col gap-2 text-center lg:text-left border-b border-[#8B6D3B]/20 pb-8 relative z-10">
+            <div className="flex flex-col gap-2 border-t border-[#8B6D3B]/20 pt-6 md:border-t-0 md:pt-0 border-l-0 md:border-l md:border-[#8B6D3B]/20 md:pl-8">
             <h3 className="font-serif font-bold text-3xl text-brand-white-100 uppercase tracking-wide">
               Planificá tu visita
             </h3>

@@ -43,7 +43,7 @@ export default function AgendaPreview({
   const temaDe = (ev: PublicEvent) => ev.ciclos?.estilo_tema ?? null;
 
   return (
-    <section className="bg-brand-black-100 py-12 lg:py-16 overflow-hidden w-full">
+    <section className="bg-brand-black-100 py-16 sm:py-20 lg:py-28 overflow-hidden w-full">
       <style>{`
         @keyframes bmTitleMarq { from { transform: translateX(0); } to { transform: translateX(-50%); } }
         .bm-title-marq { animation: bmTitleMarq 12s linear infinite; }

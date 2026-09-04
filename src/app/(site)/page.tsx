@@ -37,11 +37,12 @@ export default async function HomePage() {
     <div className="flex flex-col min-h-screen bg-brand-black-100 pb-32">
       <HeroSection />
       <div className="-mt-10 lg:-mt-20">
-        <SellosAccesibilidad variant="strip" />
         <ScrollCue />
       </div>
-
-      <div className="flex flex-col gap-14 lg:gap-20 mt-6 lg:mt-8">
+      <div className="bg-brand-black-100">
+          <SellosAccesibilidad variant="strip" />
+      </div>
+      <div className="flex flex-col">
         <Suspense fallback={<BrandSpinner />}>
           <AgendaWrapper />
         </Suspense>
