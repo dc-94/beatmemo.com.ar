@@ -168,7 +168,7 @@ function getTipoItem(categoria: string): "comida" | "trago" {
 function TipoIcon({ categoria }: { categoria: string }) {
   const tipo = getTipoItem(categoria);
   return (
-    <div
+    <div role="img"
       className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm
                  border border-accent-gold-vibrant flex items-center justify-center text-white/90"
       title={tipo === "trago" ? "Coctelería" : "Cocina"}

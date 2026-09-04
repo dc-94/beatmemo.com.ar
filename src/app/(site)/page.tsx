@@ -38,9 +38,10 @@ export default async function HomePage() {
       <HeroSection />
       <div className="-mt-10 lg:-mt-20">
         <ScrollCue />
-      </div>
-      <div className="bg-brand-black-100">
-          <SellosAccesibilidad variant="strip" />
+      </div>      
+      <div className="-mt-2 lg:-mt-20">
+        <SellosAccesibilidad variant="strip" />
+        <ScrollCue />
       </div>
       <div className="flex flex-col">
         <Suspense fallback={<BrandSpinner />}>

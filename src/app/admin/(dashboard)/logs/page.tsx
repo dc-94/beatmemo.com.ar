@@ -175,7 +175,6 @@ export default async function LogsPage({ searchParams }: {
                     })()}
                   </td>
                   <td className="p-4 text-neutral-300">{log.metadata?.email || "—"}</td>
-                  {/* Columnas que la UI vieja ignoraba: table_name + record_id */}
                   <td className="p-4 text-neutral-400">
                     {log.table_name}
                     {log.record_id && (
