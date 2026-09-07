@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { invitarAdmin, cambiarRol, revocarAcceso, borrarInvitado, denegarInvitado } from "@/actions/roles";
 import { Clock, Trash2,ShieldCheck, Ban, UserPlus, User } from "lucide-react";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 
 interface Admin { user_id: string; email: string; role: "SUPERADMIN" | "CM" | "VISITOR"; }
@@ -26,12 +26,13 @@ export default function UsuariosClient({
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${callback}?next=${encodeURIComponent("/reauth")}`,  // ← /reauth
+        redirectTo: `${callback}?next=${encodeURIComponent("/usuarios")}`,
         queryParams: { prompt: "consent" },
       },
     });
   };
 
+  const router = useRouter();
   const correr = async (
     fn: () => Promise<{ success: boolean; error?: string }>,
     msgOk: string,
@@ -40,7 +41,7 @@ export default function UsuariosClient({
     setSaving(true);
     try {
       const res = await fn();
-      if (res.success) toast.success(msgOk);
+    if (res.success) { toast.success(msgOk); router.refresh(); }
       else if (res.error === "REAUTH_REQUERIDA") {
         if (pendiente) sessionStorage.setItem("accion_pendiente", JSON.stringify(pendiente));
         toast.info("Confirmá tu identidad con Google…");
@@ -88,17 +89,26 @@ export default function UsuariosClient({
     correr(() => denegarInvitado(fd), "Email bloqueado");
   };
 
-    useEffect(() => {
+  useEffect(() => {
     const pend = sessionStorage.getItem("accion_pendiente");
     if (!pend) return;
     sessionStorage.removeItem("accion_pendiente");
-    const { tipo, payload } = JSON.parse(pend);
-    const fd = new FormData();
-    Object.entries(payload).forEach(([k, v]) => fd.set(k, v as string));
-    if (tipo === "cambiarRol") correr(() => cambiarRol(fd), "Rol actualizado");
-    if (tipo === "revocar") correr(() => revocarAcceso(fd), "Acceso revocado");
-  }, []);
 
+    let cancelado = false;
+    // Diferir al próximo tick: evita disparar la action en pleno montaje
+    // (causa del "unexpected response" de Next).
+    const t = setTimeout(() => {
+      if (cancelado) return;
+      const { tipo, payload } = JSON.parse(pend);
+      const fd = new FormData();
+      Object.entries(payload).forEach(([k, v]) => fd.set(k, v as string));
+      if (tipo === "cambiarRol") correr(() => cambiarRol(fd), "Rol actualizado");
+      else if (tipo === "revocar") correr(() => revocarAcceso(fd), "Acceso revocado");
+    }, 0);
+
+    return () => { cancelado = true; clearTimeout(t); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <div className="space-y-8 max-w-3xl">
       <header>

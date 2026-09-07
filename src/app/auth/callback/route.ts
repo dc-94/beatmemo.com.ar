@@ -50,10 +50,16 @@ export async function GET(request: Request) {
           }
         );
       }
+    const adminDomain = process.env.NEXT_PUBLIC_ADMIN_URL || "http://vault.localhost:3000";
+    const resp = NextResponse.redirect(`${adminDomain}${next}`);   // ← respeta next, sin adivinar
 
-      const adminDomain = process.env.NEXT_PUBLIC_ADMIN_URL || "http://vault.localhost:3000";
-
-      return NextResponse.redirect(`${adminDomain}${next}`);
+    // Ventana sudo solo si el re-consentimiento vino del panel de roles.
+    if (next === "/usuarios") {
+      resp.cookies.set("sudo_until", String(Date.now() + 5 * 60 * 1000), {
+        httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 300,
+      });
+    }
+    return resp;
     }
 
     console.error("[Auth] Error en exchangeCodeForSession:", error.message);

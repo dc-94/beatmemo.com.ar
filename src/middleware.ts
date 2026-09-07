@@ -120,15 +120,13 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const isLoginPage = pathname.startsWith('/login');
-// ── REGLA 3.5: Bypass del rewrite para Server Actions con archivos ────────
-  // Los POST multipart (subida de PDFs/imágenes) NO deben pasar por el rewrite
-  // de la Regla 6: el rewrite trunca el stream del body en archivos grandes,
-  // causando "Unexpected end of form". El server action resuelve su propia ruta.
-  const isMultipartPost =
-    request.method === 'POST' &&
-    (request.headers.get('content-type') ?? '').includes('multipart/form-data');
 
-  if (isMultipartPost) {
+    // ── REGLA 3.5: Bypass del rewrite para TODOS los POST ─────────────────────
+  // Las Server Actions viajan como POST a la URL actual del navegador. Si el
+  // rewrite de la Regla 6 las reescribe (/usuarios → /admin/usuarios), el
+  // runtime de actions no encuentra el endpoint → 404 "unexpected response".
+  // Los POST no necesitan el rewrite de URL limpia (no son navegación de página).
+  if (request.method === "POST") {
     return noIndex(NextResponse.next({ request: { headers: request.headers } }));
   }
   // ── REGLA 4: Forzar autenticación ─────────────────────────────────────────
