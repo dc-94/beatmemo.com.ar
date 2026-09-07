@@ -4,9 +4,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { LogOut, ChevronDown} from "lucide-react";
-import { ADMIN_NAV as navLinks, type NavItem } from "./nav-config";
+import { ADMIN_NAV, navParaRol, type NavItem } from "./nav-config";
 
-export default function Sidebar({ erroresAbiertos = 0 }: { erroresAbiertos?: number }) {
+
+export default function Sidebar({ erroresAbiertos = 0, role = "CM" }: { erroresAbiertos?: number; role?: string }) {
+  const navLinks = navParaRol(role);
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
@@ -15,7 +17,7 @@ export default function Sidebar({ erroresAbiertos = 0 }: { erroresAbiertos?: num
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push("/login"); 
+    router.push("/admin/login"); 
     router.refresh();
   };
 

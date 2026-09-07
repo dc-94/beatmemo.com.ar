@@ -3,19 +3,20 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ADMIN_NAV } from "./nav-config";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { LogOut } from "lucide-react";
+import { ADMIN_NAV, navParaRol } from "./nav-config";
 
-export default function BottomNav({ erroresAbiertos = 0 }: { erroresAbiertos?: number }) {
+export default function BottomNav({ erroresAbiertos = 0, role = "CM" }: { erroresAbiertos?: number; role?: string }) {
+  const nav = navParaRol(role);
   const pathname = usePathname();
   const activeRef = useRef<HTMLAnchorElement>(null);
   const router = useRouter();
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/login");
+    router.push("/admin/login");
     router.refresh();
   };
 
@@ -52,7 +53,7 @@ export default function BottomNav({ erroresAbiertos = 0 }: { erroresAbiertos?: n
       {/* Nav principal: scroll horizontal con peek */}
       <div className="relative">
         <div className="flex overflow-x-auto h-14 items-stretch [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {ADMIN_NAV.map((link) => {
+          {nav.map((link) => {
             const Icon = link.icon;
             const active = isActive(link.href);
             return (

@@ -11,7 +11,7 @@ export async function GET(request: Request) {
 
   if (!next.startsWith("/") || next.startsWith("//")) {
     console.warn(`[Seguridad] Redirección externa bloqueada: ${next}`);
-    return NextResponse.redirect(new URL("/login?error=invalid_redirect", request.url));
+    return NextResponse.redirect(new URL("/admin/login?error=auth_failed", request.url));
   }
 
   if (code) {
@@ -62,5 +62,5 @@ export async function GET(request: Request) {
     console.error("[Auth] Error en exchangeCodeForSession:", error.message);
   }
 
-  return NextResponse.redirect(new URL("/login?error=auth_failed", request.url));
+return NextResponse.redirect(new URL("/admin/login?error=auth_failed", request.url));
 }

@@ -1,13 +1,13 @@
 import type { ComponentType } from "react";
 import {
   Calendar, Coffee, LayoutDashboard, FileText, Megaphone, ShieldAlert,
-  AlertTriangle, LayoutTemplate, Images, Star, UtensilsCrossed, Wine, Settings,
+  AlertTriangle, LayoutTemplate, Images, Star, UtensilsCrossed, Wine, Settings,UserCog,
 } from "lucide-react";
 
 export type NavSubItem = { name: string; href: string; icon: ComponentType<{ size?: number }> };
 export type NavItem = {
   name: string; href: string; icon: ComponentType<{ size?: number }>;
-  badge?: boolean; subItems?: NavSubItem[];
+  badge?: boolean; subItems?: NavSubItem[]; superadminOnly?: boolean;
 };
 
 // Fuente única de la navegación del admin. Sidebar y BottomNav la consumen.
@@ -28,6 +28,7 @@ export const ADMIN_NAV: NavItem[] = [
   { name: "Promociones", href: "/admin/promociones", icon: Megaphone },
   { name: "Auditoría", href: "/admin/logs", icon: ShieldAlert },
   { name: "Errores", href: "/admin/errores", icon: AlertTriangle, badge: true },
+  { name: "Usuarios", href: "/admin/usuarios", icon: UserCog, superadminOnly: true },
   { name: "Configuración", href: "/admin/config", icon: Settings },
 ];
 
@@ -36,3 +37,7 @@ export const BOTTOM_PRIMARY_HREFS = ["/admin", "/admin/shows", "/admin/pub", "/a
 export const BOTTOM_SHORT: Record<string, string> = {
   "/admin": "Inicio", "/admin/shows": "Shows", "/admin/pub": "Pub", "/admin/promociones": "Promos",
 };
+
+export function navParaRol(role: string): NavItem[] {
+  return ADMIN_NAV.filter((n) => !n.superadminOnly || role === "SUPERADMIN");
+}
