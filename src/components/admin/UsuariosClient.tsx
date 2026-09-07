@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { invitarAdmin, cambiarRol, revocarAcceso, borrarInvitado, denegarInvitado } from "@/actions/roles";
@@ -20,30 +20,38 @@ export default function UsuariosClient({
 
   // Confirmación B2: tipear el email del afectado.
   const [confirm, setConfirm] = useState<{ open: boolean; texto: string; onOk: () => void } | null>(null);
-
   const pedirSudo = async () => {
     const supabase = createClient();
+    const callback = process.env.NEXT_PUBLIC_ADMIN_CALLBACK_URL!;
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/admin/reauth?next=/admin/usuarios`,
+        redirectTo: `${callback}?next=${encodeURIComponent("/admin/reauth")}`,
         queryParams: { prompt: "consent" },
       },
     });
   };
 
-  const correr = async (fn: () => Promise<{ success: boolean; error?: string }>, msgOk: string) => {
+  const correr = async (
+    fn: () => Promise<{ success: boolean; error?: string }>,
+    msgOk: string,
+    pendiente?: { tipo: string; payload: Record<string, string> },
+  ) => {
     setSaving(true);
     try {
       const res = await fn();
-      if (res.success) { toast.success(msgOk); }
+      if (res.success) toast.success(msgOk);
       else if (res.error === "REAUTH_REQUERIDA") {
-        toast.info("Confirmá tu identidad con Google para esta acción.");
+        if (pendiente) sessionStorage.setItem("accion_pendiente", JSON.stringify(pendiente));
+        toast.info("Confirmá tu identidad con Google…");
         await pedirSudo();
       } else toast.error(res.error || "No se pudo completar.");
     } catch (e) {
-      console.error(e); toast.error("Error de conexión.");
-    } finally { setSaving(false); }
+      console.error(e);
+      toast.error("Error de conexión.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleInvitar = () => {
@@ -52,18 +60,21 @@ export default function UsuariosClient({
   };
 
   const handleCambiar = (a: Admin, nuevoRol: string) => {
-    const fd = new FormData(); fd.set("userId", a.user_id); fd.set("rol", nuevoRol);
-    correr(() => cambiarRol(fd), "Rol actualizado");
+    const payload = { userId: a.user_id, rol: nuevoRol };
+    const fd = new FormData();
+    Object.entries(payload).forEach(([k, v]) => fd.set(k, v));
+    correr(() => cambiarRol(fd), "Rol actualizado", { tipo: "cambiarRol", payload });
   };
 
   const handleRevocar = (a: Admin) => {
-    // B2: confirmar tipeando el email
     setConfirm({
       open: true,
       texto: a.email,
       onOk: () => {
-        const fd = new FormData(); fd.set("userId", a.user_id); fd.set("email", a.email);
-        correr(() => revocarAcceso(fd), "Acceso revocado");
+        const payload = { userId: a.user_id, email: a.email };
+        const fd = new FormData();
+        Object.entries(payload).forEach(([k, v]) => fd.set(k, v));
+        correr(() => revocarAcceso(fd), "Acceso revocado", { tipo: "revocar", payload });
         setConfirm(null);
       },
     });
@@ -76,6 +87,17 @@ export default function UsuariosClient({
     const fd = new FormData(); fd.set("email", email);
     correr(() => denegarInvitado(fd), "Email bloqueado");
   };
+
+    useEffect(() => {
+    const pend = sessionStorage.getItem("accion_pendiente");
+    if (!pend) return;
+    sessionStorage.removeItem("accion_pendiente");
+    const { tipo, payload } = JSON.parse(pend);
+    const fd = new FormData();
+    Object.entries(payload).forEach(([k, v]) => fd.set(k, v as string));
+    if (tipo === "cambiarRol") correr(() => cambiarRol(fd), "Rol actualizado");
+    if (tipo === "revocar") correr(() => revocarAcceso(fd), "Acceso revocado");
+  }, []);
 
   return (
     <div className="space-y-8 max-w-3xl">

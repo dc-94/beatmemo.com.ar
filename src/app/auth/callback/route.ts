@@ -35,16 +35,12 @@ export async function GET(request: Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
+
     if (!error) {
       const { data: { user } } = await supabase.auth.getUser();
 
-      if (user) {
-        // Unificado: mismo helper que el resto de la auditoría.
-        // record_id queda null (un login no afecta a un registro puntual);
-        // admin_id se llena con el UUID real del usuario que ingresó.
-        await logAdminAction(
-          'LOGIN_SUCCESS',
-          'auth.users',
+     if (user && !next.startsWith("/admin/reauth")) {
+        await logAdminAction('LOGIN_SUCCESS', 'auth.users',
           user.id,
           {
             message: 'Login exitoso vía Google',
