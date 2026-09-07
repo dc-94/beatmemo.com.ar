@@ -52,11 +52,11 @@ export async function GET(request: Request) {
       }
 
       const adminDomain = process.env.NEXT_PUBLIC_ADMIN_URL || "http://vault.localhost:3000";
+
       return NextResponse.redirect(`${adminDomain}${next}`);
     }
 
     console.error("[Auth] Error en exchangeCodeForSession:", error.message);
   }
-
 return NextResponse.redirect(new URL("/admin/login?error=auth_failed", request.url));
 }

@@ -76,7 +76,7 @@ export async function cambiarRol(formData: FormData): Promise<ActionResponse> {
   if (!parsed.success) return { success: false, error: "Datos inválidos" };
   const { userId, rol } = parsed.data;
   const { supabase, user } = guard;
-
+  console.log("[cambiarRol] userId:", JSON.stringify(userId), "rol:", rol, "sudo?", await tieneSudo());
   // Anti-lockout: no podés degradarte a vos mismo.
   if (userId === user.id && rol !== "SUPERADMIN") {
     return { success: false, error: "No podés quitarte a vos mismo el rol de superadmin." };

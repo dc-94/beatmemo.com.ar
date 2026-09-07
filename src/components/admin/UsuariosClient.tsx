@@ -26,7 +26,7 @@ export default function UsuariosClient({
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${callback}?next=${encodeURIComponent("/admin/reauth")}`,
+        redirectTo: `${callback}?next=${encodeURIComponent("/reauth")}`,  // ← /reauth
         queryParams: { prompt: "consent" },
       },
     });
