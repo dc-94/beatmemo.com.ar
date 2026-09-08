@@ -42,7 +42,6 @@ export default function AtributoBadges({ item, compact = false, max , variant = 
         <span
           key={key}
           title={compact ? label : undefined}
-          aria-label={compact ? label : undefined}
           className={`inline-flex items-center gap-1 uppercase tracking-widest font-bold ${color} border border-${color.split('/')[0].split(' ')[1]}/30 rounded-none ${
             compact ? "p-1" : "text-[9px] px-2 py-1"
           }`}

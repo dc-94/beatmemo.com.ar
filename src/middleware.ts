@@ -77,7 +77,8 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith('/auth/')) {
     return noIndex(NextResponse.next({ request: { headers: request.headers } }));
   }
-
+  
+  
   // ── INICIALIZAR CLIENTE SUPABASE con gestión correcta de cookies ───────────
   // Patrón oficial de @supabase/ssr para middleware de Next.js.
   // El cliente propaga automáticamente el refresh de tokens al browser.
@@ -120,15 +121,18 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const isLoginPage = pathname.startsWith('/login');
-
-    // ── REGLA 3.5: Bypass del rewrite para TODOS los POST ─────────────────────
-  // Las Server Actions viajan como POST a la URL actual del navegador. Si el
-  // rewrite de la Regla 6 las reescribe (/usuarios → /admin/usuarios), el
-  // runtime de actions no encuentra el endpoint → 404 "unexpected response".
-  // Los POST no necesitan el rewrite de URL limpia (no son navegación de página).
-  if (request.method === "POST") {
+ // ── REGLA 3.5: Bypass SOLO para uploads multipart ──────────────────────────
+  // Los POST multipart (uploads) no deben pasar por el rewrite: se truncan.
+  // OJO: los Server Actions normales SÍ deben pasar por el rewrite de la
+  // Regla 6 para resolverse (/usuarios → /admin/usuarios). No bypassearlos.
+  const isMultipartPost =
+    request.method === 'POST' &&
+    (request.headers.get('content-type') ?? '').includes('multipart/form-data');
+  if (isMultipartPost) {
     return noIndex(NextResponse.next({ request: { headers: request.headers } }));
   }
+  
+
   // ── REGLA 4: Forzar autenticación ─────────────────────────────────────────
   // Sin sesión activa fuera de la página de login → redirigir al login.
   if (!user && !isLoginPage) {
@@ -145,10 +149,6 @@ export async function middleware(request: NextRequest) {
   // ── REGLA 6: Rewrite interno hacia la carpeta física /admin ───────────────
   // El subdominio expone URLs limpias al usuario (vault.beatmemo.com/shows),
   // pero Next.js renderiza la carpeta src/app/admin internamente.
-  //
-  // FIX: el original usaba .replace('/admin', '') que es un string replace
-  // que solo elimina la PRIMERA ocurrencia y puede producir resultados
-  // incorrectos con inputs inesperados. .startsWith + .slice es determinista.
   //
   // Tabla de transformación:
   //   /              →  /admin          (dashboard principal)
