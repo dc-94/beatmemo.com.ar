@@ -46,6 +46,7 @@ export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit, user
  
 
   useEffect(() => {
+    if (!isOpen) return;  // ← solo actuar cuando está abierto
     if (eventToEdit) {
       const tipoDelEvento = eventToEdit.tipo || "SHOW";
       reset({
@@ -59,8 +60,7 @@ export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit, user
         titulo: "", fecha: "", hora: "", descripcion: "", integrantes: "", url_imagen: "",
       });
     }
-  }, [eventToEdit, reset]);
-
+  }, [eventToEdit, isOpen, reset]);   // ← isOpen agregado
  
   if (!isOpen) return null;
 
@@ -160,8 +160,12 @@ export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit, user
 
             {/* TÍTULO */}
             <div>
-              <label className="block text-sm text-neutral-400 mb-1">Título *</label>
-              <input {...register("titulo")} placeholder="Ej: Noche de Jazz" className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded text-white focus:border-brand-red outline-none" />
+              {tipoEvento === "SHOW" ? (
+                <label>Título <span className="text-red-500">*</span></label>
+              ) : (
+                <label>Título <span className="text-neutral-500 text-xs font-normal">(opcional — si lo dejás vacío se usa el ciclo)</span></label>
+              )}
+              <input {...register("titulo")} placeholder={tipoEvento === "SHOW" ? "Nombre de la banda" : "Opcional"} className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded text-white focus:border-brand-red outline-none" />
               {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message as string}</p>}
             </div>
             {/* INTEGRANTES (Condicional: Solo para SHOWS) */}
