@@ -59,3 +59,7 @@ export function getTema(estiloTema: string | null | undefined, superficie: Super
       };
   }
 }
+
+export function temaDeEvento(tipo: string, estiloTemaCiclo: string | null | undefined): string {
+  return tipo === "SHOW" ? "red" : (estiloTemaCiclo ?? "gold");
+}

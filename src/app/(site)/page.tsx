@@ -7,6 +7,9 @@ import PromoSection from "@/components/home/PromoSection";
 import SellosAccesibilidad from "@/components/shared/SellosAccesibilidad";
 import Pub from "@/components/home/Pub";
 import MuseumPreview from "@/components/home/MuseumPreview";
+import EspacioPreview from "@/components/home/EspacioPreview";
+import RooftopSection from "@/components/home/RooftopSection";
+import { getEspacioFotos } from "@/lib/pub-data";
 import { SITE_URL } from "@/lib/config";
 import { Metadata } from "next";
 import { getSiteContent } from "@/lib/site-content";
@@ -28,9 +31,11 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [museoContent, config] = await Promise.all([
+  const [museoContent, config, espacioContent, espacioFotos] = await Promise.all([
     getSiteContent("home_museo"),
     getSiteConfig(),
+    getSiteContent("home_espacio"),
+    getEspacioFotos(),  
   ]);
 
   return (
@@ -47,11 +52,13 @@ export default async function HomePage() {
         <Suspense fallback={<BrandSpinner />}>
           <AgendaWrapper />
         </Suspense>
-        <Pub />
-        <Suspense fallback={<BrandSpinner />}>
-          <PromoSection />
-        </Suspense>
-        <MuseumPreview contenido={museoContent} museoVisitas={config.museo_visitas} />
+             <Pub />
+      <MuseumPreview contenido={museoContent} museoVisitas={config.museo_visitas} />
+      <EspacioPreview contenido={espacioContent} fotos={espacioFotos} />
+      <RooftopSection />
+      <Suspense fallback={<BrandSpinner />}>
+        <PromoSection />
+      </Suspense>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import EventoModal from "@/components/eventos/EventoModal";
 import ArchivoEventos from "@/components/eventos/ArchivoEventos";
 import type { PublicEvent } from "@/lib/shows-data";
 import EventoCardCompact from "@/components/eventos/EventoCardCompact";
+  import { temaDeEvento } from "@/lib/evento-tema";
 
 interface Props {
   shows: PublicEvent[];
@@ -22,7 +23,7 @@ export default function AgendaGrid({ shows, whatsappNumero, modoArchivo = false 
     return <p className="text-center text-brand-white-300 py-12">No hay eventos para este período.</p>;
   }
 
-  const temaDe = (ev: PublicEvent) => ev.ciclos?.estilo_tema ?? null;
+  const temaDe = (ev: PublicEvent) => temaDeEvento(ev.tipo, ev.ciclos?.estilo_tema);
 
   return (
     <>

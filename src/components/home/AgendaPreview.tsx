@@ -8,8 +8,8 @@ import { getOptimizedImageUrl } from "@/lib/utils";
 import { whatsappLink, WA_MESSAGES } from "@/lib/config";
 import EventoModal from "@/components/eventos/EventoModal";
 import type { PublicEvent } from "@/lib/shows-data";
-import { getTema } from "@/lib/evento-tema";
 import { useState, useRef, useEffect } from "react";
+import { getTema, temaDeEvento } from "@/lib/evento-tema";
 
 const TZ = "America/Argentina/Buenos_Aires";
 const HORA_FMT: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: TZ };
@@ -40,7 +40,7 @@ export default function AgendaPreview({
 
   if (!shows || shows.length === 0) return null;
 
-  const temaDe = (ev: PublicEvent) => ev.ciclos?.estilo_tema ?? null;
+  const temaDe = (ev: PublicEvent) => temaDeEvento(ev.tipo, ev.ciclos?.estilo_tema);
 
   return (
     <section className="bg-brand-black-100 py-16 sm:py-20 lg:py-28 overflow-hidden w-full">
@@ -109,7 +109,7 @@ export default function AgendaPreview({
 function DesktopAccordionCard({
   show, isExpanded, onHover, onOpen,
     }: { show: PublicEvent; isExpanded: boolean; onHover: () => void; onOpen: () => void }) {
-    const tema = getTema(show.ciclos?.estilo_tema ?? null, "dark");
+    const tema = getTema(temaDeEvento(show.tipo, show.ciclos?.estilo_tema), "dark");
     const wpUrl = whatsappLink(WA_MESSAGES.reservaShow(show.titulo, show.fecha));
     const dateObj = new Date(`${show.fecha}T${show.hora}`);
     const fechaStr = dateObj.toLocaleDateString("es-AR", { day: "numeric", month: "long", timeZone: "America/Argentina/Buenos_Aires" });
@@ -188,7 +188,7 @@ function DesktopAccordionCard({
 function MobileAccordionRow({
   show, isOpen, onToggle, onOpenModal,
 }: { show: PublicEvent; isOpen: boolean; onToggle: () => void; onOpenModal: () => void }) {
-  const tema = getTema(show.ciclos?.estilo_tema ?? null, "dark");
+  const tema = getTema(temaDeEvento(show.tipo, show.ciclos?.estilo_tema), "dark");
   const wpUrl = whatsappLink(WA_MESSAGES.reservaShow(show.titulo, show.fecha));
   const f = new Date(`${show.fecha}T${show.hora}`);
   const dia = f.toLocaleDateString("es-AR", { day: "numeric", timeZone: TZ });

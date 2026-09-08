@@ -6,10 +6,11 @@
 import { useState } from "react";
 import EventoCard from "@/components/eventos/EventoCard";
 import type { PublicEvent } from "@/lib/shows-data";
+  import { temaDeEvento } from "@/lib/evento-tema";
 
 export default function CulturalGrid({ eventos, whatsappNumero }: { eventos: PublicEvent[]; whatsappNumero: string }) {
   const [abierto, setAbierto] = useState<PublicEvent | null>(null);
-  const temaDe = (ev: PublicEvent) => ev.ciclos?.estilo_tema ?? null;
+  const temaDe = (ev: PublicEvent) => temaDeEvento(ev.tipo, ev.ciclos?.estilo_tema);
 
   if (eventos.length === 0) {
     return <p className="text-center text-gray-500 py-12">No hay eventos culturales programados por ahora.</p>;

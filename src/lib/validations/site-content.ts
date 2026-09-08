@@ -14,7 +14,7 @@ const ctaLinkSchema = z
 
 export const siteContentSchema = z.object({
   clave: z.enum([
-    "home_hero", "home_pub", "home_museo",
+    "home_hero", "home_pub", "home_museo","home_espacio",
     "pub", "museo", "agenda",
     "pub_cafe", "pub_ejecutivo", "pub_cocina", "pub_variedades",
     "pub_sello_1", "pub_sello_2", "pub_hh", "pub_barra", "pub_whisky", "pub_espacio"]),  imagen_url: z.string().trim().default(""),

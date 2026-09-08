@@ -27,7 +27,7 @@ function esHoy(fecha: string): boolean {
 
 export default function EventoCard({ evento, estiloTema, superficie="dark", onClick }: Props) {
   const tema = getTema(estiloTema, superficie);
-  const esShow = estiloTema === "red";
+const esShow = evento.tipo === "SHOW";   
   const hoy = esShow && esHoy(evento.fecha);
   const dark = superficie === "dark";
   const esMesaIdioma = estiloTema === "uk-flag" || estiloTema === "it-flag";
@@ -117,3 +117,7 @@ export default function EventoCard({ evento, estiloTema, superficie="dark", onCl
     </button>
   );
 }
+
+
+
+
