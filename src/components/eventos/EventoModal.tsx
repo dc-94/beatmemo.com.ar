@@ -97,7 +97,7 @@ export default function EventoModal({ evento, estiloTema, superficie = "dark", w
         <div className="flex-1 overflow-y-auto md:overflow-hidden flex flex-col md:flex-row min-h-0">
 
         {/* ── IMAGEN: lateral izquierda en desktop, arriba en móvil ── */}
-        <div className="relative w-full md:w-[45%] aspect-video md:aspect-auto shrink-0 bg-neutral-900">
+        <div className="relative w-full md:w-[45%] aspect-video md:aspect-auto md:min-h-[440px] shrink-0 bg-neutral-900">
           {evento.url_imagen && (
             <Image src={getOptimizedImageUrl(evento.url_imagen, 600, 800)} alt={evento.titulo} fill className="object-cover" sizes="(max-width:768px) 100vw, 45vw" />
           )}

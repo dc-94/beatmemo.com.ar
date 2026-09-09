@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import { whatsappLink, WA_MESSAGES } from "@/lib/config";
 import EventoModal from "@/components/eventos/EventoModal";
@@ -142,6 +141,7 @@ function DesktopAccordionCard({
             {isExpanded ? fechaStr : fechaCorta}
           </span>
         </div>
+        {isExpanded && hoy && <LiveTodayBadge />}
         {isExpanded && !hoy && (
           <span className="text-[10px] uppercase tracking-widest text-brand-white-300/50 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
             Click para ver detalle
