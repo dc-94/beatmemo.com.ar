@@ -49,9 +49,7 @@ const csp = [
 
 
 const securityHeaders = [
-  // REPORT-ONLY: declara la política pero NO bloquea nada. Las violaciones
-  // aparecen en la consola del navegador. Se pasa a enforce recién cuando
-  // el reporte esté limpio.
+  
   { key: "Content-Security-Policy", value: csp },
 
   // Impide que el sitio (sobre todo el vault) se cargue en un <iframe> ajeno.

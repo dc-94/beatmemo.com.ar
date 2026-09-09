@@ -2,9 +2,10 @@
 import Image from "next/image";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import type { SiteContent } from "@/lib/site-content";
+import CTALink from "@/components/shared/CTALink";
 
 // Qué entra en el happy hour. Fijo (sale de la carta), no editable por ahora.
-const COBERTURA = ["Cerveza tirada", "Copa de vino", "Aperitivos", "Gin", "Clásicos", "De autor", "Whisky"];
+const COBERTURA = ["Cerveza tirada", "Copa de vino", "Aperitivos", "Gin Tonic", "Clásicos", "De autor", "Whisky"];
 
 export default function FacetaHappyHour({ contenido }: { contenido: SiteContent | null }) {
   return (
@@ -35,6 +36,9 @@ export default function FacetaHappyHour({ contenido }: { contenido: SiteContent 
               </span>
             ))}
           </div>
+          {contenido?.cta_mostrar && contenido.cta_texto && contenido.cta_link && (
+            <div className="mt-6"><CTALink href={contenido.cta_link} texto={contenido.cta_texto} /></div>
+          )}
         </div>
       </div>
     </section>

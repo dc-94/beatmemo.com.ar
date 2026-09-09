@@ -4,6 +4,7 @@ import { getOptimizedImageUrl } from "@/lib/utils";
 import CTALink from "@/components/shared/CTALink";
 import type { PubItem } from "@/lib/pub-data";
 import type { SiteContent } from "@/lib/site-content";
+import AtributoBadges from "@/components/pub/AtributoBadges";
 
 const INCLUYE = ["Entrada", "Principal", "Bebida", "Postre o café"];
 
@@ -39,6 +40,7 @@ export default function FacetaEjecutivo({ contenido, items }: { contenido: SiteC
               </div>
               <h3 className="font-serif text-lg font-bold">{item.nombre}</h3>
               {item.descripcion && <p className="text-white/50 text-sm mt-1">{item.descripcion}</p>}
+              <AtributoBadges item={item} variant="dark" max={3} />
             </article>
           ))}
         </div>

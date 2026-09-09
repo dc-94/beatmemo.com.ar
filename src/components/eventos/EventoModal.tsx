@@ -44,7 +44,7 @@ export default function EventoModal({ evento, estiloTema, superficie = "dark", w
 
   const tema = getTema(estiloTema, superficie);
   const dark = superficie === "dark";
-  const esShow = estiloTema === "red";
+const esShow = evento.tipo === "SHOW";   
   const hoy = esShow && esHoy(evento.fecha);
 
 //Eventos pasados

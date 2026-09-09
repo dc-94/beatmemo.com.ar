@@ -18,19 +18,26 @@ export default function CarruselWhisky({ whiskies }: { whiskies: Whisky[] }) {
   // Duplicamos la lista para que el loop sea continuo (sin salto al reiniciar).
   const loop = [...whiskies, ...whiskies];
 
-  return (
+   return (
     <div className="w-full overflow-hidden" aria-label="Colección de whiskies">
-      <div className="flex gap-10 w-max animate-whisky-scroll motion-reduce:animate-none motion-reduce:flex-wrap motion-reduce:justify-center">
+      <div className="flex gap-8 w-max animate-whisky-scroll motion-reduce:animate-none motion-reduce:flex-wrap motion-reduce:justify-center">
         {loop.map((w, i) => (
           <div key={`${w.id}-${i}`} className="flex-none w-[150px] text-center relative" aria-hidden={i >= whiskies.length ? true : undefined}>
             {w.tiene_hh && (
-              <span className="absolute -top-1 right-0 z-10 text-[9px] uppercase font-bold text-[#E6C987] border border-[#E6C987]/50 rounded-full px-1.5 py-0.5 bg-black/60">HH</span>
+              <span className="absolute top-1 right-2 z-10 text-[9px] uppercase font-bold text-[#E6C987] border border-[#E6C987]/50 rounded-full px-1.5 py-0.5 bg-black/60">HH</span>
             )}
-            <div className="h-14 flex items-center justify-center mb-2">
+            {/* Cuadrado 1:1: el logo se ajusta adentro sin desbordar (contain) */}
+            <div className="relative w-[120px] h-[120px] mx-auto mb-3 bg-white/[0.03] rounded-sm">
               {w.logo_url ? (
-                <Image src={getOptimizedImageUrl(w.logo_url, 150, 56)} alt={w.marca} width={120} height={48} className="object-contain max-h-12 w-auto opacity-90" />
+                <Image
+                  src={getOptimizedImageUrl(w.logo_url, 240, 240)}
+                  alt={w.marca}
+                  fill
+                  className="object-contain p-3 "
+                  sizes="120px"
+                />
               ) : (
-                <span className="font-serif text-lg text-white/70">{w.marca}</span>
+                <span className="absolute inset-0 flex items-center justify-center font-serif text-lg text-white/70">{w.marca}</span>
               )}
             </div>
             <p className="text-white text-sm font-medium">{w.marca}</p>

@@ -63,7 +63,7 @@ export default function RooftopSection() {
         {/* Header: marca a la izquierda, título a la derecha */}
         <div className="mb-8 lg:mb-10 flex flex-col lg:flex-row items-end lg:justify-between gap-6">
           <div className="lg:text-right lg:max-w-md">
-            <h2 className="font-serif font-bold text-3xl sm:text-4xl lg:text-5xl leading-[1.05] tracking-tight ">
+            <h2 className="font-serif font-bold text-3xl sm:text-5xl lg:text-5xl leading-[1.05] tracking-tight ">
               Eventos privados.
             </h2>
           </div>

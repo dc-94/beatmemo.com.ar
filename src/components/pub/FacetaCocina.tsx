@@ -33,19 +33,31 @@ export default function FacetaCocina({
           </div>
         </div>
 
-        {/* Mosaico asimétrico */}
+        {/* Mosaico asimétrico*/}
         {mosaico.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-4">
-            <div className="relative aspect-[4/3] lg:aspect-auto lg:row-span-2 bg-[#F2EDE5] overflow-hidden">
+            <div className="relative aspect-[4/3] lg:aspect-auto lg:row-span-2 bg-[#F2EDE5] overflow-hidden group">
               {mosaico[0]?.url_imagen && (
                 <Image src={getOptimizedImageUrl(mosaico[0].url_imagen, 700, 525)} alt={mosaico[0].nombre} fill className="object-cover" sizes="(max-width:1024px) 100vw, 60vw" />
               )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                <h3 className="font-serif text-xl lg:text-2xl font-bold leading-tight">{mosaico[0].nombre}</h3>
+                {mosaico[0].descripcion && <p className="text-white/75 text-sm mt-1 line-clamp-2">{mosaico[0].descripcion}</p>}
+                <AtributoBadges item={mosaico[0]} variant="dark" max={4} />
+              </div>
             </div>
             {mosaico.slice(1, 3).map((item) => (
-              <div key={item.id} className="relative aspect-[16/9] bg-[#F2EDE5] overflow-hidden">
+              <div key={item.id} className="relative aspect-[16/9] bg-[#F2EDE5] overflow-hidden group">
                 {item.url_imagen && (
                   <Image src={getOptimizedImageUrl(item.url_imagen, 400, 225)} alt={item.nombre} fill className="object-cover" sizes="40vw" />
                 )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                  <h4 className="font-serif text-base font-bold leading-tight">{item.nombre}</h4>
+                  {item.descripcion && <p className="text-white/70 text-xs mt-0.5 line-clamp-1">{item.descripcion}</p>}
+                  <AtributoBadges item={item} variant="dark" max={3} />
+                </div>
               </div>
             ))}
           </div>
@@ -67,6 +79,7 @@ export default function FacetaCocina({
                     )}
                   </div>
                   <h4 className="font-serif text-sm lg:text-base font-bold text-[#2C2924]">{v.nombre}</h4>
+                   <p className="text-white/70 text-xs mt-0.5 line-clamp-1">{v.descripcion}</p>
                   <div className="flex justify-center">
                     <AtributoBadges item={v} compact max={3} />
                   </div>

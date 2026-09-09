@@ -12,7 +12,7 @@ import type { PublicEvent } from "@/lib/shows-data";
 interface Props {
   evento: PublicEvent;
   estiloTema: string | null;
-  superficie?: "dark" | "light";   // ← nuevo
+  superficie?: "dark" | "light";  
   onClick: () => void;
 }
 

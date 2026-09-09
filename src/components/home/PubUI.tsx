@@ -44,8 +44,7 @@ export default function PubUI({
   if (!hero) return null;
 
   return (
-    <section   ref={containerRef}
-      className="w-full bg-[#F5F4F0] p-2 py-16 sm:py-20 lg:py-28px-4 sm:px-6 lg:px-8 overflow-hidden"
+    <section   ref={containerRef} className="w-full bg-[#F5F4F0] py-16 sm:py-20 lg:py-28 px-4 sm:px-6 lg:px-8 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto flex flex-col gap-16 sm:gap-24 lg:gap-40">
         {/* BLOQUE A: SPLIT EDITORIAL */}
@@ -172,7 +171,6 @@ function TipoIcon({ categoria }: { categoria: string }) {
       className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm
                  border border-accent-gold-vibrant flex items-center justify-center text-white/90"
       title={tipo === "trago" ? "Coctelería" : "Cocina"}
-      aria-label={tipo === "trago" ? "Coctelería" : "Cocina"}
     >
       {tipo === "trago" ? (
         // copa de cóctel
@@ -267,11 +265,11 @@ function BentoHorizontal({ item }: { item: PubItem }) {
   );
 }
 
-// VERTICAL: título dentro de la imagen, descripción y badges debajo. Para los 4 de abajo.
+// VERTICAL: nombre sobre la imagen con degradé + badges debajo. Para los 4 de abajo.
 function BentoVertical({ item }: { item: PubItem }) {
   return (
-    <div className="group flex flex-col ">
-      <div className="relative w-full aspect-[4/3] overflow-hidden rounded-sm bg-gray-200 mb-3">
+    <div className="group flex flex-col">
+      <div className="relative w-full aspect-[4/3] overflow-hidden rounded-sm bg-gray-200 mb-2">
         <TipoIcon categoria={item.categoria} />
         <Image
           src={getOptimizedImageUrl(item.url_imagen, 400, 300)}
@@ -279,19 +277,15 @@ function BentoVertical({ item }: { item: PubItem }) {
           className="object-cover transition-transform duration-700 group-hover:scale-105"
           sizes="(max-width: 768px) 100vw, 300px"
         />
-      <div className="pt-3">
-        <h3 className="font-serif font-bold text-brand-black-100 text-base leading-tight line-clamp-2">
-          {item.nombre}
-        </h3>
-        <AtributoBadges item={item} max={3} />
+        {/* Nombre sobre la imagen, con gradient que asegura lectura */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+          <h3 className="font-serif font-bold text-white text-sm lg:text-base leading-tight line-clamp-2">
+            {item.nombre}
+          </h3>
+        </div>
       </div>
-      {item.descripcion && (
-        <p className="font-sans text-gray-600 text-xs lg:text-sm line-clamp-2 mb-2">
-          {item.descripcion}
-        </p>
-      )}
-      <AtributoBadges item={item} compact max={4} />
+      <AtributoBadges item={item} max={3} />
     </div>
-  </div>
   );
 }

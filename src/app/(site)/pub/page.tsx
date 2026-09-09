@@ -121,6 +121,9 @@ export default async function PubPage() {
             {cWhisky?.cuerpo && <p className="text-white/60 max-w-xl mx-auto">{cWhisky.cuerpo}</p>}
         </div>
           <CarruselWhisky whiskies={whiskies} />
+          {cWhisky?.cta_mostrar && cWhisky.cta_texto && cWhisky.cta_link && (
+            <div className="text-center mt-10"><CTALink href={cWhisky.cta_link} texto={cWhisky.cta_texto} /></div>
+          )}
         </section>
 
         </RevealSection>
