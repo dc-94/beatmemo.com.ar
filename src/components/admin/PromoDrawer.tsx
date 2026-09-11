@@ -64,7 +64,7 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
         activo: true, prioridad: 0,
       });
     }
-  }, [promoToEdit, reset]);
+  }, [promoToEdit,isOpen ,reset]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -114,15 +114,16 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
     if (!promoToEdit?.id) return;
     setConfirmOpen(true);
   };
-  const confirmDelete = async () => {
+
+    const confirmDelete = async () => {
     if (!promoToEdit?.id) return;
     setIsDeleting(true);
     try {
       const res = await deletePromocion(promoToEdit.id);
-      if (res.success) { toast.success("Whisky eliminado"); setConfirmOpen(false); onClose(); }
+      if (res.success) { toast.success("Promoción eliminada"); setConfirmOpen(false); onClose(); }
       else { toast.error(res.error || "No se pudo eliminar"); }
     } catch (e) {
-      console.error("[WhiskyDrawer] delete falló:", e);
+      console.error("[PromoDrawer] delete falló:", e);
       toast.error("No se pudo eliminar. Revisá tu conexión.");
     } finally { setIsDeleting(false); }
   };

@@ -10,12 +10,11 @@ import { guardAction, type ActionResponse } from "@/lib/guard";
 // Son páginas cacheadas (ISR): sin revalidate, el cambio no se ve hasta
 // que expire el cache.
 const RUTA_POR_CLAVE: Record<string, string> = {
-  pub: "/pub",
-  museo: "/museo",
-  agenda: "/agenda",
-  home_hero: "/",
-  home_pub: "/",
-  home_museo: "/",
+  home_hero: "/", home_pub: "/", home_museo: "/", home_espacio: "/",
+  pub: "/pub", museo: "/museo", agenda: "/agenda",
+  pub_cafe: "/pub", pub_ejecutivo: "/pub", pub_cocina: "/pub",
+  pub_variedades: "/pub", pub_sello_1: "/pub", pub_sello_2: "/pub",
+  pub_hh: "/pub", pub_barra: "/pub", pub_whisky: "/pub", pub_espacio: "/pub",
 };
 
 export async function updateSiteContent(formData: FormData): Promise<ActionResponse> {

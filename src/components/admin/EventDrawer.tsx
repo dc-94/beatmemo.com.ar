@@ -160,11 +160,11 @@ export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit, user
 
             {/* TÍTULO */}
             <div>
-              {tipoEvento === "SHOW" ? (
-                <label>Título <span className="text-red-500">*</span></label>
-              ) : (
-                <label>Título <span className="text-neutral-500 text-xs font-normal">(opcional — si lo dejás vacío se usa el ciclo)</span></label>
-              )}
+              <label className="block text-sm text-neutral-400 mb-1">
+                {tipoEvento === "SHOW"
+                  ? <>Título <span className="text-red-500">*</span></>
+                  : <>Título <span className="text-neutral-500 text-xs font-normal">(opcional — si lo dejás vacío se usa el ciclo)</span></>}
+              </label>
               <input {...register("titulo")} placeholder={tipoEvento === "SHOW" ? "Nombre de la banda" : "Opcional"} className="w-full p-2.5 bg-neutral-900 border border-neutral-800 rounded text-white focus:border-brand-red outline-none" />
               {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message as string}</p>}
             </div>
@@ -228,19 +228,27 @@ export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit, user
           </form>    
         </div>
 
-        {/* FOOTER: Botones apilados en móvil, uno al lado del otro en escritorio */}
-        <div className="p-4 md:p-6 border-t border-neutral-800 bg-neutral-900 flex flex-col md:flex-row gap-3 mb-24">
-          {/* El botón eliminar SOLO aparece si estamos editando */}
-          {isEditing && (
-            <Button variant="danger" onClick={handleDelete} disabled={isDeleting || isSubmitting} className="w-full md:w-auto">
-              {isDeleting ? "Borrando…" : "Eliminar"}
-            </Button>
+        {/* FOOTER fijo: el form scrollea arriba, esto queda siempre visible */}
+        <div className="shrink-0 p-4 md:p-6 border-t border-neutral-800 bg-neutral-900">
+          {/* Indicador de campos faltantes */}
+          {Object.keys(errors).length > 0 && (
+            <p className="text-amber-500 text-xs mb-3 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              Faltan campos por completar ({Object.keys(errors).length})
+            </p>
           )}
-          
-          <Button type="submit" form="event-form" disabled={isSubmitting || isDeleting} fullWidth className="flex-1">
-            {isSubmitting ? "Guardando…" : (isEditing ? "Actualizar" : "Guardar")}
-          </Button>
+          <div className="flex flex-col md:flex-row gap-3">
+            {isEditing && (
+              <Button variant="danger" onClick={handleDelete} disabled={isDeleting || isSubmitting} className="w-full md:w-auto">
+                {isDeleting ? "Borrando…" : "Eliminar"}
+              </Button>
+            )}
+            <Button type="submit" form="event-form" disabled={isSubmitting || isDeleting} fullWidth className="flex-1">
+              {isSubmitting ? "Guardando…" : (isEditing ? "Actualizar" : "Guardar")}
+            </Button>
+          </div>
         </div>
+        
       </div>
      <ConfirmDialog
         open={confirmOpen}

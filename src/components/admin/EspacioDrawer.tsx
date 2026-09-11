@@ -4,7 +4,7 @@
 import { useDrawerA11y } from "@/hooks/useDrawerA11y";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useState , useEffect} from "react";
 import { toast } from "sonner";
 import CloudinaryWidget from "./CloudinaryWidget";
 import { upsertEspacio, deleteEspacio } from "@/actions/espacio";
@@ -18,7 +18,7 @@ export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen:
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const drawerRef = useDrawerA11y(isOpen, onClose);
-  const { register, handleSubmit, setValue, watch, setError, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, setValue, watch, reset, setError, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(espacioSchema),
     defaultValues: {
       imagen_url: fotoToEdit?.imagen_url ?? "",
@@ -28,6 +28,17 @@ export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen:
       visible: fotoToEdit?.visible ?? true,
     },
   });
+
+    useEffect(() => {
+    if (!isOpen) return;
+    reset({
+      imagen_url: fotoToEdit?.imagen_url ?? "",
+      titulo: fotoToEdit?.titulo ?? "",
+      epigrafe: fotoToEdit?.epigrafe ?? "",
+      orden: fotoToEdit?.orden ?? 0,
+      visible: fotoToEdit?.visible ?? true,
+    });
+  }, [fotoToEdit, isOpen, reset]);
 
   const imagenUrl = watch("imagen_url");
 
@@ -62,14 +73,14 @@ export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen:
     setIsDeleting(true);
     try {
       const res = await deleteEspacio(fotoToEdit.id);
-      if (res.success) { toast.success("Whisky eliminado"); setConfirmOpen(false); onClose(); }
+      if (res.success) { toast.success("Foto eliminada"); setConfirmOpen(false); onClose(); }
       else { toast.error(res.error || "No se pudo eliminar"); }
     } catch (e) {
-      console.error("[WhiskyDrawer] delete falló:", e);
+      console.error("[EspacioDrawer] delete falló:", e);
       toast.error("No se pudo eliminar. Revisá tu conexión.");
     } finally { setIsDeleting(false); }
   };
-
+  
   const inputCls = "w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded text-white focus:border-brand-red outline-none text-sm";
 
   return (

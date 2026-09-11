@@ -139,10 +139,10 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
     setDeleting(true);
     try {
       const res = await deleteMenu(menuToEdit.id);
-      if (res.success) { toast.success("Whisky eliminado"); setConfirmOpen(false); onClose(); }
+      if (res.success) { toast.success("Carta eliminada"); setConfirmOpen(false); onClose(); }
       else { toast.error(res.error || "No se pudo eliminar"); }
     } catch (e) {
-      console.error("[WhiskyDrawer] delete falló:", e);
+      console.error("[MenuDrawer] delete falló:", e);
       toast.error("No se pudo eliminar. Revisá tu conexión.");
     } finally { setDeleting(false); }
   };

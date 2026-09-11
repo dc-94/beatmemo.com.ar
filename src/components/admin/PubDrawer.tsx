@@ -57,7 +57,7 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
         faceta: "", ingredientes: "", 
       });
     }
-  }, [itemToEdit, reset]);
+  }, [itemToEdit,isOpen ,reset]);
 
   if (!isOpen) return null;
 
@@ -102,14 +102,13 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
     setIsDeleting(true);
     try {
       const res = await deletePubItem(itemToEdit.id);
-      if (res.success) { toast.success("Whisky eliminado"); setConfirmOpen(false); onClose(); }
+      if (res.success) { toast.success("Item eliminado"); setConfirmOpen(false); onClose(); }
       else { toast.error(res.error || "No se pudo eliminar"); }
     } catch (e) {
-      console.error("[WhiskyDrawer] delete falló:", e);
+      console.error("[PubDrawer] delete falló:", e);
       toast.error("No se pudo eliminar. Revisá tu conexión.");
     } finally { setIsDeleting(false); }
   };
-
   return (
     <>
       <div className="fixed inset-0 bg-black/60 z-40" onClick={onClose} />

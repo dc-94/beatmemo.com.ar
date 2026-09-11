@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Check, X } from "lucide-react";
 import { upsertCiclo, deleteCiclo } from "@/actions/ciclos";
 import { TIPOS_CICLO } from "@/lib/validations/ciclos";
+import ConfirmDialog from "../ui/ConfirmDialog";
 
 interface Ciclo { id: string; nombre: string; tipo: string; }
 
@@ -24,7 +25,10 @@ export default function CiclosManager({ ciclos, onCiclosChange }: Props) {
   const [editando, setEditando] = useState<string | null>(null);
   const [nombre, setNombre] = useState("");
   const [tipo, setTipo] = useState<string>("SHOW");
+
   const [guardando, setGuardando] = useState(false);
+  const [aBorrar, setABorrar] = useState<Ciclo | null>(null);
+  const [borrando, setBorrando] = useState(false);
 
   const abrirNuevo = () => { setEditando("new"); setNombre(""); setTipo("SHOW"); };
   const abrirEditar = (c: Ciclo) => { setEditando(c.id); setNombre(c.nombre); setTipo(c.tipo); };
@@ -61,19 +65,23 @@ export default function CiclosManager({ ciclos, onCiclosChange }: Props) {
     }
   };
 
-  const borrar = async (c: Ciclo) => {
-    if (!window.confirm(`¿Eliminar el ciclo "${c.nombre}"?`)) return;
+  const confirmarBorrado = async () => {
+    if (!aBorrar) return;
+    setBorrando(true);
     try {
-      const res = await deleteCiclo(c.id);
+      const res = await deleteCiclo(aBorrar.id);
       if (res.success) {
         toast.success("Ciclo eliminado");
-        onCiclosChange(ciclos.filter((x) => x.id !== c.id));
+        onCiclosChange(ciclos.filter((x) => x.id !== aBorrar.id));
+        setABorrar(null);
       } else {
         toast.error(res.error || "No se pudo eliminar");
       }
     } catch (e) {
       console.error("[CiclosManager delete]", e);
       toast.error("Error de conexión.");
+    } finally {
+      setBorrando(false);
     }
   };
 
@@ -117,12 +125,22 @@ export default function CiclosManager({ ciclos, onCiclosChange }: Props) {
               <div key={c.id} className="flex items-center gap-2 p-2.5 bg-neutral-900/50 border border-neutral-800 rounded group">
                 <span className="flex-1 text-white text-sm">{c.nombre}</span>
                 <button type="button" onClick={() => abrirEditar(c)} className="text-neutral-500 hover:text-white text-xs px-2 opacity-0 group-hover:opacity-100 transition">Editar</button>
-                <button type="button" onClick={() => borrar(c)} className="text-red-500/70 hover:text-red-500 p-1"><Trash2 size={15} /></button>
+                <button type="button" onClick={() => setABorrar(c)} className="text-red-500/70 hover:text-red-500 p-1"><Trash2 size={15} /></button>
               </div>
             ))}
           </div>
         </div>
       ))}
+            <ConfirmDialog
+        open={!!aBorrar}
+        danger
+        loading={borrando}
+        title="¿Eliminar este ciclo?"
+        message={aBorrar ? `Se elimina el ciclo "${aBorrar.nombre}". Los eventos que lo usan quedan sin ciclo.` : ""}
+        confirmLabel="Eliminar"
+        onConfirm={confirmarBorrado}
+        onCancel={() => setABorrar(null)}
+      />
     </div>
   );
 }
