@@ -6,6 +6,7 @@ import { siteContentSchema } from "@/lib/validations/site-content";
 import { logAdminAction } from "@/lib/admin-logger";
 import { guardAction, type ActionResponse } from "@/lib/guard";
 import { heroSlidesSchema } from "@/lib/validations/hero-slides";
+import { listaSchema } from "@/lib/validations/hh-lista";
 
 // Mapea cada clave a la ruta que hay que revalidar tras editarla.
 // Son páginas cacheadas (ISR): sin revalidate, el cambio no se ve hasta
@@ -106,6 +107,39 @@ export async function updateHeroSlides(slidesRaw: unknown): Promise<ActionRespon
     return { success: true };
   } catch (e) {
     console.error("[HERO_SLIDES FATAL]", e);
+    return { success: false, error: "Error inesperado." };
+  }
+}
+
+export async function updateLista(clave: string, listaRaw: unknown): Promise<ActionResponse> {
+  try {
+    const guard = await guardAction({ intent: "UPDATE_LISTA", table: "site_content" });
+    if (!guard.ok) return guard.response;
+    const { supabase, user } = guard;
+
+    const parsed = listaSchema.safeParse(listaRaw);
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message ?? "Lista inválida" };
+    }
+
+    const { data, error } = await supabase
+      .from("site_content")
+      .update({ lista: parsed.data })
+      .eq("clave", clave)
+      .select("clave")
+      .single();
+
+    if (error || !data) {
+      console.error("[LISTA]", error);
+      return { success: false, error: "No se pudo guardar la lista." };
+    }
+
+    await logAdminAction("UPDATE_LISTA", "site_content", user.id, { clave, count: parsed.data.length }, clave);
+    const ruta = RUTA_POR_CLAVE[clave];
+    if (ruta) revalidatePath(ruta);
+    return { success: true };
+  } catch (e) {
+    console.error("[LISTA FATAL]", e);
     return { success: false, error: "Error inesperado." };
   }
 }

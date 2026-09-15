@@ -34,7 +34,6 @@ const GRUPOS: { grupo: string; claves: MetaClave[] }[] = [
       { clave: "pub_variedades", nombre: "Variedades (wraps)", donde: "Título de la fila de wraps", ruta: "/pub#cocina" },
       { clave: "pub_sello_1", nombre: "Sello 1", donde: "Franja de sellos bajo la cocina", ruta: "/pub#cocina" },
       { clave: "pub_sello_2", nombre: "Sello 2", donde: "Franja de sellos bajo la cocina", ruta: "/pub#cocina" },
-      { clave: "pub_hh", nombre: "Happy Hour", donde: "Sección con foto y horario del happy hour", ruta: "/pub#happyhour" },
       { clave: "pub_barra", nombre: "Barra de autor", donde: "Sección de cócteles", ruta: "/pub#barra" },
       { clave: "pub_whisky", nombre: "Colección de whisky", donde: "Carrusel de logos de whisky", ruta: "/pub#whisky" },
     ],

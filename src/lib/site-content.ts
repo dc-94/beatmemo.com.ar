@@ -15,12 +15,13 @@ export interface SiteContent {
   cta_texto: string | null;
   cta_link: string | null;
   slides?: { imagen: string; palabra: string }[];
+  lista?: string[];
 }
 
 export async function getSiteContent(clave: string): Promise<SiteContent | null> {
   const { data } = await publicClient
     .from("site_content")
-    .select("clave, imagen_url, alt_texto, titulo, subtitulo, cuerpo, cta_mostrar, cta_texto, cta_link, slides")
+    .select("clave, imagen_url, alt_texto, titulo, subtitulo, cuerpo, cta_mostrar, cta_texto, cta_link, slides, lista")
     .eq("clave", clave)
     .maybeSingle(); // maybeSingle: no explota si no hay fila, devuelve null
 

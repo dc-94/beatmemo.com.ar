@@ -5,9 +5,12 @@ import type { SiteContent } from "@/lib/site-content";
 import CTALink from "@/components/shared/CTALink";
 
 // Qué entra en el happy hour. Fijo (sale de la carta), no editable por ahora.
-const COBERTURA = ["Cerveza tirada", "Copa de vino", "Aperitivos", "Gin Tonic", "Clásicos", "De autor", "Whisky"];
+// Fallback si la clave no tiene lista cargada.
+const COBERTURA_FALLBACK = ["Cerveza tirada", "Copa de vino", "Aperitivos", "Gin Tonic", "Clásicos", "De autor", "Whisky"];
 
 export default function FacetaHappyHour({ contenido }: { contenido: SiteContent | null }) {
+  const cobertura = contenido?.lista && contenido.lista.length > 0 ? contenido.lista : COBERTURA_FALLBACK;
+
   return (
     <section id="happyhour" className="py-16 lg:py-24 bg-[#0C0C0C] text-white scroll-mt-24">
       <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
@@ -30,7 +33,7 @@ export default function FacetaHappyHour({ contenido }: { contenido: SiteContent 
           {contenido?.cuerpo && <p className="text-white/60 leading-relaxed mb-6 max-w-md">{contenido.cuerpo}</p>}
 
           <div className="flex flex-wrap gap-2">
-            {COBERTURA.map((c) => (
+            {cobertura.map((c) => (
               <span key={c} className="text-[11px] uppercase tracking-[0.12em] font-semibold border border-[#C5A059] text-[#C5A059] px-2 py-0.5 rounded-full" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
                 {c}
               </span>
