@@ -12,36 +12,32 @@ export interface TickerItem {
   live?: "today" | "soon";
 }
 
-const SLIDES = [
+// Fallback si la DB no tiene slides cargados. El editable los pisa.
+const SLIDES_FALLBACK = [
   { word: "el pub", img: "/placeholders/hero/food.jpeg", alt: "Gastronomía y barra de Beatmemo" },
   { word: "los shows", img: "/placeholders/hero/show.jpeg", alt: "Show en vivo en Beatmemo" },
   { word: "nuestro museo", img: "/placeholders/hero/cultural.jpeg", alt: "Museo temático de Beatmemo" },
 ];
 
-const WORDS = ["el pub", "los shows", "nuestro museo"];
+interface Slide { word: string; img: string; alt: string; }
 
 export default function HeroSectionView({
-  titulo,
-  eyebrow,
-  bajada,
-  tickerItems,
+  titulo, eyebrow, bajada, tickerItems, slides,
 }: {
   titulo: string;
   eyebrow: string;
   bajada: string;
   tickerItems: TickerItem[];
+  slides?: Slide[];
 }) {
   const reduce = useReducedMotion();
   const [index, setIndex] = useState(0);
 
-  useEffect(() => {
-    if (reduce) return;
-    const t = setInterval(() => setIndex((i) => (i + 1) % SLIDES.length), 4000);
-    return () => clearInterval(t);
-  }, [reduce]);
-
+  // Slides de la DB, o el fallback si no hay. Nunca vacío.
+  const SLIDES = slides && slides.length > 0 ? slides : SLIDES_FALLBACK;
   const hasTicker = tickerItems.length > 0;
 
+  
   return (
     <section className="relative w-full h-[60vh] min-h-[480px] overflow-hidden bg-brand-black-100 flex flex-col justify-end">
       <style>{`

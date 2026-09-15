@@ -35,6 +35,11 @@ export default async function HeroSection() {
   const hoy = hoyAr();
   const items: TickerItem[] = [];
 
+  // Slides desde la DB. Si están vacíos (o mal), el View usa su fallback.
+  const slides = (c?.slides ?? [])
+    .filter((s) => s?.imagen && s?.palabra)
+    .map((s) => ({ word: s.palabra, img: s.imagen, alt: s.palabra }));
+
   // Shows reales. LIVE TODAY el de hoy; el resto, LIVE.
   if (showsRes.ok && showsRes.data.length > 0) {
     const s = showsRes.data[0];
@@ -55,13 +60,13 @@ export default async function HeroSection() {
   for (const p of promos) {
     if (isPromoVigente(p)) items.push({ when: p.entidad ?? "Beneficio", text: p.titulo });
   }
-
   return (
     <HeroSectionView
       titulo={c?.titulo ?? "El lugar Beatle en Rosario."}
       eyebrow={c?.subtitulo ?? "Rosario · Bv. Oroño 107 bis"}
       bajada={c?.cuerpo ?? "Museo, pub y escenario. Un homenaje a The Beatles en el corazón de Rosario."}
       tickerItems={items}
+      slides={slides}
     />
   );
 }

@@ -17,6 +17,7 @@ export interface SeccionData {
   cta_mostrar: boolean;
   cta_texto: string | null;
   cta_link: string | null;
+  slides?: { imagen: string; palabra: string }[];
 }
 
 export default function ContenidoForm({ seccion }: { seccion: SeccionData }) {

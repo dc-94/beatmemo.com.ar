@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { siteContentSchema } from "@/lib/validations/site-content";
 import { logAdminAction } from "@/lib/admin-logger";
 import { guardAction, type ActionResponse } from "@/lib/guard";
+import { heroSlidesSchema } from "@/lib/validations/hero-slides";
 
 // Mapea cada clave a la ruta que hay que revalidar tras editarla.
 // Son páginas cacheadas (ISR): sin revalidate, el cambio no se ve hasta
@@ -72,6 +73,39 @@ export async function updateSiteContent(formData: FormData): Promise<ActionRespo
     return { success: true };
   } catch (e) {
     console.error("[SITE_CONTENT FATAL]:", e);
+    return { success: false, error: "Error inesperado." };
+  }
+}
+
+
+export async function updateHeroSlides(slidesRaw: unknown): Promise<ActionResponse> {
+  try {
+    const guard = await guardAction({ intent: "UPDATE_HERO_SLIDES", table: "site_content" });
+    if (!guard.ok) return guard.response;
+    const { supabase, user } = guard;
+
+    const parsed = heroSlidesSchema.safeParse(slidesRaw);
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message ?? "Slides inválidos" };
+    }
+
+    const { data, error } = await supabase
+      .from("site_content")
+      .update({ slides: parsed.data })
+      .eq("clave", "home_hero")
+      .select("clave")
+      .single();
+
+    if (error || !data) {
+      console.error("[HERO_SLIDES]", error);
+      return { success: false, error: "No se pudieron guardar los slides." };
+    }
+
+    await logAdminAction("UPDATE_HERO_SLIDES", "site_content", user.id, { count: parsed.data.length }, "home_hero");
+    revalidatePath("/");
+    return { success: true };
+  } catch (e) {
+    console.error("[HERO_SLIDES FATAL]", e);
     return { success: false, error: "Error inesperado." };
   }
 }

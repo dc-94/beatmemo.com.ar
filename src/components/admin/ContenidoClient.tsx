@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { ChevronDown, ExternalLink } from "lucide-react";
 import ContenidoForm, { type SeccionData } from "./ContenidoForm";
+import HeroSlidesEditor from "./HeroSlideEditor";
 
 interface MetaClave {
   clave: string;
@@ -108,6 +109,12 @@ export default function ContenidoClient({ secciones }: { secciones: SeccionData[
                         >
                           <ExternalLink size={13} /> Ver esta sección en el sitio
                         </a>
+                        {meta.clave === "home_hero" && (
+                          <div className="mb-6 pb-6 border-b border-white/10">
+                            <h3 className="text-sm font-bold text-white mb-3">Slides de la portada</h3>
+                            <HeroSlidesEditor initial={sec.slides ?? []} />
+                          </div>
+                        )}
                         <ContenidoForm seccion={sec} />
                       </div>
                     )}
