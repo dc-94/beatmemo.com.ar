@@ -35,6 +35,15 @@ export default function HeroSectionView({
 
   // Slides de la DB, o el fallback si no hay. Nunca vacío.
   const SLIDES = slides && slides.length > 0 ? slides : SLIDES_FALLBACK;
+
+  // Rota el índice compartido (imagen + palabra sincronizadas) cada 4s.
+  useEffect(() => {
+    if (reduce) return;
+    const t = setInterval(() => setIndex((i) => (i + 1) % SLIDES.length), 3000);
+    return () => clearInterval(t);
+  }, [reduce, SLIDES.length]);
+
+
   const hasTicker = tickerItems.length > 0;
 
   

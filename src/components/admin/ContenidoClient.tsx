@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { ChevronDown, ExternalLink } from "lucide-react";
 import ContenidoForm, { type SeccionData } from "./ContenidoForm";
-import HeroSlidesEditor from "./HeroSlideEditor";
+import HeroSlidesEditor from "./HeroSlidesEditor";
 
 interface MetaClave {
   clave: string;
