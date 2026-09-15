@@ -171,11 +171,6 @@ const drawerRef = useDrawerA11y(isOpen, onClose);
               )}
             </div>
 
-            {/* ORDEN */}
-            <div>
-              <label className="block text-sm text-neutral-400 mb-1">Orden en el carrusel</label>
-              <input type="number" {...register("orden")} className={inputCls} />
-            </div>
 
             {/* FLAGS */}
             <div className="p-4 bg-neutral-950 border border-neutral-800 rounded space-y-3">
@@ -188,18 +183,30 @@ const drawerRef = useDrawerA11y(isOpen, onClose);
                 Disponible (visible en el sitio)
               </label>
             </div>
+            {/* ORDEN */}
+            <div>
+              <label className="block text-sm text-neutral-400 mb-1">Orden en el carrusel</label>
+              <input type="number" {...register("orden")} className={inputCls} />
+            </div>
           </form>
         </div>
-
-        <div className="p-4 md:p-6 border-t border-neutral-800 flex flex-col md:flex-row gap-3 pb-24">
-          {isEditing && (
-            <Button variant="danger" onClick={handleDelete} disabled={isDeleting || isSubmitting} className="w-full md:w-auto">
-              {isDeleting ? "Borrando…" : "Eliminar"}
-            </Button>
+        <div className="shrink-0 p-4 md:p-6 border-t border-neutral-800">
+          {Object.keys(errors).length > 0 && (
+            <p className="text-amber-500 text-xs mb-3 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              Faltan campos por completar ({Object.keys(errors).length})
+            </p>
           )}
-          <Button type="submit" form="whisky-form" disabled={isSubmitting || isDeleting} fullWidth className="flex-1">
-            {isSubmitting ? "Guardando…" : (isEditing ? "Actualizar" : "Guardar")}
-          </Button>
+          <div className="flex flex-col md:flex-row gap-3">
+            {isEditing && (
+              <Button variant="danger" onClick={handleDelete} disabled={isDeleting || isSubmitting} className="w-full md:w-auto">
+                {isDeleting ? "Borrando…" : "Eliminar"}
+              </Button>
+            )}
+            <Button type="submit" form="pub-form" disabled={isSubmitting || isDeleting} fullWidth className="flex-1">
+              {isSubmitting ? "Guardando…" : (isEditing ? "Actualizar" : "Guardar")}
+            </Button>
+          </div>
         </div>
       <ConfirmDialog
         open={confirmOpen} danger loading={isDeleting}

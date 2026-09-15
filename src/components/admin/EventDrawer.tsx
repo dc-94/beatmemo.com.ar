@@ -157,7 +157,6 @@ export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit, user
                 {errors.ciclo_id && <p className="text-red-500 text-xs mt-1">{errors.ciclo_id.message as string}</p>}
               </div>
             </div>
-
             {/* TÍTULO */}
             <div>
               <label className="block text-sm text-neutral-400 mb-1">
@@ -230,7 +229,6 @@ export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit, user
 
         {/* FOOTER fijo: el form scrollea arriba, esto queda siempre visible */}
         <div className="shrink-0 p-4 md:p-6 border-t border-neutral-800 bg-neutral-900">
-          {/* Indicador de campos faltantes */}
           {Object.keys(errors).length > 0 && (
             <p className="text-amber-500 text-xs mb-3 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
