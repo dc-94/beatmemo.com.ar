@@ -1,7 +1,7 @@
 // src/components/home/PromoSection.tsx
 import { publicClient } from "@/lib/supabase/public";
-import { isPromoVigente, type PromoData } from "@/lib/promo-helpers";
 import PromoCard from "./PromoCard";
+import { isPromoVigente, resolveVencimiento, proximaVigencia , type PromoData} from "@/lib/promo-helpers";
 
 export default async function PromoSection() {
   const hoyAr = new Intl.DateTimeFormat("en-CA", {
@@ -52,17 +52,33 @@ export default async function PromoSection() {
       </div>
 
       <div className="hidden sm:grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {promos.map((p) => (
-          <PromoCard key={(p as any).id} promo={p as PromoData & { id: string }} />
-        ))}
+        {promos.map((p) => {
+          const vigente = isPromoVigente(p);
+          return (
+            <PromoCard
+              key={`${p.titulo}-${p.entidad}`}
+              promo={p}
+              vigente={vigente}
+              vencimiento={vigente ? resolveVencimiento(p) : null}
+              cuandoVuelve={vigente ? null : proximaVigencia(p)}
+            />
+          );
+        })}
       </div>
 
       <div className="sm:hidden flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        {promos.map((p) => (
-          <div key={(p as any).id} className="snap-start shrink-0 w-[78%]">
-            <PromoCard promo={p as PromoData & { id: string }} />
-          </div>
-        ))}
+          {promos.map((p) => {
+            const vigente = isPromoVigente(p);
+            return (
+              <PromoCard
+                key={`${p.titulo}-${p.entidad}`}
+                promo={p}
+                vigente={vigente}
+                vencimiento={vigente ? resolveVencimiento(p) : null}
+                cuandoVuelve={vigente ? null : proximaVigencia(p)}
+              />
+            );
+          })}
         {/* Spacer: sin esto, la última card queda pegada al borde derecho
             (el padding-right no se respeta en flex scroll). */}
         <div className="shrink-0 w-px" aria-hidden="true" />

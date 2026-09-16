@@ -13,13 +13,7 @@ import { getTema, temaDeEvento } from "@/lib/evento-tema";
 const TZ = "America/Argentina/Buenos_Aires";
 const HORA_FMT: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: TZ };
 
-function esHoy(fecha: string): boolean {
-  const hoyAr = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Argentina/Buenos_Aires",
-    year: "numeric", month: "2-digit", day: "2-digit",
-  }).format(new Date());
-  return fecha === hoyAr;
-}
+export type EventoConHoy = PublicEvent & { esHoy: boolean };
 
 function LiveTodayBadge() {
   return (
@@ -29,13 +23,12 @@ function LiveTodayBadge() {
     </div>
   );
 }
-
 export default function AgendaPreview({
   shows, whatsappNumero,
-}: { shows: PublicEvent[]; whatsappNumero: string }) {
+}: { shows: EventoConHoy[]; whatsappNumero: string }) {
   const [hoveredIndex, setHoveredIndex] = useState(0);
-  const [openIndex, setOpenIndex] = useState(0); // móvil: el más próximo abierto
-  const [abierto, setAbierto] = useState<PublicEvent | null>(null);
+  const [openIndex, setOpenIndex] = useState(0);
+  const [abierto, setAbierto] = useState<EventoConHoy | null>(null);
 
   if (!shows || shows.length === 0) return null;
 
@@ -107,13 +100,13 @@ export default function AgendaPreview({
 /* ══════════ DESKTOP ══════════ */
 function DesktopAccordionCard({
   show, isExpanded, onHover, onOpen,
-    }: { show: PublicEvent; isExpanded: boolean; onHover: () => void; onOpen: () => void }) {
+    }: { show: EventoConHoy; isExpanded: boolean; onHover: () => void; onOpen: () => void }) {
     const tema = getTema(temaDeEvento(show.tipo, show.ciclos?.estilo_tema), "dark");
     const wpUrl = whatsappLink(WA_MESSAGES.reservaShow(show.titulo, show.fecha));
     const dateObj = new Date(`${show.fecha}T${show.hora}`);
     const fechaStr = dateObj.toLocaleDateString("es-AR", { day: "numeric", month: "long", timeZone: "America/Argentina/Buenos_Aires" });
     const fechaCorta = dateObj.toLocaleDateString("es-AR", { day: "numeric", month: "short", timeZone: "America/Argentina/Buenos_Aires" });
-    const hoy = esHoy(show.fecha);
+    const hoy = show.esHoy;
 
   return (
     <motion.div
@@ -187,14 +180,14 @@ function DesktopAccordionCard({
 /* ══════════ MÓVIL ══════════ */
 function MobileAccordionRow({
   show, isOpen, onToggle, onOpenModal,
-}: { show: PublicEvent; isOpen: boolean; onToggle: () => void; onOpenModal: () => void }) {
+}: { show: EventoConHoy; isOpen: boolean; onToggle: () => void; onOpenModal: () => void }) {
   const tema = getTema(temaDeEvento(show.tipo, show.ciclos?.estilo_tema), "dark");
   const wpUrl = whatsappLink(WA_MESSAGES.reservaShow(show.titulo, show.fecha));
   const f = new Date(`${show.fecha}T${show.hora}`);
   const dia = f.toLocaleDateString("es-AR", { day: "numeric", timeZone: TZ });
   const diaSem = f.toLocaleDateString("es-AR", { weekday: "short", timeZone: TZ });
   const hora = f.toLocaleTimeString("es-AR", HORA_FMT);
-  const hoy = esHoy(show.fecha);
+  const hoy = show.esHoy;
 
   // Mesa de idiomas u otros sin nombre propio: el ciclo pasa a ser el título.
   const tieneTitulo = Boolean(show.titulo?.trim());

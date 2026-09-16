@@ -78,7 +78,9 @@ export async function middleware(request: NextRequest) {
     return noIndex(NextResponse.next({ request: { headers: request.headers } }));
   }
   
-  
+    if (pathname.startsWith('/api/')) {
+    return noIndex(NextResponse.next({ request: { headers: request.headers } }));
+  }
   // ── INICIALIZAR CLIENTE SUPABASE con gestión correcta de cookies ───────────
   // Patrón oficial de @supabase/ssr para middleware de Next.js.
   // El cliente propaga automáticamente el refresh de tokens al browser.

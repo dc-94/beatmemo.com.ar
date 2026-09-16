@@ -11,8 +11,7 @@ import Image from "next/image";
 import { Landmark, Tag, Sparkles, CalendarClock } from "lucide-react";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import {
-  resolvePromoAlt, promoTieneImagen, resolveVencimiento,
-  isPromoVigente, proximaVigencia, type PromoData,
+  resolvePromoAlt, promoTieneImagen,type PromoData,
 } from "@/lib/promo-helpers";
 
 const DIAS_LABEL: Record<number, string> = {
@@ -42,18 +41,17 @@ function textoDias(dias: number[] | null): string {
 interface Props {
   promo: PromoData & { id?: string };
   preview?: boolean;
+  vigente: boolean;
+  vencimiento: string | null;
+  cuandoVuelve: string | null;
 }
 
-export default function PromoCard({ promo, preview = false }: Props) {
+export default function PromoCard({ promo, preview = false, vigente, vencimiento, cuandoVuelve }: Props) {
   const conImagen = promoTieneImagen(promo);
-  const vigente = isPromoVigente(promo);
-  const vencimiento = vigente ? resolveVencimiento(promo) : null;
-  const cuandoVuelve = vigente ? null : proximaVigencia(promo);
   const Icon = iconoPorTipo(promo.tipo);
 
   const apagada = !vigente && !preview;
   const badgeTexto = vigente ? textoDias(promo.dias_semana) : cuandoVuelve;
-
   return (
     <div className="relative w-full h-full">
       {/* CONTENIDO — atenuado por desaturación parcial, no grayscale total.

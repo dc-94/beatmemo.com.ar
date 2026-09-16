@@ -1,27 +1,29 @@
 // src/components/home/AgendaWrapper.tsx
 import { getUpcomingShows } from "@/lib/shows-data";
-import AgendaPreview from "./AgendaPreview";
+import AgendaPreview, { type EventoConHoy } from "./AgendaPreview";
+
+// "Hoy" en zona AR, calculado UNA vez en el server. Se serializa al HTML,
+// así cliente y server hidratan con el mismo valor (sin mismatch).
+function esHoyAr(fecha: string): boolean {
+  const hoy = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date());
+  return fecha === hoy;
+}
 
 export default async function AgendaWrapper() {
   const result = await getUpcomingShows();
 
-  // DECISIÓN DE CX (deliberada, no accidental):
-  // En el HOME, ante fallo de datos la sección desaparece en silencio.
-  // - No mostramos error: un banner de fallo en la portada daña la marca
-  //   más de lo que informa, y el home tiene otras secciones que sostienen
-  //   la conversión (hero, pub, museo, FAB de WhatsApp siempre visible).
-  // - No mostramos datos falsos: jamás.
-  // - El error YA quedó logueado como [DATA_ERROR] en el server: la
-  //   degradación es silenciosa para el usuario, ruidosa para nosotros.
-  // En /agenda (destino dedicado) la política es distinta: error honesto
-  // con CTA, porque ahí el usuario vino ESPECÍFICAMENTE a ver shows.
   if (!result.ok || result.data.length === 0) {
-    return null; // AgendaPreview ya devolvía null con lista vacía; se preserva.
+    return null;
   }
+
+  const shows: EventoConHoy[] = result.data.map((s) => ({ ...s, esHoy: esHoyAr(s.fecha) }));
 
   return (
     <AgendaPreview
-      shows={result.data}
+      shows={shows}
       whatsappNumero={process.env.NEXT_PUBLIC_WHATSAPP_NUMERO ?? ""}
     />
   );
