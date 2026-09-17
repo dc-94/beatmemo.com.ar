@@ -89,7 +89,9 @@ export default function PromocionesClient({ promos }: { promos: Promo[] }) {
                   onClick={() => openEdit(p)}
                   className="group text-left relative focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red rounded-sm p-1"
                 >
-                  <PromoCard promo={p} preview />
+                <PromoCard
+                  promo={p} preview vigente={true} vencimiento={null} cuandoVuelve={null}
+                />
                   <div className="mt-3 flex items-center justify-between px-1">
                     <span className={`text-[11px] font-medium flex items-center gap-1.5 ${m.color}`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${m.dot}`} /> {m.txt}
