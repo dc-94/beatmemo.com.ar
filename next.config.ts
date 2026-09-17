@@ -95,7 +95,7 @@ const nextConfig: NextConfig = {
     allowedDevOrigins: ["192.168.1.42", "*.nip.io","192.168.100.86","qr.192.168.100.86.nip.io", "192.168.100.86.nip.io"],
   experimental: {
     serverActions: {
-      bodySizeLimit: "10mb",
+      bodySizeLimit: "25mb",
     },
   },
   images: {

@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 
 const CARPETAS_OK = new Set([
   "beatmemo/shows", "beatmemo/pub", "beatmemo/whisky",
-  "beatmemo/promos", "beatmemo/espacio", "beatmemo/hero",
+  "beatmemo/promos", "beatmemo/espacio", "beatmemo/hero","beatmemo/audioguia", 
 ]);
 
 export async function POST(request: Request) {
