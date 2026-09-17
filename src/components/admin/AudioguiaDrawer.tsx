@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { UploadCloud, FileCheck } from "lucide-react";
 import CloudinaryWidget from "./CloudinaryWidget";
 import { upsertAudioguiaTrack, deleteAudioguiaTrack } from "@/actions/audioguia";
-import { uploadAudioguiaTrack } from "@/actions/audioguia-uploads";
+import { createClient } from "@/lib/supabase/client";
 import Button from "@/components/ui/Button";
 import ConfirmDialog from "../ui/ConfirmDialog";
 
@@ -60,18 +60,30 @@ export default function AudioguiaDrawer({ isOpen, onClose, trackToEdit, nextOrde
     const file = e.target.files?.[0];
     if (!file) return;
     if (!titulo.trim()) { toast.error("Primero ponele título a la pista."); e.target.value = ""; return; }
-    if (file.size > 20 * 1024 * 1024) { toast.error(`El audio pesa ${(file.size / 1024 / 1024).toFixed(1)}MB. Máximo 20MB.`); e.target.value = ""; return; }
+    if (file.size > 50 * 1024 * 1024) { toast.error(`El audio pesa ${(file.size / 1024 / 1024).toFixed(1)}MB. Máximo 50MB.`); e.target.value = ""; return; }
 
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await uploadAudioguiaTrack(fd, slug || `track-${nextOrden}`);
-      if (res.success && res.url) { setAudioUrl(res.url); setAudioNombre(file.name); toast.success("Audio subido"); } 
-      else toast.error(res.error || "Error al subir el audio");
+      const supabase = createClient();
+      const path = `${slug || `track-${nextOrden}`}.mp3`;
+      // upload directo cliente → Storage. No pasa por Server Action ni middleware.
+      const { error } = await supabase.storage
+        .from("audioguia")
+        .upload(path, file, { upsert: true, contentType: "audio/mpeg", cacheControl: "3600" });
+
+      if (error) {
+        console.error("[audioguia upload]", error);
+        toast.error(error.message || "Falló la subida del audio.");
+        return;
+      }
+
+      const { data } = supabase.storage.from("audioguia").getPublicUrl(path);
+      setAudioUrl(`${data.publicUrl}?t=${Date.now()}`);  // cache-bust
+      setAudioNombre(file.name);
+      toast.success("Audio subido");
     } catch (err) {
-      console.error("[AudioguiaDrawer upload]", err);
-      toast.error("Falló la subida. Probá de nuevo.");
+      console.error("[audioguia upload]", err);
+      toast.error("Error al subir. Probá de nuevo.");
     } finally {
       setUploading(false);
       e.target.value = "";

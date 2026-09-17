@@ -89,6 +89,14 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith('/api/')) {
     return noIndex(NextResponse.next({ request: { headers: request.headers } }));
   }
+  const isMultipartPost =
+    request.method === 'POST' &&
+    (request.headers.get('content-type') ?? '').includes('multipart/form-data');
+  if (isMultipartPost) {
+        console.log("[mw] multipart bypass →", pathname);
+    return noIndex(NextResponse.next({ request: { headers: request.headers } }));
+  }
+  
   // ── INICIALIZAR CLIENTE SUPABASE con gestión correcta de cookies ───────────
   // Patrón oficial de @supabase/ssr para middleware de Next.js.
   // El cliente propaga automáticamente el refresh de tokens al browser.
@@ -135,13 +143,6 @@ export async function middleware(request: NextRequest) {
   // Los POST multipart (uploads) no deben pasar por el rewrite: se truncan.
   // OJO: los Server Actions normales SÍ deben pasar por el rewrite de la
   // Regla 6 para resolverse (/usuarios → /admin/usuarios). No bypassearlos.
-  const isMultipartPost =
-    request.method === 'POST' &&
-    (request.headers.get('content-type') ?? '').includes('multipart/form-data');
-  if (isMultipartPost) {
-    return noIndex(NextResponse.next({ request: { headers: request.headers } }));
-  }
-  
 
   // ── REGLA 4: Forzar autenticación ─────────────────────────────────────────
   // Sin sesión activa fuera de la página de login → redirigir al login.
