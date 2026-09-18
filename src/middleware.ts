@@ -32,9 +32,9 @@ export async function middleware(request: NextRequest) {
 
   const isAdminSubdomain = hostname.startsWith(ADMIN_PREFIX);
   const QR_PREFIX = process.env.NEXT_PUBLIC_QR_SUBDOMAIN_PREFIX ?? 'qr.';
+  const AUDIOGUIA_PREFIX = process.env.NEXT_PUBLIC_AUDIOGUIA_SUBDOMAIN_PREFIX ?? 'audioguia.';
   const isBlockedPath = BLOCKED_ON_PUBLIC.some((p) => pathname.startsWith(p));
 
-    const AUDIOGUIA_PREFIX = process.env.NEXT_PUBLIC_AUDIOGUIA_SUBDOMAIN_PREFIX ?? 'audioguia.';
   // ── REGLA 1: Devolver 404 real en el dominio público ──────────────────────
   // FIX: el original usaba NextResponse.rewrite('/404') que devuelve HTTP 200.
   // Los crawlers de Google indexaban esa URL como página válida.
