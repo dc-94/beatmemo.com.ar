@@ -35,13 +35,6 @@ export async function middleware(request: NextRequest) {
   const isBlockedPath = BLOCKED_ON_PUBLIC.some((p) => pathname.startsWith(p));
 
     const AUDIOGUIA_PREFIX = process.env.NEXT_PUBLIC_AUDIOGUIA_SUBDOMAIN_PREFIX ?? 'audioguia.';
-  if (hostname.startsWith(AUDIOGUIA_PREFIX)) {
-    if (pathname === '/') {
-      url.pathname = '/audioguia';
-      return noIndex(NextResponse.rewrite(url));
-    }
-    return noIndex(NextResponse.next({ request: { headers: request.headers } }));
-  }
   // ── REGLA 1: Devolver 404 real en el dominio público ──────────────────────
   // FIX: el original usaba NextResponse.rewrite('/404') que devuelve HTTP 200.
   // Los crawlers de Google indexaban esa URL como página válida.
@@ -61,6 +54,13 @@ export async function middleware(request: NextRequest) {
       // headers() si venía del QR, y eso ataba la página a render dinámico.
       // El rewrite conserva los searchParams (?tipo=hh) automáticamente.
       url.pathname = '/qr';
+      return noIndex(NextResponse.rewrite(url));
+    }
+    return noIndex(NextResponse.next({ request: { headers: request.headers } }));
+  }
+  if (hostname.startsWith(AUDIOGUIA_PREFIX)) {
+    if (pathname === '/') {
+      url.pathname = '/audioguia';
       return noIndex(NextResponse.rewrite(url));
     }
     return noIndex(NextResponse.next({ request: { headers: request.headers } }));
