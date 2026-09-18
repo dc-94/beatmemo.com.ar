@@ -71,7 +71,7 @@ export async function middleware(request: NextRequest) {
   // A partir de esta línea, el código SOLO se ejecuta en el subdominio admin.
   if (!isAdminSubdomain) {
     return NextResponse.next({ request: { headers: request.headers } });
-  }
+  } 
 
   // ──────────────────────────────────────────────────────────────────────────
   // A partir de acá: estamos GARANTIZADOS en el subdominio admin (vault.*)
