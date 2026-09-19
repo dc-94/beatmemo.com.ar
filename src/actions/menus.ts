@@ -14,6 +14,7 @@ const menuSchema = z.object({
   tipo: z.string().min(1).regex(/^[a-z0-9-]+$/, "Solo minúsculas, números y guiones"),
   nombre: z.string().min(2, "El nombre es obligatorio"),
   url_archivo: z.string().url("Falta subir el PDF"),
+  url_archivo_movil: z.string().url().or(z.literal("")).nullable().default(""),
   orden: z.coerce.number().int().default(0),
   activo: z.boolean().default(true),
 });

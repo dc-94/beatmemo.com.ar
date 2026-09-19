@@ -7,7 +7,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { publicClient } from "@/lib/supabase/public";
-import PdfViewer from "@/components/menu/PdfViewer";
+import MenuVersionPicker from "./MenuVersionPicker";
 import { Star, CalendarDays,ArrowRight ,MessageCircle } from "lucide-react";
 import { GOOGLE_REVIEW_URL, SITE_URL, SOCIAL, whatsappLink, WA_MESSAGES } from "@/lib/config";
 
@@ -16,6 +16,7 @@ interface Menu {
   tipo: string;
   nombre: string;
   url_archivo: string;
+  url_archivo_movil: string|null;
   version: number;
   orden: number;
 }
@@ -30,7 +31,7 @@ export default async function MenuView({
   // Lectura pública: publicClient, sin cookies (Regla del cliente público).
   const { data } = await publicClient
     .from("menus")
-    .select("id, tipo, nombre, url_archivo, version, orden")
+    .select("id, tipo, nombre, url_archivo,url_archivo_movil, version, orden")
     .eq("is_deleted", false)
     .eq("activo", true)
     .order("orden", { ascending: true });
@@ -101,8 +102,13 @@ export default async function MenuView({
         </nav>
 
         {/* VISOR — key fuerza remount al cambiar de carta */}
-        <PdfViewer key={activa.id} url={activa.url_archivo} version={activa.version} />
-
+        <MenuVersionPicker
+          key={activa.id}
+          urlDesktop={activa.url_archivo}
+          urlMovil={activa.url_archivo_movil}
+          version={activa.version}
+          isQr={isQr}
+        />
         {/* CTAs — jerarquía deliberada: una acción principal, una secundaria,
             accesorios abajo. Seis botones del mismo peso = ninguno se toca. */}
         <div className="mt-2 mb-4 space-y-3">          

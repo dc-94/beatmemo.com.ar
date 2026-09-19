@@ -3,7 +3,7 @@
 "use client";
 
 import {useDrawerA11y} from "@/hooks/useDrawerA11y";
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { UploadCloud, FileCheck, AlertTriangle } from "lucide-react";
 import { upsertMenu, deleteMenu } from "@/actions/menus";
@@ -26,6 +26,7 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
   const [tipo, setTipo] = useState("");
   const [activo, setActivo] = useState(true);
   const [urlArchivo, setUrlArchivo] = useState("");
+  const [urlArchivoMovil, setUrlArchivoMovil] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadWarning, setUploadWarning] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -36,7 +37,8 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
     setNombre(menuToEdit?.nombre ?? "");
     setTipo(menuToEdit?.tipo ?? "");
     setActivo(menuToEdit?.activo ?? true);
-    setUrlArchivo(menuToEdit?.url_archivo ?? "");
+    setUrlArchivo(menuToEdit?.url_archivo ?? "");   
+    setUrlArchivoMovil(menuToEdit?.url_archivo_movil ?? "");
     setUploadWarning(null);
     setUploading(false);
     setSaving(false);
@@ -54,50 +56,25 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>, variante: "desktop" | "movil") => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (!tipo) {
-      toast.error("Primero ponele nombre a la carta.");
-      e.target.value = "";
-      return;
-    }
-
-    // Validación temprana en cliente: evita gastar ancho de banda subiendo
-    // algo que el server va a rechazar igual.
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error(`El PDF pesa ${(file.size / 1024 / 1024).toFixed(1)}MB. El máximo es 10MB.`);
-      e.target.value = "";
-      return;
-    }
-
+    if (!tipo) { toast.error("Primero ponele nombre a la carta."); e.target.value = ""; return; }
+    if (file.size > 10 * 1024 * 1024) { toast.error(`El PDF pesa ${(file.size/1024/1024).toFixed(1)}MB. Máximo 10MB.`); e.target.value = ""; return; }
     setUploading(true);
-    setUploadWarning(null);
-
-    // FIX: try/finally. Si uploadMenuPdf LANZA (no devuelve error, revienta:
-    // body limit, red caída, form truncado), el setUploading(false) suelto
-    // nunca se ejecutaba y `uploading` quedaba en true para siempre →
-    // Cancelar y Guardar quedaban deshabilitados de por vida.
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await uploadMenuPdf(formData, tipo);
+      const fd = new FormData();
+      fd.append("file", file);
+      // slug distinto para que móvil y desktop no se sobrescriban
+      const slug = variante === "movil" ? `${tipo}-movil` : tipo;
+      const res = await uploadMenuPdf(fd, slug);
       if (res.success && res.url) {
-        setUrlArchivo(res.url);
-        toast.success("PDF subido");
-        if (res.warning) setUploadWarning(res.warning);
-      } else {
-        toast.error(res.error || "Error al subir el PDF");
-      }
-    } catch (err) {
-      console.error("[UPLOAD PDF]", err);
-      toast.error("Falló la subida del PDF. Probá de nuevo.");
-    } finally {
-      setUploading(false);
-      e.target.value = ""; // permite reintentar el mismo archivo
-    }
+        if (variante === "movil") setUrlArchivoMovil(res.url);
+        else setUrlArchivo(res.url);
+        toast.success(`PDF ${variante} subido`);
+      } else toast.error(res.error || "Error al subir");
+    } catch (err) { console.error(err); toast.error("Falló la subida."); }
+    finally { setUploading(false); e.target.value = ""; }
   };
 
   const handleSave = async () => {
@@ -112,6 +89,7 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
       formData.append("nombre", nombre);
       formData.append("tipo", tipo);
       formData.append("url_archivo", urlArchivo);
+      formData.append("url_archivo_movil", urlArchivoMovil);
       formData.append("activo", String(activo));
 
       const res = await upsertMenu(formData, isEditing ? menuToEdit.id : undefined);
@@ -186,40 +164,60 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
             <p className="text-neutral-600 text-xs mt-1">Se usa en la URL del QR y como nombre del archivo.</p>
           </div>
 
-          {/* UPLOAD PDF */}
+          {/* UPLOAD — Versión principal (desktop) */}
           <div>
-            <label className="block text-sm text-neutral-400 mb-2">Archivo PDF *</label>
+            <label className="block text-sm text-neutral-400 mb-2">
+              Versión principal (desktop) <span className="text-red-500">*</span>
+            </label>
             <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-neutral-800 rounded-lg p-6 cursor-pointer hover:border-neutral-600 transition">
               {uploading ? (
                 <span className="text-neutral-400 text-sm">Subiendo…</span>
               ) : urlArchivo ? (
                 <>
                   <FileCheck className="text-green-400" size={28} />
-                  <span className="text-green-400 text-sm">PDF cargado</span>
+                  <span className="text-green-400 text-sm">PDF principal cargado</span>
                   <span className="text-neutral-600 text-xs">Tocá para reemplazar</span>
                 </>
               ) : (
                 <>
                   <UploadCloud className="text-neutral-500" size={28} />
-                  <span className="text-neutral-400 text-sm">Subir PDF (máx. 10MB)</span>
+                  <span className="text-neutral-400 text-sm">Subir PDF principal (máx. 10MB)</span>
                 </>
               )}
-              <input
-                type="file"
-                accept="application/pdf"
-                onChange={handleFileChange}
-                className="hidden"
-                disabled={uploading}
-              />
+              <input type="file" accept="application/pdf" onChange={(e) => handleFileChange(e, "desktop")} className="hidden" disabled={uploading} />
             </label>
-
-            {uploadWarning && (
-              <div className="flex items-start gap-2 mt-2 text-amber-400 text-xs bg-amber-950/30 border border-amber-900/50 rounded p-2">
-                <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-                <span>{uploadWarning}</span>
-              </div>
-            )}
           </div>
+
+          {/* UPLOAD — Versión móvil (opcional) */}
+          <div>
+            <label className="block text-sm text-neutral-400 mb-2">
+              Versión móvil <span className="text-neutral-600 text-xs">(opcional — si no la subís, se usa la principal)</span>
+            </label>
+            <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-neutral-800 rounded-lg p-6 cursor-pointer hover:border-neutral-600 transition">
+              {uploading ? (
+                <span className="text-neutral-400 text-sm">Subiendo…</span>
+              ) : urlArchivoMovil ? (
+                <>
+                  <FileCheck className="text-green-400" size={28} />
+                  <span className="text-green-400 text-sm">PDF móvil cargado</span>
+                  <span className="text-neutral-600 text-xs">Tocá para reemplazar</span>
+                </>
+              ) : (
+                <>
+                  <UploadCloud className="text-neutral-500" size={28} />
+                  <span className="text-neutral-400 text-sm">Subir PDF móvil (máx. 10MB)</span>
+                </>
+              )}
+              <input type="file" accept="application/pdf" onChange={(e) => handleFileChange(e, "movil")} className="hidden" disabled={uploading} />
+            </label>
+          </div>
+
+          {uploadWarning && (
+            <div className="flex items-start gap-2 mt-2 text-amber-400 text-xs bg-amber-950/30 border border-amber-900/50 rounded p-2">
+              <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+              <span>{uploadWarning}</span>
+            </div>
+          )}
 
           {/* ACTIVO */}
           <label className="flex items-center gap-2 cursor-pointer text-white text-sm">
