@@ -7,7 +7,8 @@ import { useState, useEffect, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { UploadCloud, FileCheck, AlertTriangle } from "lucide-react";
 import { upsertMenu, deleteMenu } from "@/actions/menus";
-import { uploadMenuPdf } from "@/actions/menu-uploads";
+
+import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import ConfirmDialog from "../ui/ConfirmDialog";
@@ -27,7 +28,10 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
   const [activo, setActivo] = useState(true);
   const [urlArchivo, setUrlArchivo] = useState("");
   const [urlArchivoMovil, setUrlArchivoMovil] = useState("");
-  const [uploading, setUploading] = useState(false);
+  const [uploadingDesktop, setUploadingDesktop] = useState(false);
+  const [uploadingMovil, setUploadingMovil] = useState(false);
+  const [nombreDesktop, setNombreDesktop] = useState("");
+  const [nombreMovil, setNombreMovil] = useState("");
   const [uploadWarning, setUploadWarning] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -40,7 +44,12 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
     setUrlArchivo(menuToEdit?.url_archivo ?? "");   
     setUrlArchivoMovil(menuToEdit?.url_archivo_movil ?? "");
     setUploadWarning(null);
-    setUploading(false);
+    setUrlArchivo(menuToEdit?.url_archivo ?? "");
+    setUrlArchivoMovil(menuToEdit?.url_archivo_movil ?? "");
+    setNombreDesktop(menuToEdit?.url_archivo ? decodeURIComponent(menuToEdit.url_archivo.split("/").pop()?.split("?")[0] ?? "") : "");
+    setNombreMovil(menuToEdit?.url_archivo_movil ? decodeURIComponent(menuToEdit.url_archivo_movil.split("/").pop()?.split("?")[0] ?? "") : "");
+    setUploadingDesktop(false);
+    setUploadingMovil(false);
     setSaving(false);
     setDeleting(false);
   }, [menuToEdit, isOpen]);
@@ -60,21 +69,24 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!tipo) { toast.error("Primero ponele nombre a la carta."); e.target.value = ""; return; }
-    if (file.size > 10 * 1024 * 1024) { toast.error(`El PDF pesa ${(file.size/1024/1024).toFixed(1)}MB. Máximo 10MB.`); e.target.value = ""; return; }
-    setUploading(true);
+    if (file.type !== "application/pdf") { toast.error("Solo archivos PDF."); e.target.value = ""; return; }
+    if (file.size > 15 * 1024 * 1024) { toast.error(`El PDF pesa ${(file.size/1024/1024).toFixed(1)}MB. Máximo 15MB.`); e.target.value = ""; return; }
+
+    const setUp = variante === "movil" ? setUploadingMovil : setUploadingDesktop;
+    setUp(true);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      // slug distinto para que móvil y desktop no se sobrescriban
+      const supabase = createClient();
       const slug = variante === "movil" ? `${tipo}-movil` : tipo;
-      const res = await uploadMenuPdf(fd, slug);
-      if (res.success && res.url) {
-        if (variante === "movil") setUrlArchivoMovil(res.url);
-        else setUrlArchivo(res.url);
-        toast.success(`PDF ${variante} subido`);
-      } else toast.error(res.error || "Error al subir");
-    } catch (err) { console.error(err); toast.error("Falló la subida."); }
-    finally { setUploading(false); e.target.value = ""; }
+      const path = `${slug}.pdf`;
+      const { error } = await supabase.storage.from("menus").upload(path, file, { upsert: true, contentType: "application/pdf", cacheControl: "3600" });
+      if (error) { toast.error(error.message || "Falló la subida."); return; }
+      const { data } = supabase.storage.from("menus").getPublicUrl(path);
+      const url = `${data.publicUrl}?t=${Date.now()}`;
+      if (variante === "movil") { setUrlArchivoMovil(url); setNombreMovil(file.name); }
+      else { setUrlArchivo(url); setNombreDesktop(file.name); }
+      toast.success(`PDF ${variante} subido`);
+    } catch (err) { console.error(err); toast.error("Error al subir."); }
+    finally { setUp(false); e.target.value = ""; }
   };
 
   const handleSave = async () => {
@@ -125,7 +137,7 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
     } finally { setDeleting(false); }
   };
 
-  const busy = saving || deleting || uploading;
+  const busy = saving || deleting || uploadingDesktop || uploadingMovil;
 
   return (
     <>
@@ -170,21 +182,21 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
               Versión principal (desktop) <span className="text-red-500">*</span>
             </label>
             <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-neutral-800 rounded-lg p-6 cursor-pointer hover:border-neutral-600 transition">
-              {uploading ? (
+              {uploadingDesktop ? (
                 <span className="text-neutral-400 text-sm">Subiendo…</span>
               ) : urlArchivo ? (
                 <>
-                  <FileCheck className="text-green-400" size={28} />
-                  <span className="text-green-400 text-sm">PDF principal cargado</span>
+                  <FileCheck className="text-green-400" size={24} />
+                  <span className="text-green-400 text-sm font-mono break-all text-center px-2">{nombreDesktop || "PDF cargado"}</span>
                   <span className="text-neutral-600 text-xs">Tocá para reemplazar</span>
                 </>
               ) : (
                 <>
                   <UploadCloud className="text-neutral-500" size={28} />
-                  <span className="text-neutral-400 text-sm">Subir PDF principal (máx. 10MB)</span>
+                  <span className="text-neutral-400 text-sm">Subir PDF principal (máx. 15MB)</span>
                 </>
               )}
-              <input type="file" accept="application/pdf" onChange={(e) => handleFileChange(e, "desktop")} className="hidden" disabled={uploading} />
+              <input type="file" accept="application/pdf" onChange={(e) => handleFileChange(e, "desktop")} className="hidden" disabled={uploadingDesktop} />
             </label>
           </div>
 
@@ -194,12 +206,12 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
               Versión móvil <span className="text-neutral-600 text-xs">(opcional — si no la subís, se usa la principal)</span>
             </label>
             <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-neutral-800 rounded-lg p-6 cursor-pointer hover:border-neutral-600 transition">
-              {uploading ? (
+              {uploadingMovil ? (
                 <span className="text-neutral-400 text-sm">Subiendo…</span>
               ) : urlArchivoMovil ? (
                 <>
                   <FileCheck className="text-green-400" size={28} />
-                  <span className="text-green-400 text-sm">PDF móvil cargado</span>
+                  <span className="text-green-400 text-sm">{nombreMovil || "PDF cargado"}</span>
                   <span className="text-neutral-600 text-xs">Tocá para reemplazar</span>
                 </>
               ) : (
@@ -208,7 +220,7 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
                   <span className="text-neutral-400 text-sm">Subir PDF móvil (máx. 10MB)</span>
                 </>
               )}
-              <input type="file" accept="application/pdf" onChange={(e) => handleFileChange(e, "movil")} className="hidden" disabled={uploading} />
+              <input type="file" accept="application/pdf" onChange={(e) => handleFileChange(e, "movil")} className="hidden" disabled={uploadingMovil} />
             </label>
           </div>
 
