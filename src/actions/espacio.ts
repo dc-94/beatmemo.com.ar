@@ -15,6 +15,8 @@ export async function upsertEspacio(formData: FormData): Promise<ActionResponse>
     const id = (formData.get("id") as string) || null;
     const raw = Object.fromEntries(formData.entries()) as Record<string, unknown>;
     raw.visible = raw.visible !== "false";
+    raw.mostrar_home = raw.mostrar_home === "true" || raw.mostrar_home === "on";  
+    raw.es_museo = raw.es_museo === "true" || raw.es_museo === "on";  
 
     const validated = espacioSchema.safeParse(raw);
     if (!validated.success) {
@@ -26,6 +28,8 @@ export async function upsertEspacio(formData: FormData): Promise<ActionResponse>
       titulo: validated.data.titulo || null,
       epigrafe: validated.data.epigrafe || null,
       orden: validated.data.orden,
+      mostrar_home: validated.data.mostrar_home,
+      es_museo: validated.data.es_museo,
       visible: validated.data.visible,
     };
 

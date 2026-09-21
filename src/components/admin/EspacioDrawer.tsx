@@ -26,6 +26,8 @@ export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen:
       epigrafe: fotoToEdit?.epigrafe ?? "",
       orden: fotoToEdit?.orden ?? 0,
       visible: fotoToEdit?.visible ?? true,
+      mostrar_home: fotoToEdit?.mostrar_home ?? false,
+      es_museo: fotoToEdit?.es_museo ?? false,
     },
   });
 
@@ -37,6 +39,8 @@ export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen:
       epigrafe: fotoToEdit?.epigrafe ?? "",
       orden: fotoToEdit?.orden ?? 0,
       visible: fotoToEdit?.visible ?? true,
+      mostrar_home: fotoToEdit?.mostrar_home ?? false,
+      es_museo: fotoToEdit?.es_museo ?? false,
     });
   }, [fotoToEdit, isOpen, reset]);
 
@@ -117,6 +121,17 @@ export default function EspacioDrawer({ isOpen, onClose, fotoToEdit }: { isOpen:
             <div>
               <label className="block text-sm text-neutral-400 mb-1">Orden</label>
               <input type="number" {...register("orden")} className={inputCls} />
+            </div>
+            <div className="p-4 bg-neutral-950 border border-neutral-800 rounded space-y-3">
+              <span className="block text-sm text-neutral-400">Clasificación y visibilidad</span>
+              <label className="flex items-center gap-2 cursor-pointer text-white text-sm">
+                <input type="checkbox" {...register("es_museo")} className="w-4 h-4 accent-brand-red" />
+                Es del museo <span className="text-neutral-500 text-xs">(si no, es del bar / espacio)</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer text-white text-sm">
+                <input type="checkbox" {...register("mostrar_home")} className="w-4 h-4 accent-amber-500" />
+                Mostrar en el home <span className="text-neutral-500 text-xs">(sección museo del inicio)</span>
+              </label>
             </div>
             <label className="flex items-center gap-2 cursor-pointer text-white text-sm p-4 bg-neutral-950 border border-neutral-800 rounded">
               <input type="checkbox" {...register("visible")} className="w-4 h-4 accent-brand-red" /> Visible en el sitio

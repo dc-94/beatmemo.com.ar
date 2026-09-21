@@ -6,8 +6,7 @@ import BrandSpinner from "@/components/ui/BrandSpinner";
 import PromoSection from "@/components/home/PromoSection";
 import SellosAccesibilidad from "@/components/shared/SellosAccesibilidad";
 import Pub from "@/components/home/Pub";
-import MuseumPreview from "@/components/home/MuseumPreview";
-import EspacioPreview from "@/components/home/EspacioPreview";
+import MuseoEspacioWrapper from "@/components/home/MuseoEspacioWrapper";
 import RooftopSection from "@/components/home/RooftopSection";
 import { getEspacioFotos } from "@/lib/pub-data";
 import { SITE_URL } from "@/lib/config";
@@ -53,8 +52,7 @@ export default async function HomePage() {
           <AgendaWrapper />
         </Suspense>
              <Pub />
-      <MuseumPreview contenido={museoContent} museoVisitas={config.museo_visitas} />
-      <EspacioPreview contenido={espacioContent} fotos={espacioFotos} />
+      <MuseoEspacioWrapper />
       <RooftopSection />
       <Suspense fallback={<BrandSpinner />}>
         <PromoSection />
