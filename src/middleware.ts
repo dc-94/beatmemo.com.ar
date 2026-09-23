@@ -93,7 +93,6 @@ export async function middleware(request: NextRequest) {
     request.method === 'POST' &&
     (request.headers.get('content-type') ?? '').includes('multipart/form-data');
   if (isMultipartPost) {
-        console.log("[mw] multipart bypass →", pathname);
     return noIndex(NextResponse.next({ request: { headers: request.headers } }));
   }
   
