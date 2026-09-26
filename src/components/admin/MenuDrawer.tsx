@@ -70,7 +70,7 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
     if (!file) return;
     if (!tipo) { toast.error("Primero ponele nombre a la carta."); e.target.value = ""; return; }
     if (file.type !== "application/pdf") { toast.error("Solo archivos PDF."); e.target.value = ""; return; }
-    if (file.size > 15 * 1024 * 1024) { toast.error(`El PDF pesa ${(file.size/1024/1024).toFixed(1)}MB. Máximo 15MB.`); e.target.value = ""; return; }
+    if (file.size > 20 * 1024 * 1024) { toast.error(`El PDF pesa ${(file.size/1024/1024).toFixed(1)}MB. Máximo 20MB.`); e.target.value = ""; return; }
 
     const setUp = variante === "movil" ? setUploadingMovil : setUploadingDesktop;
     setUp(true);
@@ -193,7 +193,7 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
               ) : (
                 <>
                   <UploadCloud className="text-neutral-500" size={28} />
-                  <span className="text-neutral-400 text-sm">Subir PDF principal (máx. 15MB)</span>
+                  <span className="text-neutral-400 text-sm">Subir PDF principal (máx. 20MB)</span>
                 </>
               )}
               <input type="file" accept="application/pdf" onChange={(e) => handleFileChange(e, "desktop")} className="hidden" disabled={uploadingDesktop} />

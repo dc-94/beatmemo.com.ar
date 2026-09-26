@@ -120,7 +120,7 @@ export default async function MenuView({
             <MessageCircle size={14} /> Reservá tu mesa
           </a>
 
-          {/* SECUNDARIO — solo QR: en la web el navbar ya lleva a la agenda. */}
+          {/* SECUNDARIO — solo QR: en la web el navbar ya lleva a la agenda. 
           {isQr && (
             
             <a  href={`${SITE_URL}/agenda`}
@@ -129,7 +129,7 @@ export default async function MenuView({
               <CalendarDays size={14} /> Ver agenda de shows
             </a>
           )}
-
+*/}
           {/* TERCIARIO — reseña */}
           
           <a  href={GOOGLE_REVIEW_URL}
@@ -187,12 +187,12 @@ export default async function MenuView({
                 </a>
               </div>
 
-              
+{/*               
                <a href={SITE_URL}
                 className="flex items-center gap-1 text-[11px] uppercase tracking-widest text-[#5C5852] hover:text-[#A68966] transition-colors px-2 py-2"
               >
                 Ver sitio completo <ArrowRight size={12} />
-              </a>
+              </a> */}
             </div>
           )}
       </div>
