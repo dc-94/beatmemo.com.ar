@@ -262,7 +262,7 @@ export default function AudioguiaPlayer({
       {fullOpen && <div className="fixed inset-0 bg-black/55 z-30" onClick={() => setFullOpen(false)} />}
 
       {/* ══ FULL PLAYER ══ (ancho limitado en desktop, alto anclado al viewport visible) */}
-      <div className={`fixed left-0 right-0 max-w-xl mx-auto z-40 bg-brand-black-200 border-t border-brand-black-300 rounded-t-3xl flex flex-col overflow-hidden transition-transform duration-[420ms] ${fullOpen ? "translate-y-0" : "translate-y-full"}`}
+      <div className={`fixed left-0 right-0 h-80% max-w-xl mx-auto z-40 bg-brand-black-200 border-t border-brand-black-300 rounded-t-3xl flex flex-col overflow-hidden transition-transform duration-[420ms] ${fullOpen ? "translate-y-0" : "translate-y-full"}`}
         style={{
           bottom: "var(--ag-bottom, 0px)",
           height: "min(85dvh, calc(var(--ag-vh, 100dvh) * 0.85))",
@@ -279,7 +279,7 @@ export default function AudioguiaPlayer({
             </button>
           </div>
           {/* Imagen grande 6:4 arriba */}
-          <div className="relative w-full aspect-[3/2] bg-brand-black-300 flex-none">
+          <div className="relative w-full aspect-[6/4] bg-brand-black-300 flex-none">
             {track.imagen_url ? (
               <Image src={getOptimizedImageUrl(track.imagen_url, 600, 400)} alt={track.titulo} fill className="object-cover" sizes="(min-width: 640px) 576px, 100vw" />
             ) : (
