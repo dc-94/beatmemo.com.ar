@@ -279,7 +279,7 @@ export default function AudioguiaPlayer({
             </button>
           </div>
           {/* Imagen grande 6:4 arriba */}
-          <div className="relative w-full aspect-[6/4] bg-brand-black-300 flex-none">
+          <div className="relative w-full aspect-[4/2] bg-brand-black-300 flex-none">
             {track.imagen_url ? (
               <Image src={getOptimizedImageUrl(track.imagen_url, 600, 400)} alt={track.titulo} fill className="object-cover" sizes="(min-width: 640px) 576px, 100vw" />
             ) : (
