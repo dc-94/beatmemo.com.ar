@@ -41,6 +41,8 @@ export default function AudioguiaPlayer({
   const [time, setTime] = useState(0);
   const [dur, setDur] = useState(0);
   const [durations, setDurations] = useState<Record<string, number>>({});
+  const [deepPrimed, setDeepPrimed] = useState(false); // QR: Play cebado hasta el 1er toque
+  const wantPlay = useRef(false);                        // el efecto [cur] decide si reproduce
 
   const track = tracks[cur];
 
@@ -56,34 +58,95 @@ export default function AudioguiaPlayer({
       }, { once: true });
     });
   }, [tracks, durations]);
+
+  // ── FIX MÓVIL: barra de URL de Safari/Chrome tapando el reproductor ──
+  // El viewport VISIBLE (visualViewport) es más chico que el de layout cuando
+  // la barra del browser está visible. Publicamos dos CSS vars en :root:
+  //   --ag-bottom: cuántos px del layout quedan tapados abajo por la barra.
+  //   --ag-vh:     alto real visible en px.
+  // El sheet se posiciona con esas vars → sus controles NUNCA quedan bajo la barra.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const root = document.documentElement;
+    const apply = () => {
+      const bottomInset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      root.style.setProperty("--ag-bottom", `${bottomInset}px`);
+      root.style.setProperty("--ag-vh", `${Math.round(vv.height)}px`);
+    };
+    apply();
+    vv.addEventListener("resize", apply);
+    vv.addEventListener("scroll", apply);
+    window.addEventListener("orientationchange", apply);
+    return () => {
+      vv.removeEventListener("resize", apply);
+      vv.removeEventListener("scroll", apply);
+      window.removeEventListener("orientationchange", apply);
+      root.style.removeProperty("--ag-bottom");
+      root.style.removeProperty("--ag-vh");
+    };
+  }, []);
+
   // Bloquea el scroll del fondo cuando el player o la cola están abiertos.
   useEffect(() => {
     const abierto = fullOpen || queueOpen;
     document.body.style.overflow = abierto ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [fullOpen, queueOpen]);
-  // Cambiar de track: carga el audio y (si estaba sonando) reproduce.
+
+  // Cambiar de track: marca la intención de reproducir; el efecto [cur] carga y suena.
   const select = useCallback((i: number, autoplay = true) => {
+    wantPlay.current = autoplay;
     setCur(i);
     setFullOpen(true);
     setQueueOpen(false);
     setTime(0);
-    // el efecto de abajo reacciona al cambio de `cur` y carga el src
-    if (autoplay) setPlaying(true);
   }, []);
 
-  // Cuando cambia el track, actualiza el <audio> y reproduce si corresponde.
+  // Fuente única de carga del <audio>: cuando cambia el track, setea src y
+  // reproduce SOLO si se pidió (wantPlay). Evita dobles load() que cortan el audio.
   useEffect(() => {
     const a = audioRef.current;
     if (!a || !track) return;
     a.src = track.audio_url;
     a.load();
-    if (playing) {
+    if (wantPlay.current) {
+      wantPlay.current = false;
       setCargando(true);
-      a.play().then(() => setCargando(false)).catch(() => { setPlaying(false); setCargando(false); });
+      a.play()
+        .then(() => { setPlaying(true); setCargando(false); })
+        .catch(() => { setPlaying(false); setCargando(false); });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cur]);
+
+  // ── DEEP-LINK POR QR (?t=<id>) ──
+  // Se lee en el CLIENTE para no romper el ISR de la página. Usa el id (uuid),
+  // estable ante reordenamientos. Intenta autoplay best-effort: si el browser
+  // lo bloquea (iOS siempre), queda el Play grande cebado (1 toque).
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("t");
+    if (!id) return;
+    const i = tracks.findIndex((t) => t.id === id);
+    if (i < 0) return;                 // QR viejo/inválido → arranca normal, sin auto-abrir
+    setDeepPrimed(true);
+    if (i === cur) {
+      // Track 0: setCur no cambia → el efecto [cur] no se dispara, arrancamos acá.
+      setFullOpen(true);
+      const a = audioRef.current;
+      if (a) {
+        a.src = tracks[i].audio_url;
+        a.load();
+        a.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+      }
+    } else {
+      select(i);                       // dispara el efecto [cur] → carga + autoplay
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Apaga el "cebado" del Play apenas empieza a sonar.
+  useEffect(() => { if (playing) setDeepPrimed(false); }, [playing]);
 
   const togglePlay = () => {
     const a = audioRef.current;
@@ -171,10 +234,17 @@ export default function AudioguiaPlayer({
           })}
         </div>
 
+        <a href={process.env.NEXT_PUBLIC_SITE_URL || "https://beatmemo.com.ar"}
+          className="mt-8 flex items-center justify-center gap-2 text-brand-gold font-sans font-bold uppercase tracking-[0.2em] text-xs border-b-2 border-brand-gold/40 pb-2 mx-auto w-fit hover:border-brand-gold transition-colors">
+          Descubrí Beatmemo →
+        </a>
+      </div>
 
       {/* ══ MINI PLAYER ══ */}
       {!fullOpen && (
-        <button onClick={() => setFullOpen(true)} className="fixed left-3 right-3 bottom-3 max-w-xl mx-auto bg-brand-black-300/95 backdrop-blur border border-brand-black-300 rounded-2xl p-2.5 flex items-center gap-3 shadow-2xl z-20">
+        <button onClick={() => setFullOpen(true)}
+          className="fixed left-3 right-3 max-w-xl mx-auto bg-brand-black-300/95 backdrop-blur border border-brand-black-300 rounded-2xl p-2.5 flex items-center gap-3 shadow-2xl z-20"
+          style={{ bottom: "calc(var(--ag-bottom, 0px) + 0.75rem)" }}>
           <div className="w-11 h-11 rounded-lg bg-brand-black-200 bg-cover bg-center flex-none flex items-center justify-center" style={track.imagen_url ? { backgroundImage: `url(${getOptimizedImageUrl(track.imagen_url, 100, 100)})` } : undefined}>
             {!track.imagen_url && <Music size={16} className="text-neutral-600" />}
           </div>
@@ -191,23 +261,27 @@ export default function AudioguiaPlayer({
       {/* ══ SCRIM ══ */}
       {fullOpen && <div className="fixed inset-0 bg-black/55 z-30" onClick={() => setFullOpen(false)} />}
 
-      {/* ══ FULL PLAYER (70%) ══ */}
-      <div className={`fixed left-0 right-0 bottom-0 h-[70%] z-40 bg-brand-black-200 border-t border-brand-black-300 rounded-t-3xl flex flex-col overflow-hidden transition-transform duration-[420ms] ${fullOpen ? "translate-y-0" : "translate-y-full"}`}
-        style={{ transitionTimingFunction: "cubic-bezier(.22,1,.36,1)" }}>
+      {/* ══ FULL PLAYER ══ (ancho limitado en desktop, alto anclado al viewport visible) */}
+      <div className={`fixed left-0 right-0 max-w-xl mx-auto z-40 bg-brand-black-200 border-t border-brand-black-300 rounded-t-3xl flex flex-col overflow-hidden transition-transform duration-[420ms] ${fullOpen ? "translate-y-0" : "translate-y-full"}`}
+        style={{
+          bottom: "var(--ag-bottom, 0px)",
+          height: "min(85dvh, calc(var(--ag-vh, 100dvh) * 0.85))",
+          transitionTimingFunction: "cubic-bezier(.22,1,.36,1)",
+        }}>
         {track.imagen_url && (
           <div className="absolute inset-0 bg-cover bg-center opacity-[.13] blur-3xl" style={{ backgroundImage: `url(${getOptimizedImageUrl(track.imagen_url, 400, 400)})` }} />
         )}
         <div className="relative z-10 flex flex-col h-full">
-          <div className="flex items-center justify-between px-4 pt-4 pb-1">
+          <div className="flex items-center justify-between px-4 pt-4 pb-1 flex-none">
             <span className="text-[11px] uppercase tracking-[0.2em] text-brand-gold">Audioguía · {cur + 1}/{tracks.length}</span>
             <button onClick={() => setFullOpen(false)} className="w-11 h-11 rounded-full bg-brand-black-300 border border-brand-black-300 flex items-center justify-center" aria-label="Minimizar">
               <ChevronDown size={22} />
             </button>
           </div>
-          {/* Imagen grande 5:4 arriba */}
-          <div className="relative w-full aspect-[5/4] bg-brand-black-300 flex-none">
+          {/* Imagen grande 6:4 arriba */}
+          <div className="relative w-full aspect-[3/2] bg-brand-black-300 flex-none">
             {track.imagen_url ? (
-              <Image src={getOptimizedImageUrl(track.imagen_url, 600, 480)} alt={track.titulo} fill className="object-cover" sizes="100vw" />
+              <Image src={getOptimizedImageUrl(track.imagen_url, 600, 400)} alt={track.titulo} fill className="object-cover" sizes="(min-width: 640px) 576px, 100vw" />
             ) : (
               <div className="w-full h-full flex items-center justify-center"><Music size={48} className="text-neutral-600" /></div>
             )}
@@ -223,15 +297,16 @@ export default function AudioguiaPlayer({
           </div>
 
           {/* descripción con scroll dorado */}
-          <div className="flex-1 overflow-y-auto px-5 py-2 mx-1"
+          <div className="flex-1 min-h-0 overflow-y-auto px-5 py-2 mx-1"
             style={{ scrollbarWidth: "thin", scrollbarColor: "#C5A059 transparent" }}>
             {track.descripcion.split("\n").filter(Boolean).map((line, i) => (
               <p key={i} className={`font-serif text-[1rem] leading-relaxed mb-3 ${i === 0 ? "text-brand-white-100" : "text-brand-white-100/80"}`}>{line}</p>
             ))}
           </div>
 
-          {/* controles */}
-          <div className="px-5 pt-2 pb-6 bg-gradient-to-t from-brand-black-200 to-transparent">
+          {/* controles — anclados abajo, con safe-area para el home indicator */}
+          <div className="px-5 pt-2 flex-none bg-gradient-to-t from-brand-black-200 to-transparent"
+            style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
             <div className="h-1 bg-brand-black-300 rounded-full overflow-hidden cursor-pointer mb-1" onClick={seek}>
               <div className="h-full bg-brand-red-100" style={{ width: `${dur ? (time / dur) * 100 : 0}%` }} />
             </div>
@@ -242,7 +317,9 @@ export default function AudioguiaPlayer({
               <button onClick={() => setQueueOpen(true)} className="w-11 flex justify-center text-brand-white-300" aria-label="Lista"><ListMusic size={22} /></button>
               <div className="flex items-center gap-8">
                 <button onClick={prev} disabled={cur === 0} className="disabled:opacity-30"><SkipBack size={26} className="fill-white text-white" /></button>
-                <button onClick={togglePlay} className="w-16 h-16 rounded-full bg-brand-red-100 flex items-center justify-center shadow-lg">
+                <button onClick={togglePlay}
+                  className={`w-16 h-16 rounded-full bg-brand-red-100 flex items-center justify-center shadow-lg transition ${deepPrimed && !playing ? "ring-4 ring-brand-red-100/40 motion-safe:animate-pulse" : ""}`}
+                  aria-label={playing ? "Pausar" : "Reproducir"}>
                   {cargando ? <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : playing ? <Pause size={26} className="fill-white text-white" /> : <Play size={26} className="fill-white text-white ml-1" />}
                 </button>
                 <button onClick={next} disabled={cur === tracks.length - 1} className="disabled:opacity-30"><SkipForward size={26} className="fill-white text-white" /></button>
@@ -255,14 +332,19 @@ export default function AudioguiaPlayer({
 
       {/* ══ COLA ══ */}
       {queueOpen && <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setQueueOpen(false)} />}
-      <div className={`fixed left-0 right-0 bottom-0 h-[82%] z-50 bg-brand-black-200 border-t border-brand-black-300 rounded-t-3xl flex flex-col transition-transform duration-[380ms] ${queueOpen ? "translate-y-0" : "translate-y-full"}`}
-        style={{ transitionTimingFunction: "cubic-bezier(.22,1,.36,1)" }}>
-        <div className="w-9 h-1 bg-brand-black-300 rounded-full mx-auto mt-3 mb-1" />
-        <div className="flex items-center justify-between px-5 py-2">
+      <div className={`fixed left-0 right-0 max-w-xl mx-auto z-50 bg-brand-black-200 border-t border-brand-black-300 rounded-t-3xl flex flex-col overflow-hidden transition-transform duration-[380ms] ${queueOpen ? "translate-y-0" : "translate-y-full"}`}
+        style={{
+          bottom: "var(--ag-bottom, 0px)",
+          height: "min(88dvh, calc(var(--ag-vh, 100dvh) * 0.88))",
+          transitionTimingFunction: "cubic-bezier(.22,1,.36,1)",
+        }}>
+        <div className="w-9 h-1 bg-brand-black-300 rounded-full mx-auto mt-3 mb-1 flex-none" />
+        <div className="flex items-center justify-between px-5 py-2 flex-none">
           <h3 className="font-serif font-bold text-lg">A continuación</h3>
           <button onClick={() => setQueueOpen(false)} className="text-brand-gold text-xs font-bold uppercase tracking-widest">Cerrar</button>
         </div>
-        <div className="flex-1 overflow-y-auto px-3 pb-8" style={{ scrollbarWidth: "thin", scrollbarColor: "#C5A059 transparent" }}>
+        <div className="flex-1 min-h-0 overflow-y-auto px-3"
+          style={{ scrollbarWidth: "thin", scrollbarColor: "#C5A059 transparent", paddingBottom: "max(2rem, env(safe-area-inset-bottom))" }}>
           {tracks.map((t, i) => (
             <button key={t.id} onClick={() => select(i)} className={`w-full flex items-center gap-3 p-2.5 rounded-lg text-left transition ${i === cur ? "bg-brand-red-100/12" : "hover:bg-white/5"}`}>
               <span className={`w-6 text-center font-bold text-lg ${i === cur ? "text-brand-red-100" : "text-brand-gold"}`} style={{ fontFamily: "var(--font-barlow-condensed)" }}>{String(i + 1).padStart(2, "0")}</span>
@@ -276,11 +358,6 @@ export default function AudioguiaPlayer({
           ))}
         </div>
       </div>
-              <a href={process.env.NEXT_PUBLIC_SITE_URL || "https://beatmemo.com.ar"}
-          className="mt-8 flex items-center justify-center gap-2 text-brand-gold font-sans font-bold uppercase tracking-[0.2em] text-xs border-b-2 border-brand-gold/40 pb-2 mx-auto w-fit hover:border-brand-gold transition-colors">
-          Descubrí Beatmemo →
-        </a>
-    </div>
     </div>
   );
 }
