@@ -7,7 +7,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { publicClient } from "@/lib/supabase/public";
-import MenuVersionPicker from "./MenuVersionPicker";
+// MODELO ÚNICO DE CARTA (sep-2026): se muestra el MISMO PDF en móvil y desktop.
+// El selector por dispositivo queda desactivado (no se borró; ver MenuVersionPicker.tsx).
+// import MenuVersionPicker from "./MenuVersionPicker";
+import PdfViewer from "./PdfViewer";
 import { Star, CalendarDays,ArrowRight ,MessageCircle } from "lucide-react";
 import { GOOGLE_REVIEW_URL, SITE_URL, SOCIAL, whatsappLink, WA_MESSAGES } from "@/lib/config";
 
@@ -101,7 +104,14 @@ export default async function MenuView({
           </ul>
         </nav>
 
-        {/* VISOR — key fuerza remount al cambiar de carta */}
+        {/* VISOR — key fuerza remount al cambiar de carta.
+            MODELO ÚNICO: un solo PDF para todos los dispositivos. */}
+        <PdfViewer
+          key={activa.id}
+          url={activa.url_archivo}
+          version={activa.version}
+        />
+        {/* --- SELECTOR MÓVIL/DESKTOP — DESACTIVADO (revertir si vuelven a 2 versiones) ---
         <MenuVersionPicker
           key={activa.id}
           urlDesktop={activa.url_archivo}
@@ -109,6 +119,7 @@ export default async function MenuView({
           version={activa.version}
           isQr={isQr}
         />
+        --- fin selector desactivado --- */}
         {/* CTAs — jerarquía deliberada: una acción principal, una secundaria,
             accesorios abajo. Seis botones del mismo peso = ninguno se toca. */}
         <div className="mt-2 mb-4 space-y-3">          

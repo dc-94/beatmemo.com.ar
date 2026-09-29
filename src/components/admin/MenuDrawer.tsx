@@ -176,10 +176,10 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
             <p className="text-neutral-600 text-xs mt-1">Se usa en la URL del QR y como nombre del archivo.</p>
           </div>
 
-          {/* UPLOAD — Versión principal (desktop) */}
+          {/* UPLOAD — Carta en PDF (modelo único: misma carta para móvil y desktop) */}
           <div>
             <label className="block text-sm text-neutral-400 mb-2">
-              Versión principal (desktop) <span className="text-red-500">*</span>
+              Carta en PDF <span className="text-red-500">*</span>
             </label>
             <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-neutral-800 rounded-lg p-6 cursor-pointer hover:border-neutral-600 transition">
               {uploadingDesktop ? (
@@ -193,14 +193,16 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
               ) : (
                 <>
                   <UploadCloud className="text-neutral-500" size={28} />
-                  <span className="text-neutral-400 text-sm">Subir PDF principal (máx. 20MB)</span>
+                  <span className="text-neutral-400 text-sm">Subir la carta en PDF (máx. 10MB)</span>
                 </>
               )}
               <input type="file" accept="application/pdf" onChange={(e) => handleFileChange(e, "desktop")} className="hidden" disabled={uploadingDesktop} />
             </label>
           </div>
 
-          {/* UPLOAD — Versión móvil (opcional) */}
+          {/* --- UPLOAD VERSIÓN MÓVIL — DESACTIVADO (modelo único de carta, sep-2026) ---
+               No se borró: si el equipo vuelve a querer 2 versiones, descomentar
+               este bloque y el selector en MenuView / MenuVersionPicker.
           <div>
             <label className="block text-sm text-neutral-400 mb-2">
               Versión móvil <span className="text-neutral-600 text-xs">(opcional — si no la subís, se usa la principal)</span>
@@ -223,6 +225,7 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
               <input type="file" accept="application/pdf" onChange={(e) => handleFileChange(e, "movil")} className="hidden" disabled={uploadingMovil} />
             </label>
           </div>
+          --- fin upload móvil desactivado --- */}
 
           {uploadWarning && (
             <div className="flex items-start gap-2 mt-2 text-amber-400 text-xs bg-amber-950/30 border border-amber-900/50 rounded p-2">
