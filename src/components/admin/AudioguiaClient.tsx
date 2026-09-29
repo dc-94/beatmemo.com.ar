@@ -3,10 +3,15 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { ArrowUp, ArrowDown, Plus, Pencil, Music, Save } from "lucide-react";
+import { ArrowUp, ArrowDown, Plus, Pencil, Music, Save, Link as LinkIcon } from "lucide-react";
 import { reorderAudioguia } from "@/actions/audioguia";
 import AudioguiaDrawer from "./AudioguiaDrawer";
 import Button from "@/components/ui/Button";
+
+// Base de producción del subdominio de la audioguía. Hardcodeada a propósito:
+// los QR se imprimen y se pegan en la pared del museo — nunca deben apuntar a
+// localhost aunque el link se genere desde el admin en desarrollo.
+const AUDIOGUIA_BASE = "https://audioguia.beatmemo.com.ar";
 
 export default function AudioguiaClient({ tracks: initial }: { tracks: any[] }) {
   const router = useRouter();
@@ -34,13 +39,24 @@ export default function AudioguiaClient({ tracks: initial }: { tracks: any[] }) 
     setSaving(false);
   };
 
+  // Copia al portapapeles el link con deep-link por id (?t=<uuid>) para el QR del sector.
+  const copiarLink = async (id: string) => {
+    const url = `${AUDIOGUIA_BASE}/?t=${id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copiado — pegalo en tu generador de QR");
+    } catch {
+      toast.error(`No se pudo copiar. Link: ${url}`);
+    }
+  };
+
   const openNew = () => { setEditing(null); setDrawerOpen(true); };
   const openEdit = (t: any) => { setEditing(t); setDrawerOpen(true); };
-  
+
   useEffect(() => {
     if (!dirty) setTracks(initial);
   }, [initial, dirty]);
-  
+
   return (
     <div className="space-y-5 max-w-3xl">
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -73,7 +89,8 @@ export default function AudioguiaClient({ tracks: initial }: { tracks: any[] }) 
                 {!t.activo && <span className="text-neutral-600">· oculta</span>}
               </p>
             </div>
-            <button onClick={() => openEdit(t)} className="text-neutral-400 hover:text-white p-2"><Pencil size={16} /></button>
+            <button onClick={() => copiarLink(t.id)} title="Copiar link para el QR del sector" aria-label="Copiar link para QR" className="text-neutral-400 hover:text-brand-gold p-2"><LinkIcon size={16} /></button>
+            <button onClick={() => openEdit(t)} title="Editar" aria-label="Editar" className="text-neutral-400 hover:text-white p-2"><Pencil size={16} /></button>
           </div>
         ))}
       </div>

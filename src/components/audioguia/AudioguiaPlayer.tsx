@@ -262,73 +262,79 @@ export default function AudioguiaPlayer({
       {fullOpen && <div className="fixed inset-0 bg-black/55 z-30" onClick={() => setFullOpen(false)} />}
 
       {/* ══ FULL PLAYER ══ (ancho limitado en desktop, alto anclado al viewport visible) */}
-      <div className={`fixed left-0 right-0 h-90% max-w-xl mx-auto z-40 bg-brand-black-200 border-t border-brand-black-300 rounded-t-3xl flex flex-col overflow-hidden transition-transform duration-[420ms] ${fullOpen ? "translate-y-0" : "translate-y-full"}`}
-        style={{
-          bottom: "var(--ag-bottom, 0px)",
-          height: "min(85dvh, calc(var(--ag-vh, 100dvh) * 0.85))",
-          transitionTimingFunction: "cubic-bezier(.22,1,.36,1)",
-        }}>
-        {track.imagen_url && (
-          <div className="absolute inset-0 bg-cover bg-center opacity-[.13] blur-3xl" style={{ backgroundImage: `url(${getOptimizedImageUrl(track.imagen_url, 400, 400)})` }} />
-        )}
-        <div className="relative z-10 flex flex-col h-full">
-          <div className="flex items-center justify-between px-4 pt-4 pb-1 flex-none">
-            <span className="text-[11px] uppercase tracking-[0.2em] text-brand-gold">Audioguía · {cur + 1}/{tracks.length}</span>
-            <button onClick={() => setFullOpen(false)} className="w-11 h-11 rounded-full bg-brand-black-300 border border-brand-black-300 flex items-center justify-center" aria-label="Minimizar">
-              <ChevronDown size={22} />
-            </button>
-          </div>
-          {/* Imagen grande 6:4 arriba */}
-          <div className="relative w-full aspect-[16:10] bg-brand-black-300 flex-none">
-            {track.imagen_url ? (
-              <Image src={getOptimizedImageUrl(track.imagen_url, 600, 400)} alt={track.titulo} fill className="object-cover" sizes="(min-width: 640px) 576px, 100vw" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center"><Music size={48} className="text-neutral-600" /></div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-brand-black-200 via-transparent to-transparent" />
-            <span className="absolute bottom-3 left-4 font-bold text-4xl text-white" style={{ fontFamily: "var(--font-barlow-condensed)", textShadow: "0 2px 16px rgba(0,0,0,.9)" }}>
-              {track.titulo.split(" - ")[0]}
-            </span>
-          </div>
-          {/* Título debajo */}
-          <div className="px-5 pt-3 pb-1 flex-none">
-            <span className="text-[11px] uppercase tracking-[0.2em] text-brand-gold font-bold">El recorrido</span>
-            <h2 className="font-serif font-bold text-lg leading-tight mt-1">{track.titulo.split(" - ").slice(1).join(" - ") || track.titulo}</h2>
-          </div>
-
-          {/* descripción con scroll dorado */}
-          <div className="flex-1 min-h-0 overflow-y-auto px-5 py-2 mx-1"
-            style={{ scrollbarWidth: "thin", scrollbarColor: "#C5A059 transparent" }}>
-            {track.descripcion.split("\n").filter(Boolean).map((line, i) => (
-              <p key={i} className={`font-serif text-[1rem] leading-relaxed mb-3 ${i === 0 ? "text-brand-white-100" : "text-brand-white-100/80"}`}>{line}</p>
-            ))}
-          </div>
-
-          {/* controles — anclados abajo, con safe-area para el home indicator */}
-          <div className="px-5 pt-2 flex-none bg-gradient-to-t from-brand-black-200 to-transparent"
-            style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
-            <div className="h-1 bg-brand-black-300 rounded-full overflow-hidden cursor-pointer mb-1" onClick={seek}>
-              <div className="h-full bg-brand-red-100" style={{ width: `${dur ? (time / dur) * 100 : 0}%` }} />
-            </div>
-            <div className="flex justify-between text-[11px] text-brand-white-300 mb-3">
-              <span>{fmt(time)}</span><span>{fmt(dur)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <button onClick={() => setQueueOpen(true)} className="w-11 flex justify-center text-brand-white-300" aria-label="Lista"><ListMusic size={22} /></button>
-              <div className="flex items-center gap-8">
-                <button onClick={prev} disabled={cur === 0} className="disabled:opacity-30"><SkipBack size={26} className="fill-white text-white" /></button>
-                <button onClick={togglePlay}
-                  className={`w-16 h-16 rounded-full bg-brand-red-100 flex items-center justify-center shadow-lg transition ${deepPrimed && !playing ? "ring-4 ring-brand-red-100/40 motion-safe:animate-pulse" : ""}`}
-                  aria-label={playing ? "Pausar" : "Reproducir"}>
-                  {cargando ? <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : playing ? <Pause size={26} className="fill-white text-white" /> : <Play size={26} className="fill-white text-white ml-1" />}
-                </button>
-                <button onClick={next} disabled={cur === tracks.length - 1} className="disabled:opacity-30"><SkipForward size={26} className="fill-white text-white" /></button>
-              </div>
-              <span className="w-11" />
-            </div>
-          </div>
-        </div>
+{/* ══ FULL PLAYER ══ (header sobre la foto, ancho limitado en desktop, alto 90% del viewport visible) */}
+<div className={`fixed left-0 right-0 max-w-xl mx-auto z-40 bg-brand-black-200 border-t border-brand-black-300 rounded-t-3xl flex flex-col overflow-hidden transition-transform duration-[420ms] ${fullOpen ? "translate-y-0" : "translate-y-full"}`}
+  style={{
+    bottom: "var(--ag-bottom, 0px)",
+    height: "min(90dvh, calc(var(--ag-vh, 100dvh) * 0.90))",
+    transitionTimingFunction: "cubic-bezier(.22,1,.36,1)",
+  }}>
+  {track.imagen_url && (
+    <div className="absolute inset-0 bg-cover bg-center opacity-[.13] blur-3xl" style={{ backgroundImage: `url(${getOptimizedImageUrl(track.imagen_url, 400, 400)})` }} />
+  )}
+  <div className="relative z-10 flex flex-col h-full">
+    {/* Imagen 16:10 con el HEADER superpuesto arriba */}
+    <div className="relative w-full aspect-[16/10] bg-brand-black-300 flex-none">
+      {track.imagen_url ? (
+        <Image src={getOptimizedImageUrl(track.imagen_url, 640, 400)} alt={track.titulo} fill className="object-cover" sizes="(min-width: 640px) 576px, 100vw" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center"><Music size={48} className="text-neutral-600" /></div>
+      )}
+      {/* gradiente superior (legibilidad header) + inferior (año) */}
+      <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-black/70 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-brand-black-200 via-transparent to-transparent pointer-events-none" />
+      {/* HEADER sobre la foto */}
+      <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-4 pt-4">
+        <span className="text-[11px] uppercase tracking-[0.2em] text-brand-gold font-bold" style={{ textShadow: "0 1px 8px rgba(0,0,0,.9)" }}>
+          Audioguía · {cur + 1}/{tracks.length}
+        </span>
+        <button onClick={() => setFullOpen(false)} className="w-11 h-11 rounded-full bg-black/45 backdrop-blur border border-white/15 flex items-center justify-center text-white" aria-label="Minimizar">
+          <ChevronDown size={22} />
+        </button>
       </div>
+      {/* Año */}
+      <span className="absolute bottom-3 left-4 font-bold text-4xl text-white" style={{ fontFamily: "var(--font-barlow-condensed)", textShadow: "0 2px 16px rgba(0,0,0,.9)" }}>
+        {track.titulo.split(" - ")[0]}
+      </span>
+    </div>
+
+    {/* Título */}
+    <div className="px-5 pt-3 pb-1 flex-none">
+      <span className="text-[11px] uppercase tracking-[0.2em] text-brand-gold font-bold">El recorrido</span>
+      <h2 className="font-serif font-bold text-lg leading-tight mt-1">{track.titulo.split(" - ").slice(1).join(" - ") || track.titulo}</h2>
+    </div>
+
+    {/* descripción con scroll dorado */}
+    <div className="flex-1 min-h-0 overflow-y-auto px-5 py-2 mx-1" style={{ scrollbarWidth: "thin", scrollbarColor: "#C5A059 transparent" }}>
+      {track.descripcion.split("\n").filter(Boolean).map((line, i) => (
+        <p key={i} className={`font-serif text-[1rem] leading-relaxed mb-3 ${i === 0 ? "text-brand-white-100" : "text-brand-white-100/80"}`}>{line}</p>
+      ))}
+    </div>
+
+    {/* controles */}
+    <div className="px-5 pt-2 flex-none bg-gradient-to-t from-brand-black-200 to-transparent" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
+      <div className="h-1 bg-brand-black-300 rounded-full overflow-hidden cursor-pointer mb-1" onClick={seek}>
+        <div className="h-full bg-brand-red-100" style={{ width: `${dur ? (time / dur) * 100 : 0}%` }} />
+      </div>
+      <div className="flex justify-between text-[11px] text-brand-white-300 mb-3">
+        <span>{fmt(time)}</span><span>{fmt(dur)}</span>
+      </div>
+      <div className="flex items-center justify-between">
+        <button onClick={() => setQueueOpen(true)} className="w-11 flex justify-center text-brand-white-300" aria-label="Lista"><ListMusic size={22} /></button>
+        <div className="flex items-center gap-8">
+          <button onClick={prev} disabled={cur === 0} className="disabled:opacity-30"><SkipBack size={26} className="fill-white text-white" /></button>
+          <button onClick={togglePlay}
+            className={`w-16 h-16 rounded-full bg-brand-red-100 flex items-center justify-center shadow-lg transition ${deepPrimed && !playing ? "ring-4 ring-brand-red-100/40 motion-safe:animate-pulse" : ""}`}
+            aria-label={playing ? "Pausar" : "Reproducir"}>
+            {cargando ? <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : playing ? <Pause size={26} className="fill-white text-white" /> : <Play size={26} className="fill-white text-white ml-1" />}
+          </button>
+          <button onClick={next} disabled={cur === tracks.length - 1} className="disabled:opacity-30"><SkipForward size={26} className="fill-white text-white" /></button>
+        </div>
+        <span className="w-11" />
+      </div>
+    </div>
+  </div>
+</div>
 
       {/* ══ COLA ══ */}
       {queueOpen && <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setQueueOpen(false)} />}
