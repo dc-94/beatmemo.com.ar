@@ -27,7 +27,9 @@ const csp = [
 
 
   // AUDIO/VIDEO. 'self' + Supabase Storage (para la audioguía cuando migre).
-  `media-src 'self' ${SUPABASE_URL}`,
+  // blob: → el admin lee la duración del MP3 desde el archivo LOCAL antes de subirlo
+  // (cero descargas). Solo scripts del propio origen pueden crear blob: URLs.
+  `media-src 'self' blob: ${SUPABASE_URL}`,
 
   // WORKERS. PDF.js corre en un web worker desde blob:.
   `worker-src 'self' blob:`,

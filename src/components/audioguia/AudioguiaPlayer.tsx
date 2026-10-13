@@ -15,6 +15,7 @@ interface Track {
   imagen_url: string;
   audio_url: string;
   orden: number;
+  duracion_seg: number | null; // guardada al subir el MP3 (cero descargas para mostrarla)
 }
 interface Visita { label: string; detalle: string; href: string; }
 
@@ -39,25 +40,12 @@ export default function AudioguiaPlayer({
   const [queueOpen, setQueueOpen] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [time, setTime] = useState(0);
-  const [dur, setDur] = useState(0);
-  const [durations, setDurations] = useState<Record<string, number>>({});
-  const [deepPrimed, setDeepPrimed] = useState(false); // QR: Play cebado hasta el 1er toque
-  const wantPlay = useRef(false);                        // el efecto [cur] decide si reproduce
+  const [dur, setDur] = useState(tracks[0]?.duracion_seg ?? 0);
+  const [deepPrimed, setDeepPrimed] = useState(false); 
+  const wantPlay = useRef(false);                      
 
   const track = tracks[cur];
 
-  // Precarga las duraciones de todos los tracks (metadata) para mostrarlas en la cola.
-  useEffect(() => {
-    tracks.forEach((t) => {
-      if (!t.audio_url || durations[t.id]) return;
-      const a = new Audio();
-      a.preload = "metadata";
-      a.src = t.audio_url;
-      a.addEventListener("loadedmetadata", () => {
-        setDurations((d) => ({ ...d, [t.id]: a.duration }));
-      }, { once: true });
-    });
-  }, [tracks, durations]);
 
   // ── FIX MÓVIL: barra de URL de Safari/Chrome tapando el reproductor ──
   // El viewport VISIBLE (visualViewport) es más chico que el de layout cuando
@@ -103,20 +91,24 @@ export default function AudioguiaPlayer({
     setTime(0);
   }, []);
 
-  // Fuente única de carga del <audio>: cuando cambia el track, setea src y
-  // reproduce SOLO si se pidió (wantPlay). Evita dobles load() que cortan el audio.
+  // Fuente única de carga del <audio>. REGLA DE EGRESS: no se descarga NADA
+  // hasta que alguien pide reproducir. Al cambiar de track sin intención de
+  // play (o al montar), solo actualizamos la duración desde la DB.
   useEffect(() => {
     const a = audioRef.current;
     if (!a || !track) return;
-    a.src = track.audio_url;
-    a.load();
-    if (wantPlay.current) {
-      wantPlay.current = false;
-      setCargando(true);
-      a.play()
-        .then(() => { setPlaying(true); setCargando(false); })
-        .catch(() => { setPlaying(false); setCargando(false); });
+    setDur(track.duracion_seg ?? 0);
+    if (!wantPlay.current) {
+      // Soltamos el src anterior (si había) sin pedir el nuevo: cero bytes.
+      if (a.getAttribute("src")) { a.removeAttribute("src"); a.load(); }
+      return;
     }
+    wantPlay.current = false;
+    a.src = track.audio_url;
+    setCargando(true);
+    a.play()
+      .then(() => { setPlaying(true); setCargando(false); })
+      .catch(() => { setPlaying(false); setCargando(false); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cur]);
 
@@ -150,9 +142,12 @@ export default function AudioguiaPlayer({
 
   const togglePlay = () => {
     const a = audioRef.current;
-    if (!a) return;
-    if (a.paused) { a.play().then(() => setPlaying(true)).catch(() => setPlaying(false)); }
-    else { a.pause(); setPlaying(false); }
+    if (!a || !track) return;
+    if (a.paused) {
+      // Primer play de este track: recién acá se asigna el src (descarga bajo demanda).
+      if (a.getAttribute("src") !== track.audio_url) a.src = track.audio_url;
+      a.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+    } else { a.pause(); setPlaying(false); }
   };
 
   const next = () => { if (cur < tracks.length - 1) select(cur + 1); };
@@ -170,6 +165,7 @@ export default function AudioguiaPlayer({
       {/* audio real, oculto */}
       <audio
         ref={audioRef}
+        preload="none"
         onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
         onLoadedMetadata={(e) => setDur(e.currentTarget.duration)}
         onEnded={next}
@@ -359,7 +355,7 @@ export default function AudioguiaPlayer({
                 <span className="block text-[10px] uppercase tracking-widest text-brand-gold font-bold">{t.titulo.split(" - ")[0]}</span>
                 <span className="block font-serif font-bold text-sm truncate">{t.titulo.split(" - ").slice(1).join(" - ") || t.titulo}</span>
               </div>
-              <span className="text-xs text-brand-white-300">{durations[t.id] ? fmt(durations[t.id]) : "—"}</span>
+              <span className="text-xs text-brand-white-300">{t.duracion_seg ? fmt(t.duracion_seg) : "—"}</span>
             </button>
           ))}
         </div>

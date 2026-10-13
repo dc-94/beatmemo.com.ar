@@ -6,17 +6,17 @@ import { ChevronLeft, ChevronRight, RotateCw, MessageCircle } from "lucide-react
 import { whatsappLink, WA_MESSAGES } from "@/lib/config";
 
 interface Props {
-  /** URL pública del PDF en Supabase Storage */
+  /** URL pública del PDF en Storage. Ya trae nombre versionado por subida
+   *  (archivo-<timestamp>.pdf): cambia si y solo si se reemplazó el PDF. */
   url: string;
-  /** Versión de la carta: cache-buster REAL (solo cambia si el PDF cambió) */
-  version: number;
+  version?: number;
 }
 
 // Si en 20s no cargó, algo anda mal. Un cliente sentado en la mesa no espera
 // más que eso mirando un spinner mudo: se rinde y llama al mozo.
 const TIMEOUT_MS = 20000;
 
-export default function PdfViewer({ url, version }: Props) {
+export default function PdfViewer({ url }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const pdfDocRef = useRef<any>(null);
@@ -30,7 +30,9 @@ export default function PdfViewer({ url, version }: Props) {
   const [progress, setProgress] = useState(0); // 0-100
   const [retryKey, setRetryKey] = useState(0); // cambia → re-dispara la carga
 
-  const src = `${url}${url.includes("?") ? "&" : "?"}v=${version}`;
+  // El nombre del archivo ya versiona cada reemplazo, así que la URL es la
+  // fuente única de verdad: si el PDF no cambió, la URL no cambia
+  const src = url;
 
   /** Dibujo real de una página. Nunca se llama directo: siempre vía la cola. */
   const doRender = useCallback(async (num: number) => {

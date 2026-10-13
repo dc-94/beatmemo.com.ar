@@ -13,6 +13,11 @@ const trackSchema = z.object({
   audio_url: z.string().url("Falta subir el audio"),
   orden: z.coerce.number().int().default(0),
   activo: z.boolean().default(true),
+  // Duración en segundos, leída del archivo local al subirlo. "" → null.
+  duracion_seg: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? null : Number(v)),
+    z.number().int().min(0).max(36000).nullable()
+  ),
 });
 
 const reorderSchema = z

@@ -71,17 +71,24 @@ export default function MenuDrawer({ isOpen, onClose, menuToEdit }: Props) {
     if (!tipo) { toast.error("Primero ponele nombre a la carta."); e.target.value = ""; return; }
     if (file.type !== "application/pdf") { toast.error("Solo archivos PDF."); e.target.value = ""; return; }
     if (file.size > 20 * 1024 * 1024) { toast.error(`El PDF pesa ${(file.size/1024/1024).toFixed(1)}MB. Máximo 20MB.`); e.target.value = ""; return; }
+    // Aviso de egress/4G: el límite duro sigue en 20MB (cartas provisorias),
+    // pero cada escaneo del QR descarga el archivo completo.
+    if (file.size > 3 * 1024 * 1024) {
+      toast.warning(`Este PDF pesa ${(file.size/1024/1024).toFixed(1)}MB. Lo ideal es menos de 1,5MB: comprimilo para que cargue rápido en el celular.`);
+    }
 
     const setUp = variante === "movil" ? setUploadingMovil : setUploadingDesktop;
     setUp(true);
     try {
       const supabase = createClient();
       const slug = variante === "movil" ? `${tipo}-movil` : tipo;
-      const path = `${slug}.pdf`;
-      const { error } = await supabase.storage.from("menus").upload(path, file, { upsert: true, contentType: "application/pdf", cacheControl: "3600" });
+      // Nombre ÚNICO por versión: con cache de 1 año, re-subir al mismo nombre
+      // podría dejar la carta vieja en el CDN. Un path nuevo nunca está cacheado.
+      const path = `${slug}-${Date.now()}.pdf`;
+      const { error } = await supabase.storage.from("menus").upload(path, file, { upsert: false, contentType: "application/pdf", cacheControl: "31536000" });
       if (error) { toast.error(error.message || "Falló la subida."); return; }
       const { data } = supabase.storage.from("menus").getPublicUrl(path);
-      const url = `${data.publicUrl}?t=${Date.now()}`;
+      const url = data.publicUrl;
       if (variante === "movil") { setUrlArchivoMovil(url); setNombreMovil(file.name); }
       else { setUrlArchivo(url); setNombreDesktop(file.name); }
       toast.success(`PDF ${variante} subido`);

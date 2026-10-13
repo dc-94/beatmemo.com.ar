@@ -14,7 +14,7 @@ export default async function AudioguiaPage() {
   const [tracksRes, config] = await Promise.all([
     publicClient
       .from("audioguia_tracks")
-      .select("id, titulo, descripcion, imagen_url, audio_url, orden")
+      .select("id, titulo, descripcion, imagen_url, audio_url, orden, duracion_seg")
       .eq("activo", true).eq("is_deleted", false)
       .order("orden", { ascending: true }).order("id"),
     getSiteConfig(),

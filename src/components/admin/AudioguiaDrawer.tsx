@@ -36,6 +36,7 @@ export default function AudioguiaDrawer({ isOpen, onClose, trackToEdit, nextOrde
 
   const [audioNombre, setAudioNombre] = useState("");
   const [imagenNombre, setImagenNombre] = useState("");
+  const [duracion, setDuracion] = useState<number | null>(null);
   // Reset al abrir (patrón uniforme: isOpen en deps + todos los campos).
   useEffect(() => {
     if (!isOpen) return;
@@ -46,30 +47,48 @@ export default function AudioguiaDrawer({ isOpen, onClose, trackToEdit, nextOrde
     setAudioNombre(trackToEdit?.audio_url ? decodeURIComponent(trackToEdit.audio_url.split("/").pop()?.split("?")[0] ?? "") : "");
     setImagenNombre(trackToEdit?.imagen_url ? decodeURIComponent(trackToEdit.imagen_url.split("/").pop()?.split("?")[0] ?? "") : "");
     setActivo(trackToEdit?.activo ?? true);
+    setDuracion(trackToEdit?.duracion_seg ?? null);
     setUploading(false); setSaving(false); setDeleting(false);
   }, [trackToEdit, isOpen]);
 
   if (!isOpen) return null;
 
-  // Slug para el nombre del MP3 en Storage: del título (año). Estable al editar.
-  const slug = (trackToEdit?.id
-    ? (trackToEdit.audio_url ? trackToEdit.audio_url.split("/").pop()?.replace(/\.mp3.*$/, "") : "")
-    : "") || titulo.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  // Lee la duración del MP3 desde el archivo LOCAL (blob:), antes de subirlo.
+  // Cero descargas: el player la muestra desde la DB sin tocar el audio.
+  const leerDuracion = (file: File) => new Promise<number | null>((resolve) => {
+    const url = URL.createObjectURL(file);
+    const a = new Audio();
+    a.preload = "metadata";
+    const fin = (v: number | null) => { URL.revokeObjectURL(url); resolve(v); };
+    a.onloadedmetadata = () => fin(Number.isFinite(a.duration) ? Math.round(a.duration) : null);
+    a.onerror = () => fin(null);
+    a.src = url;
+  });
 
   const handleAudio = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!titulo.trim()) { toast.error("Primero ponele título a la pista."); e.target.value = ""; return; }
-    if (file.size > 50 * 1024 * 1024) { toast.error(`El audio pesa ${(file.size / 1024 / 1024).toFixed(1)}MB. Máximo 50MB.`); e.target.value = ""; return; }
+    if (file.size > 20 * 1024 * 1024) { toast.error(`El audio pesa ${(file.size / 1024 / 1024).toFixed(1)}MB. Máximo 20MB.`); e.target.value = ""; return; }
+    // Aviso de egress: una narración comprimida (96 kbps mono) pesa ~3 MB.
+    if (file.size > 8 * 1024 * 1024) {
+      toast.warning(`Este audio pesa ${(file.size / 1024 / 1024).toFixed(1)}MB. Comprimilo antes de subirlo: cada visitante lo descarga.`);
+    }
 
     setUploading(true);
     try {
       const supabase = createClient();
-      const path = `${slug || `track-${nextOrden}`}.mp3`;
+      // Nombre ÚNICO por versión: con cache de 1 año, re-subir al mismo nombre
+      // podría servir el audio viejo desde el CDN. Un path nuevo nunca está cacheado.
+      const base = titulo.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+        .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || `track-${nextOrden}`;
+      const path = `${base}-${Date.now()}.mp3`;
       // upload directo cliente → Storage. No pasa por Server Action ni middleware.
-      const { error } = await supabase.storage
-        .from("audioguia")
-        .upload(path, file, { upsert: true, contentType: "audio/mpeg", cacheControl: "3600" });
+      const [{ error }, segundos] = await Promise.all([
+        supabase.storage.from("audioguia")
+          .upload(path, file, { upsert: false, contentType: "audio/mpeg", cacheControl: "31536000" }),
+        leerDuracion(file),
+      ]);
 
       if (error) {
         console.error("[audioguia upload]", error);
@@ -78,8 +97,9 @@ export default function AudioguiaDrawer({ isOpen, onClose, trackToEdit, nextOrde
       }
 
       const { data } = supabase.storage.from("audioguia").getPublicUrl(path);
-      setAudioUrl(`${data.publicUrl}?t=${Date.now()}`);  // cache-bust
+      setAudioUrl(data.publicUrl);
       setAudioNombre(file.name);
+      setDuracion(segundos);
       toast.success("Audio subido");
     } catch (err) {
       console.error("[audioguia upload]", err);
@@ -102,6 +122,7 @@ export default function AudioguiaDrawer({ isOpen, onClose, trackToEdit, nextOrde
       fd.append("audio_url", audioUrl);
       fd.append("orden", String(trackToEdit?.orden ?? nextOrden));
       fd.append("activo", String(activo));
+      fd.append("duracion_seg", duracion == null ? "" : String(duracion));
 
       const res = await upsertAudioguiaTrack(fd, isEditing ? trackToEdit.id : undefined);
       if (res.success) { toast.success(isEditing ? "Pista actualizada" : "Pista creada"); router.refresh(); onClose(); }
@@ -170,7 +191,7 @@ export default function AudioguiaDrawer({ isOpen, onClose, trackToEdit, nextOrde
               <input type="file" accept="audio/mpeg,.mp3" onChange={handleAudio} className="hidden" disabled={uploading} />
             </label>
             {audioUrl && (
-              <audio controls src={audioUrl} className="w-full mt-2 h-9" />
+              <audio controls preload="none" src={audioUrl} className="w-full mt-2 h-9" />
             )}
           </div>
 
