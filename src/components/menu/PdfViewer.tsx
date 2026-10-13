@@ -31,7 +31,9 @@ export default function PdfViewer({ url }: Props) {
   const [retryKey, setRetryKey] = useState(0); // cambia → re-dispara la carga
 
   // El nombre del archivo ya versiona cada reemplazo, así que la URL es la
-  // fuente única de verdad: si el PDF no cambió, la URL no cambia
+  // fuente única de verdad: si el PDF no cambió, la URL no cambia → el cliente
+  // usa su copia cacheada (1 año) sin re-descargar. Sin ?v= para no romper ese
+  // cache cuando solo se edita un campo del menú (ej. el nombre).
   const src = url;
 
   /** Dibujo real de una página. Nunca se llama directo: siempre vía la cola. */
@@ -129,7 +131,12 @@ export default function PdfViewer({ url }: Props) {
         const pdfjs = await import("pdfjs-dist");
         pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
-        loadingTask = pdfjs.getDocument({ url: src });
+        loadingTask = pdfjs.getDocument({
+          url: src,
+          disableRange: true,
+          disableStream: true,
+          disableAutoFetch: true,
+        });
 
         // Progreso real de descarga. Un "45%" le dice al cliente que algo pasa;
         // un spinner mudo lo deja sin saber si esperar o rendirse.
