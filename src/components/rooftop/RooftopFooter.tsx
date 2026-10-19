@@ -15,7 +15,7 @@ const linkCls = "flex items-center gap-2 text-black/65 hover:text-black transiti
 export default function RooftopFooter() {
   const year = new Date().getFullYear();
   return (
-    <footer id="contacto" className="relative overflow-hidden bg-[#ffffff] text-black pt-16 pb-10">
+    <footer id="contacto" className="relative overflow-hidden bg-[#ffffff] text-black pt-24 sm:pt-32 pb-10">
       {/* Marca subiendo entre el fondo y el contenido */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden opacity-[0.04]">
         <RooftopWordmarkLetters className="p-1 w-[min(100%,1000px)] text-black" duration={1.6} stagger={0.2} baseDelay={0.15} rise={520} />
@@ -30,8 +30,8 @@ export default function RooftopFooter() {
           <a href={whatsappLink("Hola! Quiero consultar por eventos en Beatmemo Rooftop.", ROOFTOP_WHATSAPP)} target="_blank" rel="noopener noreferrer" className={linkCls}><WaIcon /><span>{ROOFTOP_CONTACT.telefono}</span></a>
           <a href={`mailto:${ROOFTOP_CONTACT.email}`} className={linkCls}><Mail size={16} strokeWidth={1.75} className="shrink-0" /><span>{ROOFTOP_CONTACT.email}</span></a>
         </div>
-        <div className="gap-6 sm:flex-row items-center justify-center">
-          <Link href="/" className="self-center border border-black/40 text-black px-6 py-3 uppercase tracking-[0.14em] font-bold text-[0.72rem] hover:bg-black hover:text-[#ffffff] transition">
+        <div className="pt-10 self-center items-center justify-center">
+          <Link href="/" className="border border-black/40 text-black px-6 py-3 uppercase tracking-[0.14em] font-bold text-[0.72rem] hover:bg-black hover:text-[#ffffff] transition">
             Ir a Beatmemo
           </Link>
         </div>

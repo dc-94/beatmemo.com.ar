@@ -6,7 +6,7 @@ import { ROOFTOP_WHATSAPP } from "@/lib/rooftop-data";
 
 export default function Cotizador() {
   return (
-    <section className="relative overflow-hidden bg-[#Fafafa] pt-20 sm:pt-28 pb-12 text-center">
+    <section className="relative overflow-hidden bg-[#Fafafa] pt-20 sm:pt-28 pb-12 text-center pb-26 sm:pb-12">
       <div className="relative z-10 max-w-[1180px] mx-auto px-5 sm:px-8 lg:px-10">
         <p className="font-extrabold text-[0.72rem] tracking-[0.26em] uppercase text-[#b4ac9c] mb-2">Reservá tu fecha</p>
         <h2 className="font-black text-[clamp(2.2rem,8vw,4.6rem)] uppercase tracking-tight leading-none text-[#141211] mb-4">
