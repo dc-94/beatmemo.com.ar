@@ -135,7 +135,7 @@ export default function Navbar({ rooftopUrl }: { rooftopUrl?: string }) {
                         {/* ROOFTOP — solo si hay URL cargada en admin/config */}
             {rooftopUrl && (
               
-              <a  href={rooftopUrl} target="_blank" rel="noopener noreferrer" className="flex items-center opacity-90 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold rounded-sm" aria-label="Rooftop">
+              <a href={rooftopUrl} target={rooftopUrl.startsWith("/") ? undefined : "_blank"} rel={rooftopUrl.startsWith("/") ? undefined : "noopener noreferrer"} className="flex items-center opacity-90 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold rounded-sm" aria-label="Rooftop">
                 <span  className="block w-24 h-5 bg-brand-white-100"
                   style={{
                     WebkitMaskImage: "url('/brand/logo_ROOFTOP.svg')",
@@ -223,7 +223,7 @@ export default function Navbar({ rooftopUrl }: { rooftopUrl?: string }) {
             })}
                         <div className="mt-12 flex flex-col items-center gap-6 pb-20">
               {rooftopUrl && (
-                <a href={rooftopUrl} target="_blank" rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="px-8 py-3 rounded-sm flex items-center justify-center opacity-90 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold">
+                <a href={rooftopUrl} target={rooftopUrl.startsWith("/") ? undefined : "_blank"} rel={rooftopUrl.startsWith("/") ? undefined : "noopener noreferrer"} onClick={() => setIsMobileMenuOpen(false)} className="px-8 py-3 rounded-sm flex items-center justify-center opacity-90 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold">
                   <span className="block w-24 h-5 bg-brand-white-100" style={{ WebkitMaskImage: "url('/brand/logo_ROOFTOP.svg')", WebkitMaskSize: "contain", WebkitMaskRepeat: "no-repeat", WebkitMaskPosition: "center" }} />
                 </a>
               )}

@@ -7,12 +7,12 @@ import RooftopWordmark from "./RooftopWordmark";
  * extra): fondo con feather del borde superior + ::after que proyecta un fade
  * blanco→transparente hacia el hero → transición armónica sin corte brusco.
  */
-export default function RooftopNav() {
+export default function RooftopNav({ bannerOn = false }: { bannerOn?: boolean }) {
   return (
-    <nav className="rt-nav bg-white fixed top-0 inset-x-0 z-50 h-[68px] flex items-center justify-between px-5 sm:px-8 lg:px-10">
+    <nav className={`rt-nav fixed ${bannerOn ? "top-10" : "top-0"} inset-x-0 z-50 h-[68px] flex bg-white items-center justify-between px-5 sm:px-8 lg:px-10`}>
       <style>{`
-        .rt-nav{background: #ffffff)}
-        .rt-nav::after{content:"";position:absolute;left:0;right:0;top:100%;height:10px;pointer-events:none;background:linear-gradient(to bottom,rgba(255,255,255,.92),rgba(255,255,255,0))}
+        .rt-nav{background: hsl(0, 0%, 98%))}
+        .rt-nav::after{content:"";position:absolute;left:0;right:0;top:100%;height:10px;pointer-events:none;background:linear-gradient(to bottom,rgba(250,250,250,.92),rgba(255,255,255,0))}
       `}</style>
 
       <Link href="#top" className="text-[#141211] shrink-0" aria-label="Beatmemo Rooftop">

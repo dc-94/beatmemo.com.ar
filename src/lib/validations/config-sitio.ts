@@ -35,10 +35,16 @@ export const configSitioSchema = z.object({
   banner_mensaje: z.string().trim().max(200).default(""),
   banner_vence: z.string().trim().default(""),
   rooftop_url: z.string().trim().default(""),
+  rooftop_banner_activo: z.boolean().default(false),
+  rooftop_banner_mensaje: z.string().trim().max(200).default(""),
+  rooftop_banner_link: z.string().trim().default(""),
   museo_visitas: museoVisitasSchema,
 }).superRefine((data, ctx) => {
   if (data.banner_activo && !data.banner_mensaje) {
     ctx.addIssue({ code: "custom", path: ["banner_mensaje"], message: "Poné el mensaje del banner" });
+  }
+  if (data.rooftop_banner_activo && !data.rooftop_banner_mensaje) {
+    ctx.addIssue({ code: "custom", path: ["rooftop_banner_mensaje"], message: "Poné el mensaje del banner del rooftop" });
   }
 });
 

@@ -11,6 +11,9 @@ export interface SiteConfig {
   facebook_url: string;
   google_review_url: string;
   rooftop_url: string;
+  rooftop_banner_activo: boolean;
+  rooftop_banner_mensaje: string | null;
+  rooftop_banner_link: string | null;
   banner_activo: boolean;
   banner_mensaje: string | null;
   banner_vence: string | null;
@@ -45,7 +48,10 @@ const FALLBACK: SiteConfig = {
     guia_gratuita: { dia: "Domingos", hora: "11:00", nota: "Sin reserva previa." },
     escuelas: { reservas_modo: "activas", mensaje: "", mostrar_whatsapp: true, idiomas_nota: "Disponible en Inglés y Español." },
   },
-  rooftop_url: "https://instagram.com/beatmemo_rosario",
+    rooftop_url: "/rooftop",
+  rooftop_banner_activo: false,
+  rooftop_banner_mensaje: null,
+  rooftop_banner_link: null,
 };
 
 export async function getSiteConfig(): Promise<SiteConfig> {
@@ -63,4 +69,9 @@ export function bannerVisible(c: SiteConfig): boolean {
   if (!c.banner_activo || !c.banner_mensaje) return false;
   if (c.banner_vence && new Date(c.banner_vence) < new Date()) return false;
   return true;
+}
+
+// Banner propio de la página del rooftop (editable desde el mismo config).
+export function rooftopBannerVisible(c: SiteConfig): boolean {
+  return c.rooftop_banner_activo && !!c.rooftop_banner_mensaje;
 }

@@ -14,6 +14,7 @@ export async function updateConfigSitio(formData: FormData): Promise<ActionRespo
 
     const raw = Object.fromEntries(formData.entries()) as Record<string, unknown>;
     raw.banner_activo = raw.banner_activo === "true" || raw.banner_activo === "on";
+    raw.rooftop_banner_activo = raw.rooftop_banner_activo === "true" || raw.rooftop_banner_activo === "on";
     // horarios viaja como JSON string desde el form; lo parseamos.
     try {
       raw.horarios = raw.horarios ? JSON.parse(raw.horarios as string) : [];
@@ -43,6 +44,9 @@ export async function updateConfigSitio(formData: FormData): Promise<ActionRespo
       banner_mensaje: d.banner_mensaje || null,
       banner_vence: d.banner_vence || null,
       rooftop_url: d.rooftop_url || null,
+      rooftop_banner_activo: d.rooftop_banner_activo,
+      rooftop_banner_mensaje: d.rooftop_banner_mensaje || null,
+      rooftop_banner_link: d.rooftop_banner_link || null,
       museo_visitas: d.museo_visitas,
     };
 

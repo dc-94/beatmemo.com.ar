@@ -169,8 +169,8 @@ export default function Footer({
                     Descubrí
                   </h4>
                    <a href={rooftopUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    target={rooftopUrl.startsWith("/") ? undefined : "_blank"}
+                    rel={rooftopUrl.startsWith("/") ? undefined : "noopener noreferrer"}
                     className="inline-flex items-center opacity-90 hover:opacity-100 transition-opacity"
                     aria-label="Rooftop"
                   >

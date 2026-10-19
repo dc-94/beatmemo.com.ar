@@ -51,3 +51,32 @@ export function buildBeatmemoSchema(config: SiteConfig, siteUrl: string) {
     },
   };
 }
+
+// Schema propio de la página del Rooftop (no hereda el schema de Beatmemo).
+//  EventVenue + LocalBusiness: espacio de eventos.
+export function buildRooftopSchema(siteUrl: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": ["EventVenue", "LocalBusiness"],
+    "@id": `${siteUrl}/rooftop/#venue`,
+    name: "Beatmemo Rooftop",
+    description:
+      "Espacio para eventos en la terraza de Beatmemo, Rosario: casamientos, cumpleaños de 15, eventos corporativos, catas y shows. Servicio llave en mano.",
+    url: `${siteUrl}/rooftop`,
+    telephone: "+543416530839",
+    image: `${siteUrl}/og/home.jpg`,
+    priceRange: "$$",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Bv. Oroño 111 bis",
+      addressLocality: "Rosario",
+      addressRegion: "Santa Fe",
+      addressCountry: "AR",
+    },
+    geo: { "@type": "GeoCoordinates", latitude: -32.935105, longitude: -60.655938 },
+    maximumAttendeeCapacity: 80,
+    areaServed: { "@type": "City", name: "Rosario" },
+    isPartOf: { "@id": `${siteUrl}/#business` },
+    sameAs: ["https://instagram.com/rooftopbeatmemo"],
+  };
+}

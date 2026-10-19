@@ -12,6 +12,7 @@ type Horario = { dias: string; horario: string };
 export default function ConfigClient({ config }: { config: any }) {
   const [horarios, setHorarios] = useState<Horario[]>(config?.horarios ?? []);
   const [bannerActivo, setBannerActivo] = useState<boolean>(config?.banner_activo ?? false);
+  const [rtBannerActivo, setRtBannerActivo] = useState<boolean>(config?.rooftop_banner_activo ?? false);
   const [guardando, setGuardando] = useState(false);
   const [museoVisitas, setMuseoVisitas] = useState<MuseoVisitas>(
     config?.museo_visitas ?? {
@@ -32,6 +33,7 @@ export default function ConfigClient({ config }: { config: any }) {
     try {
       formData.set("horarios", JSON.stringify(horarios.filter(h => h.dias && h.horario)));
       formData.set("banner_activo", bannerActivo ? "true" : "false");
+      formData.set("rooftop_banner_activo", rtBannerActivo ? "true" : "false");
       formData.set("museo_visitas", JSON.stringify(museoVisitas)); 
       const res = await updateConfigSitio(formData);
       if (res.success) toast.success("Configuración guardada");
@@ -135,7 +137,28 @@ export default function ConfigClient({ config }: { config: any }) {
           )}
         </div>
       </section>
-
+ {/* BANNER ROOFTOP */}
+      <section className="space-y-3">
+        <h2 className="text-sm uppercase tracking-widest text-brand-gold font-bold">Banner del Rooftop</h2>
+        <div className="border border-neutral-800 rounded p-4 space-y-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={rtBannerActivo} onChange={e => setRtBannerActivo(e.target.checked)} className="w-4 h-4 accent-brand-red" />
+            <span className="text-sm text-white font-medium">Mostrar barra de aviso en la página del Rooftop</span>
+          </label>
+          {rtBannerActivo && (
+            <div className="space-y-3 pt-1">
+              <div>
+                <label className={labelCls}>Mensaje</label>
+                <input name="rooftop_banner_mensaje" defaultValue={config?.rooftop_banner_mensaje ?? ""} placeholder="Reservá tu fecha para las fiestas" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Link al tocar <span className="text-neutral-600">(opcional)</span></label>
+                <input name="rooftop_banner_link" defaultValue={config?.rooftop_banner_link ?? ""} placeholder="#cotizar o https://..." className={inputCls} />
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
     {/* MUSEO · VISITAS */}
       <section className="space-y-4">
         <h2 className="text-sm uppercase tracking-widest text-brand-gold font-bold">Museo · Visitas</h2>
