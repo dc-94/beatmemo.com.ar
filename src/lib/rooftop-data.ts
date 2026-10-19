@@ -143,3 +143,12 @@ export const OPCIONES_COTIZACION = [
   "Show en vivo",
   "Otro",
 ] as const;
+
+export interface Marca { nombre: string; logo: string }
+// PLACEHOLDER — reemplazá por logos reales (SVG/PNG sin fondo). Luego sale por CRUD.
+export const ROOFTOP_MARCAS: Marca[] = [
+  { nombre: "Marca 1", logo: "/brand/logo_NEGRO.svg" },
+  { nombre: "Marca 2", logo: "/brand/logo_ROOFTOP-negro.png" },
+  { nombre: "Marca 3", logo: "/brand/logo_NEGRO.svg" },
+  { nombre: "Marca 4", logo: "/brand/logo_ROOFTOP-negro.png" },
+];

@@ -6,12 +6,7 @@ import { X } from "lucide-react";
 import { whatsappLink } from "@/lib/config";
 import { ROOFTOP_WHATSAPP, OPCIONES_COTIZACION } from "@/lib/rooftop-data";
 
-/**
- * Cotizador como modal (desktop) / drawer (mobile). Se abre con el hash
- * "#cotizar" → todos los botones Cotizar (nav, hero, footer) lo disparan sin
- * estado compartido ni props. El form NO toca el servidor: arma el mensaje y
- * abre WhatsApp precargado hacia el número FIJO del rooftop. Honeypot anti-bot.
- */
+/** El form NO toca el servidor: arma el mensaje y abre WhatsApp precargado hacia el número FIJO del rooftop. Honeypot anti-bot. */
 export default function CotizaModal() {
   const reduce = useReducedMotion();
   const [open, setOpen] = useState(false);
@@ -77,7 +72,7 @@ export default function CotizaModal() {
           <div className="absolute inset-0 bg-black/50" onClick={close} aria-hidden />
           <motion.div
             role="dialog" aria-modal="true" aria-label="Cotizá tu evento"
-            className="relative z-10 w-full sm:max-w-lg bg-white rounded-t-2xl sm:rounded-2xl p-6 sm:p-8 max-h-[92vh] overflow-y-auto"
+            className="relative z-10 w-full sm:max-w-lg bg-white  p-6 sm:p-8 max-h-[92vh] overflow-y-auto"
             initial={reduce ? { opacity: 0 } : { y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={reduce ? { opacity: 0 } : { y: 40, opacity: 0 }}
@@ -101,7 +96,7 @@ export default function CotizaModal() {
               <input name="personas" type="number" min={1} max={200} placeholder="Cantidad de personas" className={`${field} sm:col-span-2`} />
               <textarea name="mensaje" rows={3} maxLength={1000} placeholder="Contanos un poco más (opcional)" className={`${field} sm:col-span-2 resize-none`} />
               <button type="submit" className="sm:col-span-2 bg-[#141211] text-white px-8 py-3.5 uppercase tracking-[0.14em] font-bold text-[0.76rem] hover:bg-black transition mt-1">
-                Enviar por WhatsApp
+                Pedí tu cotizacion
               </button>
             </form>
           </motion.div>

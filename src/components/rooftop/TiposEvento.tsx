@@ -4,17 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { TIPOS_EVENTO, type TipoEvento } from "@/lib/rooftop-data";
 
-/**
- * Tipos de evento, Z-pattern. El carrusel corre DETRÁS DE TODO EL CONTENEDOR
- * (full-width) y scrollea solo en horizontal. Encima va un gradiente:
- *   - transparente hasta la "línea sólida" (ahí ARRANCA el gradiente),
- *   - sube hasta 90% blanco en la "línea punteada",
- *   - y queda en 90% sobre el texto (la foto se ve apenas, al 10%).
- * El marquee arranca al entrar en viewport.
- */
 export default function TiposEvento() {
   return (
-    <section id="tipos" className="bg-white py-14 sm:py-20">
+    <section id="tipos" className="bg-white pt-14 sm:pt-20">
       <style>{`
         @keyframes rtMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
         .rt-track{display:flex;width:max-content;height:100%;animation:rtMarquee 38s linear infinite;animation-play-state:paused}
@@ -48,7 +40,7 @@ export default function TiposEvento() {
 
       <div className="max-w-[1180px] mx-auto px-5 sm:px-8 lg:px-10 mb-6 sm:mb-10">
         <p className="font-extrabold text-[0.72rem] tracking-[0.26em] uppercase text-[#b4ac9c] mb-2">
-          Qué se puede hacer acá
+          Tu idea, en nuestro espacio
         </p>
         <h2 className="font-extrabold text-[clamp(1.9rem,5.5vw,3.1rem)] tracking-tight uppercase leading-[0.95] text-[#141211]">
           Tipos de <span className="font-light">evento</span>
