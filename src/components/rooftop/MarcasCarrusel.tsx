@@ -7,7 +7,7 @@ export default function MarcasCarrusel() {
   const items = [...ROOFTOP_MARCAS, ...ROOFTOP_MARCAS]; // duplicado para loop sin corte
 
   return (
-    <div className="mt-14">
+    <div className="mt-14 py-16">
       <style>{`
         @keyframes rtMarcas{from{transform:translateX(0)}to{transform:translateX(-50%)}}
         .rt-marcas{display:flex;width:max-content;align-items:center;gap:3rem;animation:rtMarcas 32s linear infinite}
