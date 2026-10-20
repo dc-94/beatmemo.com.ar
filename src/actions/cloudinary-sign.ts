@@ -8,7 +8,11 @@ import { guardAction } from "@/lib/guard";
 // Evita que se firmen uploads a rutas arbitrarias.
 const CARPETAS_OK = new Set([
   "beatmemo/shows", "beatmemo/pub", "beatmemo/whisky",
-  "beatmemo/promos", "beatmemo/espacio", "beatmemo/hero",
+    "beatmemo/promos", "beatmemo/espacio", "beatmemo/hero",
+  "beatmemo/rooftop/marcas",
+  "beatmemo/rooftop/hero",
+  "beatmemo/rooftop/secciones",
+  "beatmemo/rooftop/home",
 ]);
 
 interface FirmaResult {

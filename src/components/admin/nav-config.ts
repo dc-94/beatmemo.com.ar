@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 import {
   Calendar, Coffee, LayoutDashboard, FileText, Megaphone, ShieldAlert, Headphones,
-  AlertTriangle, LayoutTemplate, Images, Star, UtensilsCrossed, Wine, Settings,UserCog,
+  AlertTriangle, LayoutTemplate, Images, Star, UtensilsCrossed, Wine, Settings,UserCog, Glasses
 } from "lucide-react";
 
 export type NavSubItem = { name: string; href: string; icon: ComponentType<{ size?: number }> };
@@ -26,7 +26,8 @@ export const ADMIN_NAV: NavItem[] = [
     ],
   },
   { name: "Promociones", href: "/admin/promociones", icon: Megaphone },
-  { name: "Audioguía", href: "/admin/audioguia", icon: Headphones },
+  { name: "Rooftop", href: "/admin/rooftop", icon: Glasses },
+    { name: "Audioguía", href: "/admin/audioguia", icon: Headphones },
   { name: "Usuarios", href: "/admin/usuarios", icon: UserCog, superadminOnly: true },
   { name: "Auditoría", href: "/admin/logs", icon: ShieldAlert },
   { name: "Errores", href: "/admin/errores", icon: AlertTriangle, badge: true },

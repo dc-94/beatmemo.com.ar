@@ -84,7 +84,7 @@ const { count: erroresAbiertos } = await supabase
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-neutral-950 [color-scheme:dark]">
-      <Toaster position="top-right" theme="dark" richColors />
+      <Toaster position="top-right" theme="dark" richColors closeButton visibleToasts={5}  />
 
       <aside className="w-64 border-r border-white/10 hidden md:flex flex-col flex-shrink-0">
         <Sidebar erroresAbiertos={erroresAbiertos ?? 0} role={role} />
