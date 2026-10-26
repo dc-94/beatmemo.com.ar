@@ -1,5 +1,9 @@
 export const dynamic = "force-dynamic";
+import RooftopGaleriaSection from "@/components/admin/rooftop/RooftopGaleriaSection";
+import RooftopHeroSection from "@/components/admin/rooftop/RooftopHeroSection";
 import RooftopMarcasSection from "@/components/admin/rooftop/RooftopMarcasSection";
+import RooftopServiciosSection from "@/components/admin/rooftop/RooftopServiciosSection";
+import RooftopTiposEventoSection from "@/components/admin/RooftopTiposEventoSection";
 // import RooftopHeroSection from "@/components/admin/rooftop/RooftopHeroSection";
 
 export default function RooftopAdminPage() {
@@ -10,9 +14,11 @@ export default function RooftopAdminPage() {
         <h1 className="text-2xl font-serif text-white">Rooftop</h1>
         <p className="text-neutral-400 text-sm">Marcas, secciones e imágenes del rooftop.</p>
       </header>
-
+    <RooftopHeroSection />
       <RooftopMarcasSection />
-      {/* <RooftopHeroSection /> ← las próximas se cuelgan acá, sin tocar nada de arriba */}
+      <RooftopTiposEventoSection />
+      <RooftopServiciosSection />
+      <RooftopGaleriaSection />
     </div>
   );
 }

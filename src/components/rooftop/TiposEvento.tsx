@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { TIPOS_EVENTO, type TipoEvento } from "@/lib/rooftop-data";
+import type { TipoEventoPublico } from "@/lib/rooftop-tipos-evento";
 
-export default function TiposEvento() {
+
+export default function TiposEvento({ tipos }: { tipos: TipoEventoPublico[] }) {
+  if (tipos.length === 0) return null;
   return (
     <section id="tipos" className="bg-white pt-14 sm:pt-20">
       <style>{`
@@ -47,14 +49,14 @@ export default function TiposEvento() {
         </h2>
       </div>
 
-      {TIPOS_EVENTO.map((t, idx) => (
+      {tipos.map((t, idx) => (
         <TipoRow key={t.id} tipo={t} rev={idx % 2 === 1} />
       ))}
     </section>
   );
 }
 
-function TipoRow({ tipo, rev }: { tipo: TipoEvento; rev: boolean }) {
+function TipoRow({ tipo, rev }: { tipo: TipoEventoPublico; rev: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const [run, setRun] = useState(false);
 

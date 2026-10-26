@@ -27,12 +27,12 @@ export default function Sidebar({ erroresAbiertos = 0, role = "CM" }: { erroresA
 
   return (
     <nav className="flex flex-col h-full p-4">
-      <div className="mb-8 px-2">
+      <div className="mb-8 px-2 shrink-0">
         <h1 className="text-xl font-bold tracking-tight text-white">BEATMEMO</h1>
         <p className="text-xs text-neutral-500">Panel de Control</p>
       </div>
 
-      <div className="flex-1 space-y-1">
+      <div className="flex-1 space-y-1 overflow-y-auto min-h-0">
         {navLinks.map((link) => {
           const Icon = link.icon;
           const active = isActive(link.href);
@@ -96,7 +96,7 @@ export default function Sidebar({ erroresAbiertos = 0, role = "CM" }: { erroresA
 
       <button 
         onClick={handleLogout}
-        className="flex items-center gap-3 px-3 py-2 text-neutral-400 hover:text-red-400 transition-colors mt-auto border-t border-white/5 pt-4"
+        className="flex items-center gap-3 px-3 py-2 text-neutral-400 hover:text-red-400 transition-colors mt-auto border-t border-white/5 pt-4 shrink-0"
       >
         <LogOut size={18} />
         Cerrar Sesión

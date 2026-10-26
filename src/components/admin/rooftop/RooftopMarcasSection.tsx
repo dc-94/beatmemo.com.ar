@@ -7,8 +7,8 @@ export default async function RooftopMarcasSection() {
     .from("rooftop_marcas").select("*")
     .eq("is_deleted", false).order("orden", { ascending: true });
 
-  return (
-    <section className="border-t border-neutral-800 pt-8">
+  return (    
+    <section className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-5 sm:p-6">
       <RooftopMarcasClient marcas={data ?? []} />
     </section>
   );

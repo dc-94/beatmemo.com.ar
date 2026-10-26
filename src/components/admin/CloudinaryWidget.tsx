@@ -7,18 +7,23 @@ import { Plus } from "lucide-react";
 import Button from "@/components/ui/Button";
 
 interface Props {
-  onSuccess: (url: string) => void;
+  onSuccess?: (url: string) => void;
+  onUpload?: (info: { url: string; width: number; height: number }) => void;  // ← nuevo
   label?: string;
   folder?: string;
-  variant?: "box" | "primary";  
+  variant?: "box" | "primary";
 }
 
-export default function CloudinaryWidget({ onSuccess, label, folder = "beatmemo/pub", variant = "box" }: Props) {
+export default function CloudinaryWidget({ onSuccess, onUpload, label, folder = "beatmemo/pub", variant = "box" }: Props) {
   return (
     <CldUploadWidget
       signatureEndpoint="/api/cloudinary-sign"
       options={{ sources: ["local"], multiple: false, cropping: false, maxFileSize: 10485760, folder }}
-      onSuccess={(result: any) => onSuccess(result.info.secure_url)}
+      onSuccess={(result: any) => {
+        const info = result?.info ?? {};
+        onSuccess?.(info.secure_url);
+        onUpload?.({ url: info.secure_url, width: info.width ?? 0, height: info.height ?? 0 });
+      }}
       onError={() => toast.error("Falló la subida. Probá de nuevo.")}
     >
       {({ open }) =>

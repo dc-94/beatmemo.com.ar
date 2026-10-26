@@ -67,9 +67,9 @@ export async function reorderMarcas(ordenados: { id: string; orden: number }[]):
     if (!validated.success) return { success: false, error: "Datos de orden inválidos." };
 
     for (const item of validated.data) {
-      const { error } = await supabase.from("rooftop_marcas").update({ orden: item.orden }).eq("id", item.id);
-      if (error) return { success: false, error: "Error al guardar el orden." };
-    }
+          const { error } = await supabase.rpc("reorder_rooftop_marcas", { items: validated.data });
+    if (error) { console.error("[DB ERROR REORDER MARCA]:", error); return { success: false, error: "Error al guardar el orden." }; 
+  }}
 
     await logAdminAction("REORDER_ROOFTOP_MARCAS", "rooftop_marcas", user.id, { email: user.email, count: validated.data.length });
     revalidatePath("/admin/rooftop");
