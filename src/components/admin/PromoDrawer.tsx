@@ -154,7 +154,7 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
             <div>
               <label className="block text-sm text-neutral-400 mb-1">Título *</label>
               <input {...register("titulo")} placeholder="Ej: 20% de descuento"
-                className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded text-white focus:border-brand-red outline-none" />
+                className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-xs text-white focus:border-brand-red outline-none" />
               {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message as string}</p>}
             </div>
 
@@ -163,7 +163,7 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
               <div>
                 <label className="block text-sm text-neutral-400 mb-1">Entidad (banco/billetera) *</label>
                 <input {...register("entidad")} placeholder="Ej: Galicia, Modo, Cuenta DNI"
-                  className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded text-white focus:border-brand-red outline-none" />
+                  className="w-full p-2.5 bg-neutral-950 border border-neutral-800 rounded-xs text-white focus:border-brand-red outline-none" />
                 {errors.entidad && <p className="text-red-500 text-xs mt-1">{errors.entidad.message as string}</p>}
               </div>
             )}
@@ -222,7 +222,7 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
               <div className="flex flex-wrap gap-2">
                 {DIAS.map((d) => (
                   <button key={d.n} type="button" onClick={() => toggleDia(d.n)}
-                    className={`px-3 py-1.5 rounded text-xs font-bold transition ${
+                    className={`px-3 py-1.5 rounded-xs text-xs font-bold transition ${
                       dias.includes(d.n) ? "bg-brand-red text-white" : "bg-neutral-950 border border-neutral-800 text-neutral-400"
                     }`}>
                     {d.label}
@@ -278,7 +278,8 @@ export default function PromoDrawer({ isOpen, onClose, promoToEdit }: Props) {
                 {isDeleting ? "Borrando…" : "Eliminar"}
               </Button>
             )}
-            <Button type="submit" form="pub-form" disabled={isSubmitting || isDeleting} fullWidth className="flex-1">
+            <Button variant="ghost" onClick={onClose} disabled={isSubmitting || isDeleting}>Cancelar</Button>
+            <Button type="submit" form="promo-form" disabled={isSubmitting || isDeleting} fullWidth className="flex-1">
               {isSubmitting ? "Guardando…" : (isEditing ? "Actualizar" : "Guardar")}
             </Button>
           </div>

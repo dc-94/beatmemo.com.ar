@@ -91,7 +91,7 @@ export default function MenusClient({ menus: initialMenus }: Props) {
         <button
           onClick={saveOrder}
           disabled={!orderDirty || saving}
-          className={`shrink-0 text-sm font-semibold px-4 py-2 rounded-lg transition ${
+          className={`shrink-0 text-sm font-semibold px-4 py-2 rounded-xs transition ${
             orderDirty && !saving
               ? "bg-white text-black hover:bg-neutral-200"
               : "bg-white/5 text-neutral-600 cursor-not-allowed"
@@ -150,7 +150,7 @@ export default function MenusClient({ menus: initialMenus }: Props) {
 
               <button
                 onClick={() => openEdit(menu)}
-                className="flex items-center gap-2 text-neutral-400 hover:text-white text-sm px-3 py-2 rounded-lg hover:bg-white/5 transition"
+                className="flex items-center gap-2 text-neutral-400 hover:text-white text-sm px-3 py-2 rounded-xs hover:bg-white/5 transition"
               >
                 <Pencil size={15} /> Editar
               </button>

@@ -52,9 +52,9 @@ export default function ListaEditor({ clave, initial, label }: { clave: string; 
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); agregar(); } }}
           placeholder="Agregar ítem…"
           maxLength={40}
-          className="flex-1 bg-neutral-900 border border-neutral-800 text-white p-2 rounded text-sm outline-none focus:border-brand-red"
+          className="flex-1 bg-neutral-900 border border-neutral-800 text-white p-2 rounded-xs text-sm outline-none focus:border-brand-red"
         />
-        <button onClick={agregar} disabled={items.length >= 12} className="px-3 bg-neutral-800 text-white rounded disabled:opacity-40" aria-label="Agregar"><Plus size={16} /></button>
+        <button onClick={agregar} disabled={items.length >= 12} className="px-3 bg-neutral-800 text-white rounded-xs disabled:opacity-40" aria-label="Agregar"><Plus size={16} /></button>
       </div>
       <div className="flex justify-end">
         <Button onClick={guardar} disabled={saving}>{saving ? "Guardando…" : "Guardar lista"}</Button>

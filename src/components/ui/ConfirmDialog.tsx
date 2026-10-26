@@ -37,7 +37,7 @@ export default function ConfirmDialog({
           <button type="button" onClick={onCancel} disabled={loading} className="px-4 py-2 text-sm font-medium text-neutral-300 hover:text-white transition-colors disabled:opacity-50">
             {cancelLabel}
           </button>
-          <button type="button" onClick={onConfirm} disabled={loading} className={`px-4 py-2 text-sm font-bold rounded transition-colors disabled:opacity-60 ${danger ? "bg-red-600 hover:bg-red-500 text-white" : "bg-white text-black hover:bg-neutral-200"}`}>
+          <button type="button" onClick={onConfirm} disabled={loading} className={`px-4 py-2 text-sm font-bold rounded-xs transition-colors disabled:opacity-60 ${danger ? "bg-red-600 hover:bg-red-500 text-white" : "bg-white text-black hover:bg-neutral-200"}`}>
             {loading ? "Procesando…" : confirmLabel}
           </button>
         </div>

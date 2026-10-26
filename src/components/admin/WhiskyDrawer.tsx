@@ -203,7 +203,8 @@ const drawerRef = useDrawerA11y(isOpen, onClose);
                 {isDeleting ? "Borrando…" : "Eliminar"}
               </Button>
             )}
-            <Button type="submit" form="pub-form" disabled={isSubmitting || isDeleting} fullWidth className="flex-1">
+            <Button variant="ghost" onClick={onClose} disabled={isSubmitting || isDeleting}>Cancelar</Button>
+            <Button type="submit" form="whisky-form" disabled={isSubmitting || isDeleting} fullWidth className="flex-1">
               {isSubmitting ? "Guardando…" : (isEditing ? "Actualizar" : "Guardar")}
             </Button>
           </div>

@@ -252,7 +252,7 @@ function ConfirmText({
           <button
             onClick={onConfirm}
             disabled={!ok}
-            className={`px-4 py-2 text-sm font-bold rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${peligro ? "bg-red-600 hover:bg-red-500 text-white" : "bg-white text-black hover:bg-neutral-200"}`}
+            className={`px-4 py-2 text-sm font-bold rounded-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${peligro ? "bg-red-600 hover:bg-red-500 text-white" : "bg-white text-black hover:bg-neutral-200"}`}
           >
             Confirmar
           </button>

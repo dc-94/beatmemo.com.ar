@@ -94,7 +94,7 @@ export default function ErroresClient({ errores, rol }: { errores: SystemError[]
               <button
                 onClick={(e) => { e.stopPropagation(); handleResolver(err.id); }}
                 disabled={resolviendo === err.id}
-                className="bg-green-700 hover:bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded transition disabled:opacity-50"
+                className="bg-green-700 hover:bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded-xs transition disabled:opacity-50"
               >
                 {resolviendo === err.id ? "Marcando…" : "Marcar como resuelto"}
               </button>

@@ -256,12 +256,12 @@ export default async function LogsPage({ searchParams }: {
           </span>
           <div className="flex gap-2">
             {page > 1 && (
-              <Link href={pageUrl(page - 1)} className="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded text-sm transition">
+              <Link href={pageUrl(page - 1)} className="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xs text-sm transition">
                 ← Anterior
               </Link>
             )}
             {page < totalPages && (
-              <Link href={pageUrl(page + 1)} className="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded text-sm transition">
+              <Link href={pageUrl(page + 1)} className="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xs text-sm transition">
                 Siguiente →
               </Link>
             )}

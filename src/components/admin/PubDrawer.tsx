@@ -230,6 +230,7 @@ export default function PubDrawer({ categorias, isOpen, onClose, itemToEdit }: P
                 {isDeleting ? "Borrando…" : "Eliminar"}
               </Button>
             )}
+            <Button variant="ghost" onClick={onClose} disabled={isSubmitting || isDeleting}>Cancelar</Button>
             <Button type="submit" form="pub-form" disabled={isSubmitting || isDeleting} fullWidth className="flex-1">
               {isSubmitting ? "Guardando…" : (isEditing ? "Actualizar" : "Guardar")}
             </Button>

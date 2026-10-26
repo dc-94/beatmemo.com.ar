@@ -41,7 +41,7 @@ export default function Sidebar({ erroresAbiertos = 0, role = "CM" }: { erroresA
               <div key={link.name}>
                 <button
                   onClick={() => setPubOpen((v) => !v)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-sm transition-colors ${
                     active ? "text-white" : "text-neutral-400 hover:text-white hover:bg-white/5"
                   }`}
                 >
@@ -59,7 +59,7 @@ export default function Sidebar({ erroresAbiertos = 0, role = "CM" }: { erroresA
                         <Link
                           key={sub.href}
                           href={sub.href}
-                          className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                          className={`flex items-center gap-2.5 px-3 py-1.5 rounded-sm text-sm transition-colors ${
                             subActive ? "bg-white/10 text-white" : "text-neutral-400 hover:text-white hover:bg-white/5"
                           }`}
                         >
@@ -78,7 +78,7 @@ export default function Sidebar({ erroresAbiertos = 0, role = "CM" }: { erroresA
             <Link
               key={link.name}
               href={link.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+              className={`flex items-center gap-3 px-3 py-2 rounded-sm transition-colors ${
                 active ? "bg-white/10 text-white" : "text-neutral-400 hover:text-white hover:bg-white/5"
               }`}
             >

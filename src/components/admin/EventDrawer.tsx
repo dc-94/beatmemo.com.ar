@@ -241,6 +241,7 @@ export default function EventDrawer({ ciclos, isOpen, onClose, eventToEdit, user
                 {isDeleting ? "Borrando…" : "Eliminar"}
               </Button>
             )}
+            <Button variant="ghost" onClick={onClose} disabled={isSubmitting || isDeleting}>Cancelar</Button>
             <Button type="submit" form="event-form" disabled={isSubmitting || isDeleting} fullWidth className="flex-1">
               {isSubmitting ? "Guardando…" : (isEditing ? "Actualizar" : "Guardar")}
             </Button>

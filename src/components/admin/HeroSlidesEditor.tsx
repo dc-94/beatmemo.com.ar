@@ -75,7 +75,7 @@ export default function HeroSlidesEditor({ initial }: { initial: Slide[] }) {
                 <div className="relative">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={s.imagen} alt="" className="w-28 h-20 object-cover rounded" />
-                  <button onClick={() => setSlide(i, { imagen: "" })} className="absolute top-1 right-1 bg-black/70 text-red-400 rounded p-0.5" aria-label="Quitar imagen"><Trash2 size={12} /></button>
+                  <button onClick={() => setSlide(i, { imagen: "" })} className="absolute top-1 right-1 bg-black/70 text-red-400 rounded-xs p-0.5" aria-label="Quitar imagen"><Trash2 size={12} /></button>
                 </div>
               ) : (
                 <CloudinaryWidget folder="beatmemo/hero" label="Imagen" onSuccess={(url) => setSlide(i, { imagen: url })} />
@@ -90,7 +90,7 @@ export default function HeroSlidesEditor({ initial }: { initial: Slide[] }) {
                 onChange={(e) => setSlide(i, { palabra: e.target.value })}
                 placeholder="el pub"
                 maxLength={30}
-                className="w-full bg-neutral-900 border border-neutral-800 text-white p-2 rounded text-sm outline-none focus:border-brand-red"
+                className="w-full bg-neutral-900 border border-neutral-800 text-white p-2 rounded-xs   text-sm outline-none focus:border-brand-red"
               />
               <p className="text-[10px] text-neutral-600 mt-1">Aparece como “Descubrí <span className="text-neutral-400">{s.palabra || "…"}</span>”</p>
             </div>

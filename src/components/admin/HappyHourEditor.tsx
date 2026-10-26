@@ -97,7 +97,7 @@ export default function HappyHourEditor({ hh }: { hh: SiteContent | null }) {
           <input value={nuevo} onChange={(e) => setNuevo(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); agregar(); } }}
             placeholder="Agregar ítem…" maxLength={40} className={inputCls} />
-          <button onClick={agregar} disabled={items.length >= 12} className="px-3 bg-neutral-800 text-white rounded disabled:opacity-40" aria-label="Agregar"><Plus size={16} /></button>
+          <button onClick={agregar} disabled={items.length >= 12} className="px-3 bg-neutral-800 text-white rounded-xs disabled:opacity-40" aria-label="Agregar"><Plus size={16} /></button>
         </div>
       </div>
 

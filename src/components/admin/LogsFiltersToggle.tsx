@@ -11,7 +11,7 @@ export default function LogsFiltersToggle({ hayFiltro, children }: { hayFiltro: 
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`relative inline-flex items-center gap-2 px-3 py-2 rounded border text-sm transition-colors ${
+        className={`relative inline-flex items-center gap-2 px-3 py-2 rounded-xs border text-sm transition-colors ${
           open ? "border-brand-red text-white" : "border-neutral-800 text-neutral-300 hover:border-neutral-700"
         }`}
       >
