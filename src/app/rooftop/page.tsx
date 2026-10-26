@@ -2,7 +2,7 @@
 import { getSiteConfig, rooftopBannerVisible } from "@/lib/site-config";
 import RooftopBanner from "@/components/rooftop/RooftopBanner";
 import RooftopNav from "@/components/rooftop/RooftopNav";
-import RooftopHero from "@/components/rooftop/RooftopHero";
+import RooftopHeroWrapper from "@/components/rooftop/RooftopHeroWrapper";
 import TiposEventoWrapper from "@/components/rooftop/TiposEventoWrapper";
 import Servicios from "@/components/rooftop/Servicios";
 import Cotizador from "@/components/rooftop/Cotizador";
@@ -17,7 +17,7 @@ export default async function RooftopPage() {
     <>
       {bannerOn && <RooftopBanner mensaje={config.rooftop_banner_mensaje!} link={config.rooftop_banner_link ?? undefined} />}
       <RooftopNav bannerOn={bannerOn} />
-      <RooftopHero />
+      <RooftopHeroWrapper />
       <TiposEventoWrapper />
       <Servicios />
       <Descubri />

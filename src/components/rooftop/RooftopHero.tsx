@@ -4,18 +4,19 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import RooftopWordmark from "./RooftopWordmark";
-import { HERO_IMAGENES } from "@/lib/rooftop-data";
+import type { HeroData } from "@/lib/rooftop-hero";
 
-/** Hero full-screen con Ken Burns + crossfade. Sin intro (eliminada). */
-export default function RooftopHero() {
+/** Hero full-screen con Ken Burns + crossfade. Sin intro. */
+export default function RooftopHero({ hero }: { hero: HeroData }) {
   const reduce = useReducedMotion();
   const [i, setI] = useState(0);
+  const imgs = hero.imagenes;
 
   useEffect(() => {
-    if (reduce) return;
-    const id = setInterval(() => setI((n) => (n + 1) % HERO_IMAGENES.length), 5500);
+    if (reduce || imgs.length <= 1) return;
+    const id = setInterval(() => setI((n) => (n + 1) % imgs.length), 5500);
     return () => clearInterval(id);
-  }, [reduce]);
+  }, [reduce, imgs.length]);
 
   return (
     <header id="top" className="relative min-h-screen flex items-center justify-center text-center overflow-hidden bg-[#0c0c0b]">
@@ -27,7 +28,7 @@ export default function RooftopHero() {
         @media(prefers-reduced-motion:reduce){.rt-kb,.rt-cue::after{animation:none!important}}
       `}</style>
 
-      {HERO_IMAGENES.map((src, idx) => (
+      {imgs.map((src, idx) => (
         <motion.div key={src + idx} className="absolute inset-0" initial={false}
           animate={{ opacity: reduce ? (idx === 0 ? 1 : 0) : idx === i ? 1 : 0 }}
           transition={{ duration: 1.2, ease: "easeInOut" }}>
@@ -46,13 +47,23 @@ export default function RooftopHero() {
           </div>
         </div>
 
-        <h1 className="font-sans font-light text-[clamp(1.2rem,3.4vw,1.8rem)] max-w-[26ch] mx-auto my-8 leading-snug text-white/90">
-          Un nuevo espacio <b className="font-extrabold">para tus eventos.</b>
+        {hero.subtitulo && (
+          <p className="mt-6 text-[0.72rem] tracking-[0.26em] uppercase text-white/70 font-bold">{hero.subtitulo}</p>
+        )}
+
+        <h1 className="font-sans font-light text-[clamp(1.2rem,3.4vw,1.8rem)] max-w-[26ch] mx-auto my-6 leading-snug text-white/90">
+          {hero.titulo}
         </h1>
 
-        <a href="#cotizar" className="inline-block bg-white text-[#141211] px-8 py-3.5 uppercase tracking-[0.16em] font-bold text-[0.76rem] hover:bg-white/90 transition">
-          Cotizá tu evento
-        </a>
+        {hero.cuerpo && (
+          <p className="text-white/70 text-[0.95rem] max-w-[40ch] mx-auto -mt-2 mb-6 leading-relaxed">{hero.cuerpo}</p>
+        )}
+
+        {hero.cta_label && (
+          <a href={hero.cta_url || "#cotizar"} className="inline-block bg-white text-[#141211] px-8 py-3.5 uppercase tracking-[0.16em] font-bold text-[0.76rem] hover:bg-white/90 transition">
+            {hero.cta_label}
+          </a>
+        )}
       </div>
 
       <div className="rt-cue absolute bottom-7 left-1/2 -translate-x-1/2 z-10 text-white/70 text-[0.64rem] tracking-[0.3em] uppercase flex flex-col items-center gap-2">
