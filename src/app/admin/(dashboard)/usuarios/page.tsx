@@ -15,10 +15,14 @@ export default async function UsuariosPage() {
 
   const { data: admins } = await supabase.rpc("listar_admins");
   // Invitados pendientes (aún no se loguearon)
-  const { data: invitados } = await supabase
+   const { data: invitados } = await supabase
     .from("admin_invitados")
     .select("email, rol, estado, created_at")
     .order("created_at", { ascending: false });
-    
-  return <UsuariosClient admins={admins ?? []} invitados={invitados ?? []} miUserId={user.id} />;
+
+  // Un invitado que ya se logueó aparece en `admins` → lo sacamos de Pendientes.
+  const adminEmails = new Set((admins ?? []).map((a: { email: string }) => a.email.toLowerCase()));
+  const pendientes = (invitados ?? []).filter((i) => !adminEmails.has(i.email.toLowerCase()));
+
+  return <UsuariosClient admins={admins ?? []} invitados={pendientes} miUserId={user.id} />;
 }

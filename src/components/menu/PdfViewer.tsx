@@ -22,6 +22,7 @@ export default function PdfViewer({ url }: Props) {
   const pdfDocRef = useRef<any>(null);
   const renderTaskRef = useRef<any>(null);
   const queueRef = useRef<Promise<void>>(Promise.resolve());
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   const [pageNum, setPageNum] = useState(1);
   const [numPages, setNumPages] = useState(0);
@@ -212,12 +213,32 @@ export default function PdfViewer({ url }: Props) {
 
   const prev = () => setPageNum((n) => Math.max(1, n - 1));
   const next = () => setPageNum((n) => Math.min(numPages, n + 1));
+    // Swipe horizontal = cambiar de página (mismo efecto que las flechas).
+  // Solo actúa en touchEnd y solo si el gesto es claramente horizontal,
+  // así NO pisa el scroll vertical del PDF.
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length !== 1) { touchStartRef.current = null; return; } // ignora pinch/multitouch
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start || numPages <= 1) return;
+    if ((window.visualViewport?.scale ?? 1) > 1.01) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return; // no es swipe horizontal
+    if (dx < 0) next(); else prev(); // izquierda → siguiente, derecha → anterior
+  };
   const retry = () => setRetryKey((k) => k + 1);
 
   return (
     <div className="flex flex-col">
       <div
         ref={scrollRef}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
         className="relative w-full h-[70vh] overflow-y-auto overflow-x-hidden md:h-auto md:min-h-[50vh] md:overflow-visible bg-neutral-100 rounded-sm"
       >
         {/* CARGANDO — con progreso real, no un spinner mudo */}
