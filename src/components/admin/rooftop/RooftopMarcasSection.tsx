@@ -6,9 +6,10 @@ export default async function RooftopMarcasSection() {
   const { data } = await supabase
     .from("rooftop_marcas").select("*")
     .eq("is_deleted", false).order("orden", { ascending: true });
+  const hasImg = (data?.length ?? 0) > 0;
 
-  return (    
-    <section className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-5 sm:p-6">
+  return (
+    <section className={`rounded-sm border border-neutral-800 border-l-2 bg-neutral-950/40 p-5 sm:p-6 transition-colors focus-within:border-l-white/40 ${hasImg ? "border-l-white/40" : "border-l-neutral-800"}`}>
       <RooftopMarcasClient marcas={data ?? []} />
     </section>
   );
