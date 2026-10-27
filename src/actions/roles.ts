@@ -5,14 +5,17 @@ import { logAdminAction } from "@/lib/admin-logger";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { ActionResponse } from "@/lib/guard";
-
+import { sendMail } from "@/lib/mail";
 const SUPERADMIN_ONLY = { roles: ["SUPERADMIN"] as const };
+const GOOGLE_DOMAINS = ["gmail.com", "googlemail.com"];
 
 const invitarSchema = z.object({
-  email: z.string().trim().toLowerCase().email("Email inválido"),
+  email: z.string().trim().toLowerCase().email("Email inválido")
+    .refine((e) => GOOGLE_DOMAINS.includes(e.split("@")[1] ?? ""), {
+      message: "Solo se permiten cuentas de Google (@gmail.com) — el acceso es por login de Google.",
+    }),
   rol: z.enum(["CM", "SUPERADMIN"]),
 });
-
 const cambiarSchema = z.object({
   userId: z.string().uuid(),
   rol: z.enum(["CM", "SUPERADMIN", "VISITOR"]),
@@ -68,6 +71,26 @@ export async function invitarAdmin(formData: FormData): Promise<ActionResponse> 
         return { success: false, error: "No se pudo guardar la invitación (sin permisos)." };
       }
       await logAdminAction("INVITE_ADMIN", "admin_invitados", user.id, { target_email: email, rol }, null);
+      const loginUrl = process.env.NEXT_PUBLIC_ADMIN_URL || "https://vault.beatmemo.com.ar";
+      const rolNombre = rol === "SUPERADMIN" ? "Superadmin" : "Community Manager";
+      await sendMail({
+        to: email,
+        subject: "Accede al panel Admin Beatmemo ",
+        html: `
+          <div style="font-family:system-ui,Arial,sans-serif;max-width:480px;margin:0 auto;color:#1a1a1a">
+            <h2 style="font-size:20px;margin:0 0 12px">Acceso al panel de Beatmemo</h2>
+            <p style="font-size:15px;line-height:1.5;color:#444">
+              Te dieron acceso a <strong>Beatmemo Vault</strong> con el rol <strong>${rolNombre}</strong>.
+            </p>
+            <p style="font-size:15px;line-height:1.5;color:#444">Entrá e iniciá sesión con tu cuenta de Google:</p>
+            <p style="margin:20px 0">
+              <a href="${loginUrl}" style="background:#141211;color:#fff;text-decoration:none;padding:12px 22px;font-weight:bold;font-size:14px;letter-spacing:.04em;text-transform:uppercase">Ingresar al panel</a>
+            </p>
+            <p style="font-size:13px;line-height:1.5;color:#777">
+              Solo podes iniciar sesión con la cuenta de Google: <strong>${email}</strong> · El acceso está vinculado a ese correo.
+            </p>
+          </div>`,
+      });
     }
 
     revalidatePath("/admin/usuarios");
