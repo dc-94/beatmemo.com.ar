@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { invitarAdmin, cambiarRol, revocarAcceso, borrarInvitado, denegarInvitado } from "@/actions/roles";
-import { Clock, Trash2, ShieldCheck, Ban, UserPlus, User } from "lucide-react";
+import { invitarAdmin, cambiarRol, revocarAcceso, borrarInvitado, denegarInvitado, reenviarInvitacion } from "@/actions/roles";
+import { Clock, Trash2, ShieldCheck, Ban, UserPlus, User, Send } from "lucide-react";
 import Button from "@/components/ui/Button";
 
 interface Admin { user_id: string; email: string; role: "SUPERADMIN" | "CM" | "VISITOR"; }
@@ -27,15 +27,22 @@ export default function UsuariosClient({
   const [saving, setSaving] = useState(false);
   const [confirm, setConfirm] = useState<ConfirmState | null>(null);
 
-  const correr = async (fn: () => Promise<{ success: boolean; error?: string }>, msgOk: string) => {
+    const correr = async (
+    fn: () => Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string[] | undefined> }>,
+    msgOk: string
+  ): Promise<boolean> => {
     setSaving(true);
     try {
       const res = await fn();
-      if (res.success) { toast.success(msgOk); router.refresh(); }
-      else toast.error(res.error || "No se pudo completar.");
+      if (res.success) { toast.success(msgOk); router.refresh(); return true; }
+      // Prioriza el mensaje puntual del campo (ej. "Solo cuentas de Google") sobre el genérico.
+      const campoMsg = res.fieldErrors ? Object.values(res.fieldErrors).flat().find(Boolean) : undefined;
+      toast.error(campoMsg || res.error || "No se pudo completar.");
+      return false;
     } catch (e) {
       console.error(e);
       toast.error("Error de conexión.");
+      return false;
     } finally {
       setSaving(false);
     }
@@ -44,10 +51,10 @@ export default function UsuariosClient({
   const handleInvitar = () => {
     if (!email) return;
     const mail = email;
-    const enviar = () => {
+    const enviar = async () => {
       const fd = new FormData(); fd.set("email", mail); fd.set("rol", rol);
-      correr(() => invitarAdmin(fd), "Invitación enviada");
-      setEmail("");
+      const ok = await correr(() => invitarAdmin(fd), "Invitación enviada");
+      if (ok) setEmail("");   // ← solo se limpia si se envió; si falló, el mail queda para corregir
       setConfirm(null);
     };
     // Invitar como SUPERADMIN escala privilegios → confirmación.
@@ -80,7 +87,10 @@ export default function UsuariosClient({
       doCambiar(a.user_id, nuevoRol);
     }
   };
-
+  const handleReenviar = (email: string) => {
+    const fd = new FormData(); fd.set("email", email);
+    correr(() => reenviarInvitacion(fd), "Invitación reenviada");
+  };
   const handleRevocar = (a: Admin) => {
     setConfirm({
       titulo: "Revocar acceso",
@@ -188,6 +198,12 @@ export default function UsuariosClient({
                 <span className="text-[10px] uppercase tracking-widest text-neutral-500 flex-none">
                   {denegado ? "Bloqueado" : `${i.rol} · pendiente`}
                 </span>
+                {!denegado && (
+                  <button onClick={() => handleReenviar(i.email)} disabled={saving}
+                    className="text-neutral-500 hover:text-white disabled:opacity-30 p-1" aria-label="Reenviar" title="Reenviar invitación por mail">
+                    <Send size={15} />
+                  </button>
+                )}
                 {!denegado && (
                   <button onClick={() => handleDenegar(i.email)} disabled={saving}
                     className="text-neutral-500 hover:text-red-400 disabled:opacity-30 p-1" aria-label="Denegar" title="Bloquear este email">
