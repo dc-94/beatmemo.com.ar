@@ -21,6 +21,28 @@ const cambiarSchema = z.object({
   rol: z.enum(["CM", "SUPERADMIN", "VISITOR"]),
 });
 
+// Plantilla del mail de invitación — compartida por invitar y reenviar.
+function emailInvitacion(email: string, rol: "CM" | "SUPERADMIN") {
+  const loginUrl = process.env.NEXT_PUBLIC_ADMIN_URL || "https://vault.beatmemo.com.ar";
+  const rolNombre = rol === "SUPERADMIN" ? "Superadmin" : "Community Manager";
+  return {
+     subject: "Accede al panel Admin Beatmemo ",
+        html: `
+          <div style="font-family:system-ui,Arial,sans-serif;max-width:480px;margin:0 auto;color:#1a1a1a">
+            <h2 style="font-size:20px;margin:0 0 12px">Acceso al panel de Beatmemo</h2>
+            <p style="font-size:15px;line-height:1.5;color:#444">
+              Te dieron acceso a <strong>Beatmemo Vault</strong> con el rol <strong>${rolNombre}</strong>.
+            </p>
+            <p style="font-size:15px;line-height:1.5;color:#444">Entrá e iniciá sesión con tu cuenta de Google:</p>
+            <p style="margin:20px 0">
+              <a href="${loginUrl}" style="background:#141211;color:#fff;text-decoration:none;padding:12px 22px;font-weight:bold;font-size:14px;letter-spacing:.04em;text-transform:uppercase">Ingresar al panel</a>
+            </p>
+            <p style="font-size:13px;line-height:1.5;color:#777">
+              Solo podes iniciar sesión con la cuenta de Google: <strong>${email}</strong> · El acceso está vinculado a ese correo.
+            </p>
+          </div>`,
+  };
+}
 // ── INVITAR / PROMOVER POR EMAIL ──────────────────────────────────────
 // Un solo camino: si el email ya se logueó, le asigna el rol directo;
 // si no, queda en la allowlist para su primer ingreso (lo lee el trigger).
@@ -46,6 +68,10 @@ export async function invitarAdmin(formData: FormData): Promise<ActionResponse> 
     }
 
     if (userId) {
+       if (userId === user.id && rol !== "SUPERADMIN") {
+        return { success: false, error: "No podés quitarte a vos mismo el rol de superadmin." };
+      }
+
       // Ya existe → update directo. Pedimos las filas de vuelta: si RLS bloquea
       // o el id no existe, Postgres devuelve 0 filas SIN error → hay que detectarlo.
       const { data: filas, error } = await supabase
@@ -71,26 +97,8 @@ export async function invitarAdmin(formData: FormData): Promise<ActionResponse> 
         return { success: false, error: "No se pudo guardar la invitación (sin permisos)." };
       }
       await logAdminAction("INVITE_ADMIN", "admin_invitados", user.id, { target_email: email, rol }, null);
-      const loginUrl = process.env.NEXT_PUBLIC_ADMIN_URL || "https://vault.beatmemo.com.ar";
-      const rolNombre = rol === "SUPERADMIN" ? "Superadmin" : "Community Manager";
-      await sendMail({
-        to: email,
-        subject: "Accede al panel Admin Beatmemo ",
-        html: `
-          <div style="font-family:system-ui,Arial,sans-serif;max-width:480px;margin:0 auto;color:#1a1a1a">
-            <h2 style="font-size:20px;margin:0 0 12px">Acceso al panel de Beatmemo</h2>
-            <p style="font-size:15px;line-height:1.5;color:#444">
-              Te dieron acceso a <strong>Beatmemo Vault</strong> con el rol <strong>${rolNombre}</strong>.
-            </p>
-            <p style="font-size:15px;line-height:1.5;color:#444">Entrá e iniciá sesión con tu cuenta de Google:</p>
-            <p style="margin:20px 0">
-              <a href="${loginUrl}" style="background:#141211;color:#fff;text-decoration:none;padding:12px 22px;font-weight:bold;font-size:14px;letter-spacing:.04em;text-transform:uppercase">Ingresar al panel</a>
-            </p>
-            <p style="font-size:13px;line-height:1.5;color:#777">
-              Solo podes iniciar sesión con la cuenta de Google: <strong>${email}</strong> · El acceso está vinculado a ese correo.
-            </p>
-          </div>`,
-      });
+      const { subject, html } = emailInvitacion(email, rol);
+      await sendMail({ to: email, subject, html });  
     }
 
     revalidatePath("/admin/usuarios");
@@ -222,6 +230,39 @@ export async function denegarInvitado(formData: FormData): Promise<ActionRespons
     return { success: true };
   } catch (e) {
     console.error("[denegarInvitado] fatal:", e);
+    return { success: false, error: "Error inesperado del servidor." };
+  }
+}
+// ── REENVIAR INVITACION ──────────────────────────────────────────────────
+
+export async function reenviarInvitacion(formData: FormData): Promise<ActionResponse> {
+  try {
+    const guard = await guardAction({ intent: "RESEND_INVITE", table: "admin_invitados", ...SUPERADMIN_ONLY });
+    if (!guard.ok) return guard.response;
+    const { supabase, user } = guard;
+
+    const email = (formData.get("email") as string | null)?.toLowerCase();
+    if (!email) return { success: false, error: "Email requerido." };
+
+    // Solo reenviar si hay una invitación realmente pendiente.
+    const { data: inv } = await supabase
+      .from("admin_invitados")
+      .select("rol, estado")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (!inv || inv.estado !== "pendiente") {
+      return { success: false, error: "No hay una invitación pendiente para ese email." };
+    }
+
+    const { subject, html } = emailInvitacion(email, inv.rol);
+    const ok = await sendMail({ to: email, subject, html });
+    if (!ok) return { success: false, error: "No se pudo reenviar el mail." };  // acá el mail SÍ es el objetivo
+
+    await logAdminAction("RESEND_INVITE", "admin_invitados", user.id, { target_email: email }, null);
+    return { success: true };
+  } catch (e) {
+    console.error("[reenviarInvitacion] fatal:", e);
     return { success: false, error: "Error inesperado del servidor." };
   }
 }
