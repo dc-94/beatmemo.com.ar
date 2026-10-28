@@ -7,8 +7,6 @@ export default function LoginButton() {
 
   const handleLogin = async () => {
     // Usar la variable de entorno — nunca asumir el dominio en runtime
-    // .env.local: NEXT_PUBLIC_ADMIN_CALLBACK_URL=http://vault.localhost:3000/auth/callback
-    // Vercel (prod): NEXT_PUBLIC_ADMIN_CALLBACK_URL=https://vault.beatmemo.com/auth/callback
     const redirectTo = process.env.NEXT_PUBLIC_ADMIN_CALLBACK_URL;
 
     await supabase.auth.signInWithOAuth({
