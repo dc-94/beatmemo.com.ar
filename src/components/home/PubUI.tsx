@@ -223,9 +223,9 @@ function BentoHero({ item }: { item: PubItem }) {
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
       <div className="absolute inset-0 flex flex-col justify-end p-5 lg:p-7">
-        <h4 className="font-sans font-bold text-white uppercase tracking-wide leading-tight text-2xl lg:text-4xl mb-2">
+        <h3 className="font-sans font-bold text-white uppercase tracking-wide leading-tight text-2xl lg:text-4xl mb-2">
           {item.nombre}
-        </h4>
+        </h3>
         {item.descripcion && (
           <p className="font-sans text-white/85 text-sm lg:text-base line-clamp-2 max-w-md mb-3">
             {item.descripcion}

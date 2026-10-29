@@ -68,7 +68,7 @@ export default function RooftopSection() {
             </h2>
           </div>
           <div>
-            <span className="uppercase tracking-[0.34em] text-[11px] font-bold text-[#111111]/50 block mb-3">Beatmemo</span>
+            <span className="uppercase tracking-[0.34em] text-[11px] font-bold text-[#111111]/70 block mb-3">Beatmemo</span>
             <Image
               src="/brand/logo_ROOFTOP.svg"
               alt="Beatmemo Rooftop"

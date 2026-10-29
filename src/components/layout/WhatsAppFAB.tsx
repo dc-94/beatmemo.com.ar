@@ -29,8 +29,8 @@ export default function WhatsAppFAB() {
     <Link
       href={whatsappLink(WA_MESSAGES.reservaMesa)}
       rel="noopener noreferrer"
-      aria-label="Contactar por WhatsApp"
-      className={`fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40 bg-brand-black-100/50 backdrop-blur-md border border-brand-white-300/5 text-white p-3 md:p-4 rounded-full shadow-lg hover:scale-105 hover:bg-brand-black-100 transition-all duration-300 group flex items-center justify-center pr-5 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-red-100 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-black-100 ${
+      aria-label="Reserva tu mesa por WhatsApp"
+      className={`fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40 bg-brand-black-100/80 backdrop-blur-md border border-brand-white-300/5 text-white p-3 md:p-4 rounded-full shadow-lg hover:scale-105 hover:bg-brand-black-100 transition-all duration-300 group flex items-center justify-center pr-5 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-red-100 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-black-100 ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-24 pointer-events-none"
       }`}
     >
